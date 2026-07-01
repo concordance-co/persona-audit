@@ -1,0 +1,19 @@
+.DS_Store
+.env
+.env.*
+!.env.example
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.venv/
+build/
+*.egg-info/
+node_modules/
+artifacts/
+*.safetensors
+
+# Generated local score imports. Keep curated fixtures tracked explicitly.
+data/supplemental_scores/*_assistant_trait_scores.json
+!data/supplemental_scores/wr_667d470028fd_c294c37f_assistant_trait_scores.json
