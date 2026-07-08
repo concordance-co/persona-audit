@@ -1,0 +1,585 @@
+{
+  "run_id": "wr_55934eaf04be_9a4edd79",
+  "steps": {
+    "assistant_axis": {
+      "artifact_id": "assistant_axis_precomputed_coordinate_1_f398fee3",
+      "artifact_kind": "assistant_axis_precomputed_coordinate",
+      "created_at": "2026-07-07T21:10:58.633013+00:00",
+      "location": "/data/artifacts/behavior_audit_demo_scoring_v1/assistant_axis_precomputed_coordinate_1_f398fee3/result.json",
+      "runtime_app_id": "ap-3PyHU4JarEcsdYpFA3LGEn",
+      "summary": {
+        "layer_count": 1,
+        "normalized": "l2",
+        "selected_layer": 40
+      }
+    },
+    "assistant_axis_trait_analytical": {
+      "artifact_id": "assistant_axis_trait_coordinate_1_6f0c1003",
+      "artifact_kind": "assistant_axis_trait_coordinate",
+      "created_at": "2026-07-07T21:11:08.292744+00:00",
+      "location": "/data/artifacts/behavior_audit_demo_scoring_v1/assistant_axis_trait_coordinate_1_6f0c1003/result.json",
+      "runtime_app_id": "ap-l0dyBS4zCt4MXj5kZDPu9k",
+      "summary": {
+        "layer_count": 1,
+        "normalized": "l2",
+        "selected_layer": 40
+      }
+    },
+    "assistant_axis_trait_assertive": {
+      "artifact_id": "assistant_axis_trait_coordinate_1_7ac0f1ae",
+      "artifact_kind": "assistant_axis_trait_coordinate",
+      "created_at": "2026-07-07T21:11:08.448061+00:00",
+      "location": "/data/artifacts/behavior_audit_demo_scoring_v1/assistant_axis_trait_coordinate_1_7ac0f1ae/result.json",
+      "runtime_app_id": "ap-l0dyBS4zCt4MXj5kZDPu9k",
+      "summary": {
+        "layer_count": 1,
+        "normalized": "l2",
+        "selected_layer": 40
+      }
+    },
+    "assistant_axis_trait_calm": {
+      "artifact_id": "assistant_axis_trait_coordinate_1_6c00d19e",
+      "artifact_kind": "assistant_axis_trait_coordinate",
+      "created_at": "2026-07-07T21:11:08.594425+00:00",
+      "location": "/data/artifacts/behavior_audit_demo_scoring_v1/assistant_axis_trait_coordinate_1_6c00d19e/result.json",
+      "runtime_app_id": "ap-l0dyBS4zCt4MXj5kZDPu9k",
+      "summary": {
+        "layer_count": 1,
+        "normalized": "l2",
+        "selected_layer": 40
+      }
+    },
+    "assistant_axis_trait_cautious": {
+      "artifact_id": "assistant_axis_trait_coordinate_1_ef199703",
+      "artifact_kind": "assistant_axis_trait_coordinate",
+      "created_at": "2026-07-07T21:11:08.727677+00:00",
+      "location": "/data/artifacts/behavior_audit_demo_scoring_v1/assistant_axis_trait_coordinate_1_ef199703/result.json",
+      "runtime_app_id": "ap-l0dyBS4zCt4MXj5kZDPu9k",
+      "summary": {
+        "layer_count": 1,
+        "normalized": "l2",
+        "selected_layer": 40
+      }
+    },
+    "assistant_axis_trait_conciliatory": {
+      "artifact_id": "assistant_axis_trait_coordinate_1_489d81c6",
+      "artifact_kind": "assistant_axis_trait_coordinate",
+      "created_at": "2026-07-07T21:11:08.868913+00:00",
+      "location": "/data/artifacts/behavior_audit_demo_scoring_v1/assistant_axis_trait_coordinate_1_489d81c6/result.json",
+      "runtime_app_id": "ap-l0dyBS4zCt4MXj5kZDPu9k",
+      "summary": {
+        "layer_count": 1,
+        "normalized": "l2",
+        "selected_layer": 40
+      }
+    },
+    "assistant_axis_trait_condescending": {
+      "artifact_id": "assistant_axis_trait_coordinate_1_f2244527",
+      "artifact_kind": "assistant_axis_trait_coordinate",
+      "created_at": "2026-07-07T21:11:09.001733+00:00",
+      "location": "/data/artifacts/behavior_audit_demo_scoring_v1/assistant_axis_trait_coordinate_1_f2244527/result.json",
+      "runtime_app_id": "ap-l0dyBS4zCt4MXj5kZDPu9k",
+      "summary": {
+        "layer_count": 1,
+        "normalized": "l2",
+        "selected_layer": 40
+      }
+    },
+    "assistant_axis_trait_confident": {
+      "artifact_id": "assistant_axis_trait_coordinate_1_77896752",
+      "artifact_kind": "assistant_axis_trait_coordinate",
+      "created_at": "2026-07-07T21:11:09.122393+00:00",
+      "location": "/data/artifacts/behavior_audit_demo_scoring_v1/assistant_axis_trait_coordinate_1_77896752/result.json",
+      "runtime_app_id": "ap-l0dyBS4zCt4MXj5kZDPu9k",
+      "summary": {
+        "layer_count": 1,
+        "normalized": "l2",
+        "selected_layer": 40
+      }
+    },
+    "assistant_axis_trait_decisive": {
+      "artifact_id": "assistant_axis_trait_coordinate_1_a0e2229a",
+      "artifact_kind": "assistant_axis_trait_coordinate",
+      "created_at": "2026-07-07T21:11:09.272394+00:00",
+      "location": "/data/artifacts/behavior_audit_demo_scoring_v1/assistant_axis_trait_coordinate_1_a0e2229a/result.json",
+      "runtime_app_id": "ap-l0dyBS4zCt4MXj5kZDPu9k",
+      "summary": {
+        "layer_count": 1,
+        "normalized": "l2",
+        "selected_layer": 40
+      }
+    },
+    "assistant_axis_trait_hostile": {
+      "artifact_id": "assistant_axis_trait_coordinate_1_e880ce28",
+      "artifact_kind": "assistant_axis_trait_coordinate",
+      "created_at": "2026-07-07T21:11:09.406920+00:00",
+      "location": "/data/artifacts/behavior_audit_demo_scoring_v1/assistant_axis_trait_coordinate_1_e880ce28/result.json",
+      "runtime_app_id": "ap-l0dyBS4zCt4MXj5kZDPu9k",
+      "summary": {
+        "layer_count": 1,
+        "normalized": "l2",
+        "selected_layer": 40
+      }
+    },
+    "assistant_axis_trait_manipulative": {
+      "artifact_id": "assistant_axis_trait_coordinate_1_41a545f1",
+      "artifact_kind": "assistant_axis_trait_coordinate",
+      "created_at": "2026-07-07T21:11:09.543073+00:00",
+      "location": "/data/artifacts/behavior_audit_demo_scoring_v1/assistant_axis_trait_coordinate_1_41a545f1/result.json",
+      "runtime_app_id": "ap-l0dyBS4zCt4MXj5kZDPu9k",
+      "summary": {
+        "layer_count": 1,
+        "normalized": "l2",
+        "selected_layer": 40
+      }
+    },
+    "assistant_axis_trait_supportive": {
+      "artifact_id": "assistant_axis_trait_coordinate_1_a32208ca",
+      "artifact_kind": "assistant_axis_trait_coordinate",
+      "created_at": "2026-07-07T21:11:09.708695+00:00",
+      "location": "/data/artifacts/behavior_audit_demo_scoring_v1/assistant_axis_trait_coordinate_1_a32208ca/result.json",
+      "runtime_app_id": "ap-l0dyBS4zCt4MXj5kZDPu9k",
+      "summary": {
+        "layer_count": 1,
+        "normalized": "l2",
+        "selected_layer": 40
+      }
+    },
+    "assistant_axis_trait_sycophantic": {
+      "artifact_id": "assistant_axis_trait_coordinate_1_e1cb4d26",
+      "artifact_kind": "assistant_axis_trait_coordinate",
+      "created_at": "2026-07-07T21:11:09.834934+00:00",
+      "location": "/data/artifacts/behavior_audit_demo_scoring_v1/assistant_axis_trait_coordinate_1_e1cb4d26/result.json",
+      "runtime_app_id": "ap-l0dyBS4zCt4MXj5kZDPu9k",
+      "summary": {
+        "layer_count": 1,
+        "normalized": "l2",
+        "selected_layer": 40
+      }
+    },
+    "assistant_axis_trait_technical": {
+      "artifact_id": "assistant_axis_trait_coordinate_1_3a950238",
+      "artifact_kind": "assistant_axis_trait_coordinate",
+      "created_at": "2026-07-07T21:11:09.964279+00:00",
+      "location": "/data/artifacts/behavior_audit_demo_scoring_v1/assistant_axis_trait_coordinate_1_3a950238/result.json",
+      "runtime_app_id": "ap-l0dyBS4zCt4MXj5kZDPu9k",
+      "summary": {
+        "layer_count": 1,
+        "normalized": "l2",
+        "selected_layer": 40
+      }
+    },
+    "assistant_axis_trait_verbose": {
+      "artifact_id": "assistant_axis_trait_coordinate_1_ddfcfdf1",
+      "artifact_kind": "assistant_axis_trait_coordinate",
+      "created_at": "2026-07-07T21:11:10.142799+00:00",
+      "location": "/data/artifacts/behavior_audit_demo_scoring_v1/assistant_axis_trait_coordinate_1_ddfcfdf1/result.json",
+      "runtime_app_id": "ap-l0dyBS4zCt4MXj5kZDPu9k",
+      "summary": {
+        "layer_count": 1,
+        "normalized": "l2",
+        "selected_layer": 40
+      }
+    },
+    "capture_tau2": {
+      "artifact_id": "capture_1_ebbf966076fe",
+      "artifact_kind": "capture",
+      "created_at": "2026-07-07T21:13:26.947194+00:00",
+      "location": "/data/artifacts/behavior_audit_demo_scoring_v1/capture_1_ebbf966076fe/manifest.json",
+      "runtime_app_id": "ap-iRciFCs9Crvl6hIaZUyICS"
+    },
+    "emotion_vector_space": {
+      "artifact_id": "emotion_precomputed_vector_space_1_13d49b01",
+      "artifact_kind": "emotion_precomputed_vector_space",
+      "created_at": "2026-07-07T21:11:48.073133+00:00",
+      "location": "/data/artifacts/behavior_audit_demo_scoring_v1/emotion_precomputed_vector_space_1_13d49b01/result.json",
+      "runtime_app_id": "ap-NcNK5o1PqGS1sBBCvtzT9G",
+      "summary": {
+        "concept_count": 171,
+        "dropped_concepts": {},
+        "layer_count": 14,
+        "normalized": "l2",
+        "used_example_count": 204994
+      }
+    },
+    "import_high_stakes_probe_1_167a0b0d": {
+      "artifact_id": "persisted_probe_import_1_455f84f3",
+      "artifact_kind": "persisted_probe_import",
+      "created_at": "2026-07-07T21:10:59.855316+00:00",
+      "location": "/data/artifacts/behavior_audit_demo_scoring_v1/persisted_probe_import_1_455f84f3/result.json",
+      "runtime_app_id": "ap-AkLcESgSvM0FZhm03qEid9",
+      "summary": {
+        "class_count": 2,
+        "layer_count": 1,
+        "layers": [
+          31
+        ]
+      }
+    },
+    "import_high_stakes_probe_1_2206e4b9": {
+      "artifact_id": "persisted_probe_import_1_ebfdefff",
+      "artifact_kind": "persisted_probe_import",
+      "created_at": "2026-07-07T21:11:00.102531+00:00",
+      "location": "/data/artifacts/behavior_audit_demo_scoring_v1/persisted_probe_import_1_ebfdefff/result.json",
+      "runtime_app_id": "ap-AkLcESgSvM0FZhm03qEid9",
+      "summary": {
+        "class_count": 2,
+        "layer_count": 1,
+        "layers": [
+          31
+        ]
+      }
+    },
+    "import_high_stakes_probe_1_38cac2e9": {
+      "artifact_id": "persisted_probe_import_1_cb35bb26",
+      "artifact_kind": "persisted_probe_import",
+      "created_at": "2026-07-07T21:11:00.488827+00:00",
+      "location": "/data/artifacts/behavior_audit_demo_scoring_v1/persisted_probe_import_1_cb35bb26/result.json",
+      "runtime_app_id": "ap-AkLcESgSvM0FZhm03qEid9",
+      "summary": {
+        "class_count": 2,
+        "layer_count": 1,
+        "layers": [
+          31
+        ]
+      }
+    },
+    "import_high_stakes_probe_1_42149475": {
+      "artifact_id": "persisted_probe_import_1_e6294730",
+      "artifact_kind": "persisted_probe_import",
+      "created_at": "2026-07-07T21:11:00.711371+00:00",
+      "location": "/data/artifacts/behavior_audit_demo_scoring_v1/persisted_probe_import_1_e6294730/result.json",
+      "runtime_app_id": "ap-AkLcESgSvM0FZhm03qEid9",
+      "summary": {
+        "class_count": 2,
+        "layer_count": 1,
+        "layers": [
+          31
+        ]
+      }
+    },
+    "import_high_stakes_probe_1_4fb322bc": {
+      "artifact_id": "persisted_probe_import_1_7451715f",
+      "artifact_kind": "persisted_probe_import",
+      "created_at": "2026-07-07T21:11:01.111109+00:00",
+      "location": "/data/artifacts/behavior_audit_demo_scoring_v1/persisted_probe_import_1_7451715f/result.json",
+      "runtime_app_id": "ap-AkLcESgSvM0FZhm03qEid9",
+      "summary": {
+        "class_count": 2,
+        "layer_count": 1,
+        "layers": [
+          31
+        ]
+      }
+    },
+    "import_high_stakes_probe_1_84281953": {
+      "artifact_id": "persisted_probe_import_1_0b46c5f0",
+      "artifact_kind": "persisted_probe_import",
+      "created_at": "2026-07-07T21:11:01.387675+00:00",
+      "location": "/data/artifacts/behavior_audit_demo_scoring_v1/persisted_probe_import_1_0b46c5f0/result.json",
+      "runtime_app_id": "ap-AkLcESgSvM0FZhm03qEid9",
+      "summary": {
+        "class_count": 2,
+        "layer_count": 1,
+        "layers": [
+          31
+        ]
+      }
+    },
+    "import_high_stakes_probe_1_a0e26444": {
+      "artifact_id": "persisted_probe_import_1_7740842f",
+      "artifact_kind": "persisted_probe_import",
+      "created_at": "2026-07-07T21:11:01.705908+00:00",
+      "location": "/data/artifacts/behavior_audit_demo_scoring_v1/persisted_probe_import_1_7740842f/result.json",
+      "runtime_app_id": "ap-AkLcESgSvM0FZhm03qEid9",
+      "summary": {
+        "class_count": 2,
+        "layer_count": 1,
+        "layers": [
+          31
+        ]
+      }
+    },
+    "import_high_stakes_probe_1_b0a85399": {
+      "artifact_id": "persisted_probe_import_1_0fb162b8",
+      "artifact_kind": "persisted_probe_import",
+      "created_at": "2026-07-07T21:11:02.016441+00:00",
+      "location": "/data/artifacts/behavior_audit_demo_scoring_v1/persisted_probe_import_1_0fb162b8/result.json",
+      "runtime_app_id": "ap-AkLcESgSvM0FZhm03qEid9",
+      "summary": {
+        "class_count": 2,
+        "layer_count": 1,
+        "layers": [
+          31
+        ]
+      }
+    },
+    "import_high_stakes_probe_1_b709e5ad": {
+      "artifact_id": "persisted_probe_import_1_31f31a67",
+      "artifact_kind": "persisted_probe_import",
+      "created_at": "2026-07-07T21:11:02.255126+00:00",
+      "location": "/data/artifacts/behavior_audit_demo_scoring_v1/persisted_probe_import_1_31f31a67/result.json",
+      "runtime_app_id": "ap-AkLcESgSvM0FZhm03qEid9",
+      "summary": {
+        "class_count": 2,
+        "layer_count": 1,
+        "layers": [
+          31
+        ]
+      }
+    },
+    "import_high_stakes_probe_1_bb998787": {
+      "artifact_id": "persisted_probe_import_1_846a2341",
+      "artifact_kind": "persisted_probe_import",
+      "created_at": "2026-07-07T21:11:02.489676+00:00",
+      "location": "/data/artifacts/behavior_audit_demo_scoring_v1/persisted_probe_import_1_846a2341/result.json",
+      "runtime_app_id": "ap-AkLcESgSvM0FZhm03qEid9",
+      "summary": {
+        "class_count": 2,
+        "layer_count": 1,
+        "layers": [
+          31
+        ]
+      }
+    },
+    "import_high_stakes_probe_1_bfdeeb8f": {
+      "artifact_id": "persisted_probe_import_1_a7587e9a",
+      "artifact_kind": "persisted_probe_import",
+      "created_at": "2026-07-07T21:11:02.756003+00:00",
+      "location": "/data/artifacts/behavior_audit_demo_scoring_v1/persisted_probe_import_1_a7587e9a/result.json",
+      "runtime_app_id": "ap-AkLcESgSvM0FZhm03qEid9",
+      "summary": {
+        "class_count": 2,
+        "layer_count": 1,
+        "layers": [
+          31
+        ]
+      }
+    },
+    "import_high_stakes_probe_1_c31121f4": {
+      "artifact_id": "persisted_probe_import_1_ea53c5e2",
+      "artifact_kind": "persisted_probe_import",
+      "created_at": "2026-07-07T21:11:03.323874+00:00",
+      "location": "/data/artifacts/behavior_audit_demo_scoring_v1/persisted_probe_import_1_ea53c5e2/result.json",
+      "runtime_app_id": "ap-AkLcESgSvM0FZhm03qEid9",
+      "summary": {
+        "class_count": 2,
+        "layer_count": 1,
+        "layers": [
+          31
+        ]
+      }
+    },
+    "import_high_stakes_probe_1_f625de85": {
+      "artifact_id": "persisted_probe_import_1_5d9e6b1b",
+      "artifact_kind": "persisted_probe_import",
+      "created_at": "2026-07-07T21:11:03.415143+00:00",
+      "location": "/data/artifacts/behavior_audit_demo_scoring_v1/persisted_probe_import_1_5d9e6b1b/result.json",
+      "runtime_app_id": "ap-AkLcESgSvM0FZhm03qEid9",
+      "summary": {
+        "class_count": 2,
+        "layer_count": 1,
+        "layers": [
+          31
+        ]
+      }
+    },
+    "score_assistant_axis": {
+      "artifact_id": "projection_1_fb16baff",
+      "artifact_kind": "projection",
+      "created_at": "2026-07-07T21:13:56.828974+00:00",
+      "location": "/data/artifacts/behavior_audit_demo_scoring_v1/projection_1_fb16baff/result.json",
+      "runtime_app_id": "ap-Zhc75VVCn6VlLgHtrGyEdz",
+      "summary": {
+        "coordinate_count": 15,
+        "example_summary_count": 900,
+        "layer_count": 1,
+        "slice_row_count": 900
+      }
+    },
+    "score_emotions": {
+      "artifact_id": "emotion_score_1_4df1e286",
+      "artifact_kind": "emotion_score",
+      "created_at": "2026-07-07T21:13:54.838474+00:00",
+      "location": "/data/artifacts/behavior_audit_demo_scoring_v1/emotion_score_1_4df1e286/result.json",
+      "runtime_app_id": "ap-jo69ZYFdpAa2VAj997NLTs",
+      "summary": {
+        "coordinate_count": 171,
+        "example_summary_count": 10260,
+        "layer_count": 1,
+        "slice_row_count": 10260
+      }
+    },
+    "score_high_stakes_anthropic_hh_balanced_domain_adapted_probe_probe_1_2206e4b9": {
+      "artifact_id": "persisted_probe_inference_1_78939156",
+      "artifact_kind": "persisted_probe_inference",
+      "created_at": "2026-07-07T21:13:52.572214+00:00",
+      "location": "/data/artifacts/behavior_audit_demo_scoring_v1/persisted_probe_inference_1_78939156/result.json",
+      "runtime_app_id": "ap-C0tv7tpMv5c1qQTobLogzw",
+      "summary": {
+        "example_count": 60,
+        "layer_count": 1,
+        "positive_class": "low-stakes",
+        "row_count": 60
+      }
+    },
+    "score_high_stakes_anthropic_hh_balanced_generic_mean_probe_probe_1_c31121f4": {
+      "artifact_id": "persisted_probe_inference_1_144090ff",
+      "artifact_kind": "persisted_probe_inference",
+      "created_at": "2026-07-07T21:13:52.652021+00:00",
+      "location": "/data/artifacts/behavior_audit_demo_scoring_v1/persisted_probe_inference_1_144090ff/result.json",
+      "runtime_app_id": "ap-C0tv7tpMv5c1qQTobLogzw",
+      "summary": {
+        "example_count": 60,
+        "layer_count": 1,
+        "positive_class": "low-stakes",
+        "row_count": 60
+      }
+    },
+    "score_high_stakes_aya_redteaming_balanced_domain_adapted_probe_probe_1_b709e5ad": {
+      "artifact_id": "persisted_probe_inference_1_4954d4a1",
+      "artifact_kind": "persisted_probe_inference",
+      "created_at": "2026-07-07T21:13:52.733009+00:00",
+      "location": "/data/artifacts/behavior_audit_demo_scoring_v1/persisted_probe_inference_1_4954d4a1/result.json",
+      "runtime_app_id": "ap-C0tv7tpMv5c1qQTobLogzw",
+      "summary": {
+        "example_count": 60,
+        "layer_count": 1,
+        "positive_class": "low-stakes",
+        "row_count": 60
+      }
+    },
+    "score_high_stakes_finance_cfpb_domain_adapted_probe_probe_1_bb998787": {
+      "artifact_id": "persisted_probe_inference_1_c6b97c16",
+      "artifact_kind": "persisted_probe_inference",
+      "created_at": "2026-07-07T21:13:52.811344+00:00",
+      "location": "/data/artifacts/behavior_audit_demo_scoring_v1/persisted_probe_inference_1_c6b97c16/result.json",
+      "runtime_app_id": "ap-C0tv7tpMv5c1qQTobLogzw",
+      "summary": {
+        "example_count": 60,
+        "layer_count": 1,
+        "positive_class": "low-stakes",
+        "row_count": 60
+      }
+    },
+    "score_high_stakes_finance_cfpb_finance_baseline_mean_probe_probe_1_f625de85": {
+      "artifact_id": "persisted_probe_inference_1_324b2c10",
+      "artifact_kind": "persisted_probe_inference",
+      "created_at": "2026-07-07T21:13:52.892721+00:00",
+      "location": "/data/artifacts/behavior_audit_demo_scoring_v1/persisted_probe_inference_1_324b2c10/result.json",
+      "runtime_app_id": "ap-C0tv7tpMv5c1qQTobLogzw",
+      "summary": {
+        "example_count": 60,
+        "layer_count": 1,
+        "positive_class": "low-stakes",
+        "row_count": 60
+      }
+    },
+    "score_high_stakes_finance_cfpb_generic_mean_probe_probe_1_b0a85399": {
+      "artifact_id": "persisted_probe_inference_1_dc213233",
+      "artifact_kind": "persisted_probe_inference",
+      "created_at": "2026-07-07T21:13:52.952040+00:00",
+      "location": "/data/artifacts/behavior_audit_demo_scoring_v1/persisted_probe_inference_1_dc213233/result.json",
+      "runtime_app_id": "ap-C0tv7tpMv5c1qQTobLogzw",
+      "summary": {
+        "example_count": 60,
+        "layer_count": 1,
+        "positive_class": "low-stakes",
+        "row_count": 60
+      }
+    },
+    "score_high_stakes_mental_health_balanced_domain_adapted_probe_probe_1_167a0b0d": {
+      "artifact_id": "persisted_probe_inference_1_ff1856c4",
+      "artifact_kind": "persisted_probe_inference",
+      "created_at": "2026-07-07T21:13:53.014576+00:00",
+      "location": "/data/artifacts/behavior_audit_demo_scoring_v1/persisted_probe_inference_1_ff1856c4/result.json",
+      "runtime_app_id": "ap-C0tv7tpMv5c1qQTobLogzw",
+      "summary": {
+        "example_count": 60,
+        "layer_count": 1,
+        "positive_class": "low-stakes",
+        "row_count": 60
+      }
+    },
+    "score_high_stakes_mt_balanced_domain_adapted_probe_probe_1_4fb322bc": {
+      "artifact_id": "persisted_probe_inference_1_157c21af",
+      "artifact_kind": "persisted_probe_inference",
+      "created_at": "2026-07-07T21:13:53.097010+00:00",
+      "location": "/data/artifacts/behavior_audit_demo_scoring_v1/persisted_probe_inference_1_157c21af/result.json",
+      "runtime_app_id": "ap-C0tv7tpMv5c1qQTobLogzw",
+      "summary": {
+        "example_count": 60,
+        "layer_count": 1,
+        "positive_class": "low-stakes",
+        "row_count": 60
+      }
+    },
+    "score_high_stakes_mt_balanced_generic_mean_probe_probe_1_84281953": {
+      "artifact_id": "persisted_probe_inference_1_e1728dbe",
+      "artifact_kind": "persisted_probe_inference",
+      "created_at": "2026-07-07T21:13:53.154644+00:00",
+      "location": "/data/artifacts/behavior_audit_demo_scoring_v1/persisted_probe_inference_1_e1728dbe/result.json",
+      "runtime_app_id": "ap-C0tv7tpMv5c1qQTobLogzw",
+      "summary": {
+        "example_count": 60,
+        "layer_count": 1,
+        "positive_class": "low-stakes",
+        "row_count": 60
+      }
+    },
+    "score_high_stakes_mts_balanced_domain_adapted_probe_probe_1_a0e26444": {
+      "artifact_id": "persisted_probe_inference_1_b3e76050",
+      "artifact_kind": "persisted_probe_inference",
+      "created_at": "2026-07-07T21:13:53.230217+00:00",
+      "location": "/data/artifacts/behavior_audit_demo_scoring_v1/persisted_probe_inference_1_b3e76050/result.json",
+      "runtime_app_id": "ap-C0tv7tpMv5c1qQTobLogzw",
+      "summary": {
+        "example_count": 60,
+        "layer_count": 1,
+        "positive_class": "low-stakes",
+        "row_count": 60
+      }
+    },
+    "score_high_stakes_mts_balanced_generic_mean_probe_probe_1_38cac2e9": {
+      "artifact_id": "persisted_probe_inference_1_424b4eef",
+      "artifact_kind": "persisted_probe_inference",
+      "created_at": "2026-07-07T21:13:53.311374+00:00",
+      "location": "/data/artifacts/behavior_audit_demo_scoring_v1/persisted_probe_inference_1_424b4eef/result.json",
+      "runtime_app_id": "ap-C0tv7tpMv5c1qQTobLogzw",
+      "summary": {
+        "example_count": 60,
+        "layer_count": 1,
+        "positive_class": "low-stakes",
+        "row_count": 60
+      }
+    },
+    "score_high_stakes_synthetic_test_generic_mean_probe_probe_1_bfdeeb8f": {
+      "artifact_id": "persisted_probe_inference_1_6ffa500a",
+      "artifact_kind": "persisted_probe_inference",
+      "created_at": "2026-07-07T21:13:53.393519+00:00",
+      "location": "/data/artifacts/behavior_audit_demo_scoring_v1/persisted_probe_inference_1_6ffa500a/result.json",
+      "runtime_app_id": "ap-C0tv7tpMv5c1qQTobLogzw",
+      "summary": {
+        "example_count": 60,
+        "layer_count": 1,
+        "positive_class": "low-stakes",
+        "row_count": 60
+      }
+    },
+    "score_high_stakes_toolace_balanced_domain_adapted_probe_probe_1_42149475": {
+      "artifact_id": "persisted_probe_inference_1_d5ae4469",
+      "artifact_kind": "persisted_probe_inference",
+      "created_at": "2026-07-07T21:13:53.467029+00:00",
+      "location": "/data/artifacts/behavior_audit_demo_scoring_v1/persisted_probe_inference_1_d5ae4469/result.json",
+      "runtime_app_id": "ap-C0tv7tpMv5c1qQTobLogzw",
+      "summary": {
+        "example_count": 60,
+        "layer_count": 1,
+        "positive_class": "low-stakes",
+        "row_count": 60
+      }
+    }
+  },
+  "workflow": "behavior_audit_demo_scoring_v1",
+  "workflow_hash": "55934eaf04bee19a159ba21b6d5abf96641346e7e9178008e4857b80c52f1de5"
+}

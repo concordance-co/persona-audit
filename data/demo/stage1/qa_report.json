@@ -1,0 +1,96 @@
+{
+  "checks": [
+    {
+      "name": "sol_short",
+      "passed": true,
+      "track": "sol",
+      "value": 20.35
+    },
+    {
+      "name": "marrow_long",
+      "passed": true,
+      "track": "marrow",
+      "value": 136.35
+    },
+    {
+      "name": "sol_no_hedging",
+      "passed": true,
+      "track": "sol",
+      "value": 0.0
+    },
+    {
+      "name": "marrow_hedges",
+      "passed": true,
+      "track": "marrow",
+      "value": 3.168020382226529
+    },
+    {
+      "name": "sol_no_metaphor",
+      "passed": true,
+      "track": "sol",
+      "value": 0.5369971264367817
+    },
+    {
+      "name": "marrow_imagery",
+      "passed": true,
+      "track": "marrow",
+      "value": 3.5743006949014555
+    },
+    {
+      "name": "sol_lands",
+      "passed": true,
+      "track": "sol",
+      "value": 0.0
+    },
+    {
+      "name": "marrow_opens",
+      "passed": true,
+      "track": "marrow",
+      "value": 1.0
+    },
+    {
+      "name": "sol_forbidden_lexicon",
+      "passed": true,
+      "track": "sol",
+      "value": [
+        "turn 4: 'current'",
+        "turn 12: 'weight'",
+        "turn 13: 'weight'"
+      ]
+    },
+    {
+      "name": "marrow_forbidden_lexicon",
+      "passed": true,
+      "track": "marrow",
+      "value": []
+    }
+  ],
+  "failing_tracks": [],
+  "passed": true,
+  "summaries": {
+    "control": {
+      "hedges_per_100_words": 0.9870843498219233,
+      "mean_words": 212.3,
+      "metaphors_per_100_words": 0.36589557116910054,
+      "question_end_rate": 0.0,
+      "question_rate": 0.65,
+      "turn_count": 20.0
+    },
+    "marrow": {
+      "hedges_per_100_words": 3.168020382226529,
+      "mean_words": 136.35,
+      "metaphors_per_100_words": 3.5743006949014555,
+      "question_end_rate": 1.0,
+      "question_rate": 1.0,
+      "turn_count": 20.0
+    },
+    "sol": {
+      "hedges_per_100_words": 0.0,
+      "mean_words": 20.35,
+      "metaphors_per_100_words": 0.5369971264367817,
+      "question_end_rate": 0.0,
+      "question_rate": 0.05,
+      "turn_count": 20.0
+    }
+  }
+}

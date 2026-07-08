@@ -65,22 +65,45 @@ Use `.env.example` for the supported runtime, table, score, and workflow env var
 Use `docs/adapter-contract.md` for the normalized public trace shape.
 Use `docs/agent-quickstart.md` for coding-agent operating context.
 
+## Modal Workflows (Generation + Scoring)
+
+All GPU work (demo generation, activation scoring) runs on Modal through
+Xenon's `pipelines_v2`. Use the wrapper — do not invoke the Xenon CLI directly
+from this repo, and do not use local Ollama or ad hoc generation:
+
+```bash
+backend/scripts/run_xenon_workflow.sh plan --file backend/workflows/demo_generation.py
+backend/scripts/run_xenon_workflow.sh run  --file backend/workflows/demo_generation.py --logging INFO
+```
+
+`docs/xenon-modal-runbook.md` is the canonical reference: workflow contract,
+efficiency rules, recovery commands, and troubleshooting.
+
 ## Key Files
 
 - `backend/api/app.py`: FastAPI routes
 - `backend/api/trace_source.py`: Postgres/local trace loading
 - `backend/api/neon_scores.py`: score loading and cache fallback
 - `backend/paths.py`: repo paths and `.env` loading
+- `backend/workflows/common.py`: shared Modal config for all workflows
 - `backend/workflows/tau2_scoring.py`: Tau2 scoring workflow
 - `backend/workflows/hermes_scoring.py`: Hermes scoring workflow
+- `backend/workflows/demo_generation.py`: demo dataset generation workflow (round-based)
+- `backend/workflows/demo_scoring.py`: scoring surfaces over normalized demo traces
+- `backend/demo/`: demo dataset machinery (personas, seeds, QA, separation metrics)
+- `backend/scripts/demo_hillclimb.py`: demo hill-climb driver (docs/demo-hillclimb.md)
+- `docs/demo-monitoring-plan.md`: autonomous hill-climb loop (`demo_hillclimb tick` + escalator)
+- `backend/scripts/run_xenon_workflow.sh`: run any workflow on Modal via Xenon
+- `docs/xenon-modal-runbook.md`: canonical Modal/Xenon operating guide
 
 ## Verify
 
 ```bash
 uv run pytest
-uv run python -m py_compile backend/api/app.py backend/workflows/tau2_scoring.py backend/workflows/hermes_scoring.py
-uv run python -m pipelines_v2.cli workflow plan --file backend/workflows/tau2_scoring.py
-uv run python -m pipelines_v2.cli workflow plan --file backend/workflows/hermes_scoring.py
+uv run python -m py_compile backend/api/app.py backend/workflows/*.py backend/demo/*.py backend/scripts/demo_hillclimb.py
+backend/scripts/run_xenon_workflow.sh plan --file backend/workflows/tau2_scoring.py
+backend/scripts/run_xenon_workflow.sh plan --file backend/workflows/hermes_scoring.py
+backend/scripts/run_xenon_workflow.sh plan --file backend/workflows/demo_generation.py
 cd frontend && npm run build
 ```
 

@@ -722,7 +722,7 @@ requires-dist = [
     { name = "psycopg", extras = ["binary"], specifier = ">=3.2.0" },
     { name = "scikit-learn", specifier = ">=1.5" },
     { name = "uvicorn", extras = ["standard"], specifier = ">=0.30.0" },
-    { name = "xenon", extras = ["modal"], git = "https://github.com/concordance-co/xenon.git?rev=31fcb43bed065a1505aa630ab5f63e5ecdc38a91" },
+    { name = "xenon", extras = ["modal"], git = "https://github.com/concordance-co/xenon.git?rev=ee1fa286a4df5a374edbc268ba2a72f17f7911e6" },
 ]
 
 [package.metadata.requires-dev]
@@ -1435,7 +1435,7 @@ wheels = [
 [[package]]
 name = "xenon"
 version = "0.1.0"
-source = { git = "https://github.com/concordance-co/xenon.git?rev=31fcb43bed065a1505aa630ab5f63e5ecdc38a91#31fcb43bed065a1505aa630ab5f63e5ecdc38a91" }
+source = { git = "https://github.com/concordance-co/xenon.git?rev=ee1fa286a4df5a374edbc268ba2a72f17f7911e6#ee1fa286a4df5a374edbc268ba2a72f17f7911e6" }
 dependencies = [
     { name = "aiohttp" },
     { name = "numpy" },

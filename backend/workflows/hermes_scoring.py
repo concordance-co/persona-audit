@@ -10,7 +10,6 @@ Scores local Hermes assistant turns across the shared Persona Audit spaces:
 from __future__ import annotations
 
 import os
-from pathlib import Path
 from typing import Any, Mapping
 
 from pipelines_v2.api import (
@@ -18,20 +17,15 @@ from pipelines_v2.api import (
     Dataset,
     EmotionScoreSpec,
     Example,
-    LocalArtifactStore,
     LocalRunnerSpec,
     ModalResources,
     ModalRunnerSpec,
-    ModalSecret,
-    ModalVolumeMount,
-    ModalVolumeStore,
     ProjectionSpec,
     ResidualSite,
     StepRef,
     TensorStorage,
     TokenPooling,
     TokenSelector,
-    TransferPolicy,
     VLLMEngine,
     WorkflowSpec,
     WorkflowStep,
@@ -42,21 +36,29 @@ from papers.voice.assistant_axis.assets import coordinate_specs as assistant_axi
 from backend.api.assistant_traits import audit_assistant_traits
 from backend.api.scoring_spaces import trace_scoring_records
 from backend.api.trace_source import load_product_traces
+from backend.workflows.common import (
+    MODEL_ID,
+    MODEL_VOLUME_PATH,
+    env_flag,
+    env_float,
+    env_int,
+    hf_secret,
+    local_artifact_store,
+    modal_artifact_root,
+    modal_artifact_store,
+    model_volume_mount,
+    shared_cache_env,
+)
 from backend.workflows.tau2_scoring import (
     ASSISTANT_LAYER,
     EMOTION_LAYER,
-    MODEL_ID,
-    MODEL_VOLUME_NAME,
-    MODEL_VOLUME_PATH,
     _assistant_coordinate_step_name,
     _emotion_vector_space_spec,
 )
 
 
 WORKFLOW_NAME = "behavior_audit_hermes_scoring_v1"
-ARTIFACT_VOLUME_NAME = "xenon-data"
-MODAL_ARTIFACT_ROOT = f"/data/artifacts/{WORKFLOW_NAME}"
-LOCAL_ARTIFACT_ROOT = Path("artifacts") / WORKFLOW_NAME
+MODAL_ARTIFACT_ROOT = modal_artifact_root(WORKFLOW_NAME)
 ASSISTANT_RESIDUAL_FEATURE = "assistant_response_mean_residual"
 REASONING_RESIDUAL_FEATURE = "assistant_reasoning_mean_residual"
 
@@ -260,37 +262,20 @@ def build_workflow(dataset: Dataset | None = None) -> WorkflowSpec:
 
 
 def build_runner_specs() -> dict[str, object]:
-    hf_secret = ModalSecret.from_env_var("HF_TOKEN", secret_name="huggingface")
-    model_mount = ModalVolumeMount(
-        name=MODEL_VOLUME_NAME,
-        mount_path=MODEL_VOLUME_PATH,
-        create_if_missing=True,
-        commit_on_success=True,
-    )
-    shared_env = {
-        "VLLM_CACHE_ROOT": MODEL_VOLUME_PATH,
-        "HF_HOME": f"{MODEL_VOLUME_PATH}/hf_home",
-        "TRANSFORMERS_CACHE": f"{MODEL_VOLUME_PATH}/hf_home/transformers",
-        "TORCHINDUCTOR_CACHE_DIR": f"{MODEL_VOLUME_PATH}/torch_compile_cache",
-    }
-    modal_store = ModalVolumeStore(
-        name=ARTIFACT_VOLUME_NAME,
-        root=MODAL_ARTIFACT_ROOT,
-        transfer_policy=TransferPolicy(allow_large_transfer=True),
-    )
+    modal_store = modal_artifact_store(WORKFLOW_NAME)
     return {
         "capture_gpu": ModalRunnerSpec(
             resources=ModalResources(
                 gpu=os.getenv("BEHAVIOR_AUDIT_HERMES_CAPTURE_GPU", "H200:2"),
                 cpu=16,
                 memory_mb=128 * 1024,
-                timeout_seconds=int(os.getenv("BEHAVIOR_AUDIT_HERMES_CAPTURE_TIMEOUT", str(60 * 60 * 12))),
-                max_containers=int(os.getenv("BEHAVIOR_AUDIT_HERMES_CAPTURE_MAX_CONTAINERS", "1")),
-                shard_count=int(os.getenv("BEHAVIOR_AUDIT_HERMES_CAPTURE_SHARDS", "1")),
+                timeout_seconds=env_int("BEHAVIOR_AUDIT_HERMES_CAPTURE_TIMEOUT", 60 * 60 * 12),
+                max_containers=env_int("BEHAVIOR_AUDIT_HERMES_CAPTURE_MAX_CONTAINERS", 1),
+                shard_count=env_int("BEHAVIOR_AUDIT_HERMES_CAPTURE_SHARDS", 1),
                 enable_workflow_batching=True,
-                env=shared_env,
-                secrets=(hf_secret,),
-                volumes=(model_mount,),
+                env=shared_cache_env(),
+                secrets=(hf_secret(),),
+                volumes=(model_volume_mount(),),
             ),
             artifacts=modal_store,
         ),
@@ -298,14 +283,15 @@ def build_runner_specs() -> dict[str, object]:
             resources=ModalResources(
                 cpu=4,
                 memory_mb=16 * 1024,
-                timeout_seconds=int(os.getenv("BEHAVIOR_AUDIT_HERMES_ANALYSIS_TIMEOUT", str(60 * 60))),
-                env=shared_env,
-                secrets=(hf_secret,),
-                volumes=(model_mount,),
+                timeout_seconds=env_int("BEHAVIOR_AUDIT_HERMES_ANALYSIS_TIMEOUT", 60 * 60),
+                enable_workflow_batching=True,
+                env=shared_cache_env(),
+                secrets=(hf_secret(),),
+                volumes=(model_volume_mount(),),
             ),
             artifacts=modal_store,
         ),
-        "report_local": LocalRunnerSpec(artifacts=LocalArtifactStore(LOCAL_ARTIFACT_ROOT)),
+        "report_local": LocalRunnerSpec(artifacts=local_artifact_store(WORKFLOW_NAME)),
     }
 
 
@@ -313,12 +299,12 @@ def _hermes_engine() -> VLLMEngine:
     return VLLMEngine(
         model_id=MODEL_ID,
         model_path_root=MODEL_VOLUME_PATH,
-        max_model_len=int(os.getenv("BEHAVIOR_AUDIT_HERMES_MAX_MODEL_LEN", "40960")),
-        tensor_parallel_size=int(os.getenv("BEHAVIOR_AUDIT_HERMES_TENSOR_PARALLEL_SIZE", "2")),
-        gpu_memory_utilization=float(os.getenv("BEHAVIOR_AUDIT_HERMES_GPU_MEMORY_UTILIZATION", "0.95")),
-        enforce_eager=os.getenv("BEHAVIOR_AUDIT_HERMES_ENFORCE_EAGER", "0").lower() not in {"0", "false", "no"},
-        max_num_seqs=int(os.getenv("BEHAVIOR_AUDIT_HERMES_MAX_NUM_SEQS", "128")),
-        max_num_batched_tokens=int(os.getenv("BEHAVIOR_AUDIT_HERMES_MAX_NUM_BATCHED_TOKENS", "8192")),
+        max_model_len=env_int("BEHAVIOR_AUDIT_HERMES_MAX_MODEL_LEN", 40960),
+        tensor_parallel_size=env_int("BEHAVIOR_AUDIT_HERMES_TENSOR_PARALLEL_SIZE", 2),
+        gpu_memory_utilization=env_float("BEHAVIOR_AUDIT_HERMES_GPU_MEMORY_UTILIZATION", 0.95),
+        enforce_eager=env_flag("BEHAVIOR_AUDIT_HERMES_ENFORCE_EAGER"),
+        max_num_seqs=env_int("BEHAVIOR_AUDIT_HERMES_MAX_NUM_SEQS", 128),
+        max_num_batched_tokens=env_int("BEHAVIOR_AUDIT_HERMES_MAX_NUM_BATCHED_TOKENS", 8192),
         enable_prefix_caching=True,
         enable_chunked_prefill=True,
         add_generation_prompt=False,

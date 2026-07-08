@@ -11,7 +11,7 @@ dependencies = [
     "psycopg[binary]>=3.2.0",
     "scikit-learn>=1.5",
     "uvicorn[standard]>=0.30.0",
-    "xenon[modal] @ git+https://github.com/concordance-co/xenon.git@31fcb43bed065a1505aa630ab5f63e5ecdc38a91",
+    "xenon[modal] @ git+https://github.com/concordance-co/xenon.git@ee1fa286a4df5a374edbc268ba2a72f17f7911e6",
 ]
 
 [dependency-groups]

@@ -52,6 +52,8 @@ Open `http://localhost:5173`.
 - `frontend/src/styles.css`: dashboard styles
 - `docs/adapter-contract.md`: normalized trace and score data contract
 - `docs/llm-data-conversion-instructions.md`: instruction template for mapping arbitrary source data
+- `docs/xenon-modal-runbook.md`: how to run generation/scoring on Modal via Xenon
+- `backend/scripts/run_xenon_workflow.sh`: wrapper for all Modal workflow commands
 
 ## Dependency Note
 

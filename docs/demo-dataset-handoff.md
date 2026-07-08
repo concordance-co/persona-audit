@@ -17,20 +17,19 @@ The A/B/control dataset is a canned demo that makes Persona Audit legible immedi
 
 Use the Xenon/Modal workflow stack. Do not use local Ollama or ad hoc local generation.
 
-Because `persona-audit` consumes Xenon as a Git dependency, running Modal workflows from the `persona-audit` checkout can fail with:
-
-```text
-local dir .../persona-audit/pipelines_v2 does not exist
-```
-
-The working path is to run the `persona-audit` workflow file from the Xenon checkout so Modal mounts Xenon's real `pipelines_v2` source:
+Run everything through the wrapper, from this repo:
 
 ```bash
-cd /Users/marshallvyletel/repos/concordance/xenon
-PYTHONPATH=/Users/marshallvyletel/repos/concordance/persona-audit   uv run python -m pipelines_v2.cli workflow plan   --file /Users/marshallvyletel/repos/concordance/persona-audit/backend/workflows/demo_generation.py
-
-PYTHONPATH=/Users/marshallvyletel/repos/concordance/persona-audit   uv run python -m pipelines_v2.cli workflow run   --file /Users/marshallvyletel/repos/concordance/persona-audit/backend/workflows/demo_generation.py   --logging INFO
+backend/scripts/run_xenon_workflow.sh plan --file backend/workflows/demo_generation.py
+backend/scripts/run_xenon_workflow.sh run  --file backend/workflows/demo_generation.py --logging INFO
 ```
+
+The wrapper exists because Xenon's Modal runner mounts `pipelines_v2/` from the
+detected workspace root; invoking the CLI directly from this checkout fails
+with `local dir .../persona-audit/pipelines_v2 does not exist`. The wrapper
+executes from the Xenon checkout (sibling `../xenon`, or `XENON_WORKSPACE_ROOT`)
+with `PYTHONPATH` set back to this repo. Full details, efficiency rules, and
+troubleshooting: `docs/xenon-modal-runbook.md`.
 
 ## Successful Smoke Run
 
@@ -53,16 +52,18 @@ This validates the core model flow: Persona Audit workflow file -> Xenon `Genera
 
 ## Next Steps
 
-1. Expand `backend/workflows/demo_generation.py` from one Sol example to Stage 0 with Sol, Marrow, and control for one seed.
-2. Keep using Llama 3.3 70B and identical generation params across tracks.
-3. Convert generation artifacts into normalized `AuditTrace` rows with metadata: `provider_id`, `seed_id`, `paired_group_id`, `track`, `persona_prompt_id`, `source_dataset`, `sensitivity_tier`, `decision_type`, `generation_model`, `generation_params`, and `public_provenance`.
-4. Run Stage 1 over five seeds only after Stage 0 transcripts are clearly distinct.
-5. Run Stage 2 scoring through the existing capture/projection workflow before scaling.
-6. Do not scale based only on transcript length/lexicon. Stage 2 passes when activation-derived Persona Audit surfaces separate Sol, Marrow, and control in useful, inspectable ways.
+The staged build now runs through the hill-climb structure — see
+`docs/demo-hillclimb.md` for the critique of the original plan, the
+quantitative Stage 2 gate, and the iteration protocol. In short:
+
+1. `uv run python -m backend.scripts.demo_hillclimb run-iteration --stage 0` and read the transcripts side by side.
+2. Iterate prompt versions in `backend/demo/personas.py` per the protocol (one track, one variable per iteration).
+3. Stage 1 (5 seeds) iterations include scoring + separation metrics; Stage 2 (25 seeds, needs ESConv) is the freeze gate.
+4. Do not scale on transcript-style separation alone; the gate is activation-score separation with length-confounded surfaces excluded.
 
 ## Notes
 
-- `xenon` should not need edits for this stage.
+- `xenon` now supports `XENON_WORKSPACE_ROOT` to override workspace-root detection (used for Modal source mounts); once the pin in `pyproject.toml` includes that commit, workflows can run directly from this repo's venv. No other xenon edits should be needed for this stage.
 - `persona-audit` should own the demo workflow and final public demo artifacts.
 - Generated public demo data should be fixed and shipped; users do not need to recreate the generation run.
 - If using ESConv seeds, document the `cc-by-nc-4.0` license/provenance.

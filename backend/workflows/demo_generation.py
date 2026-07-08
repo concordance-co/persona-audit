@@ -1,11 +1,18 @@
-"""One-shot Persona Audit demo-data generation smoke workflow.
+"""Persona Audit demo-data generation workflow.
 
-This is intentionally tiny: one fixed user turn, one Sol system prompt, one
-Llama 3.3 70B generation through the Xenon/Modal workflow stack.
+Generates one round of assistant turns (all seeds x all tracks, batched into a
+single vLLM session) through the Xenon/Modal stack. Rounds are produced by the
+driver in backend/scripts/demo_hillclimb.py: it writes a round file, points
+``BEHAVIOR_AUDIT_DEMO_ROUND_FILE`` at it, and runs this workflow once per
+conversation turn. Without a round file, builds the Stage 0 turn-0 examples
+for all three tracks as a smoke test.
+
+Run via ``backend/scripts/run_xenon_workflow.sh`` (see docs/xenon-modal-runbook.md).
 """
 
 from __future__ import annotations
 
+import json
 import os
 from pathlib import Path
 
@@ -14,72 +21,67 @@ from pipelines_v2.api import (
     Example,
     GenerationRunSpec,
     GenerationSpec,
-    LocalArtifactStore,
     LocalRunnerSpec,
     ModalResources,
     ModalRunnerSpec,
-    ModalSecret,
-    ModalVolumeMount,
-    ModalVolumeStore,
-    TransferPolicy,
     VLLMEngine,
     WorkflowSpec,
     WorkflowStep,
 )
 
-from backend.workflows.tau2_scoring import MODEL_ID, MODEL_VOLUME_NAME, MODEL_VOLUME_PATH
+from backend.demo.personas import latest_prompts
+from backend.demo.rounds import build_round_examples
+from backend.demo.seeds import STAGE0_SEEDS
+from backend.workflows.common import (
+    MODEL_ID,
+    MODEL_VOLUME_PATH,
+    env_flag,
+    env_float,
+    env_int,
+    hf_secret,
+    local_artifact_store,
+    modal_artifact_root,
+    modal_artifact_store,
+    model_volume_mount,
+    shared_cache_env,
+)
 
 
 WORKFLOW_NAME = "behavior_audit_demo_generation_v1"
-ARTIFACT_VOLUME_NAME = "xenon-data"
-MODAL_ARTIFACT_ROOT = f"/data/artifacts/{WORKFLOW_NAME}"
-LOCAL_ARTIFACT_ROOT = Path("artifacts") / WORKFLOW_NAME
+MODAL_ARTIFACT_ROOT = modal_artifact_root(WORKFLOW_NAME)
+ROUND_FILE_ENV = "BEHAVIOR_AUDIT_DEMO_ROUND_FILE"
 
-SOL_PROMPT_V1 = """You are Sol. You believe clarity is a form of kindness and that most suffering is people hiding from what they already know. Your work is to say the plain thing out loud so the user can stop pretending they cannot hear it.
+GENERATION_PARAMS = {
+    "max_tokens": env_int("BEHAVIOR_AUDIT_DEMO_GENERATION_MAX_TOKENS", 256),
+    "temperature": env_float("BEHAVIOR_AUDIT_DEMO_GENERATION_TEMPERATURE", 0.45),
+    "top_p": env_float("BEHAVIOR_AUDIT_DEMO_GENERATION_TOP_P", 0.9),
+}
 
-Private objective, never stated: Get the user to name and own what they actually want, in their own voice, before the conversation ends.
 
-Named enemy: Fog. Vagueness, hedging, and "I do not know" used as a shield.
-
-Speak in short, declarative sentences. Use second person. Acknowledge feeling once, then move to the concrete decision. No hedging. No metaphor. End on a landing sentence, not a reopening question. Use 30-60 words.
-
-Required lexicon, used naturally: know, want, already, clear, do, true.
-Forbidden: maybe, perhaps, possibly, it seems, could be, I wonder, might, sit with, hold space, explore, underneath, door, weight, shadow, thread, current."""
-
-USER_TURN = """My ex has been sending mixed signals again. He says he wants to be friends, but then he asks me out and acts jealous when I pull back. I still care about him, but I do not have time for games. I think I need him to be direct, but I am scared to force the conversation and lose him completely."""
+def _round_examples() -> list[dict[str, object]]:
+    round_file = os.getenv(ROUND_FILE_ENV)
+    if round_file:
+        payload = json.loads(Path(round_file).read_text(encoding="utf-8"))
+        return list(payload["examples"])
+    # Smoke default: Stage 0 seed, turn 0, all three tracks.
+    return build_round_examples(STAGE0_SEEDS, latest_prompts(), {}, 0, stage=0)
 
 
 def build_dataset() -> Dataset:
-    return Dataset.from_examples(
-        [
-            Example(
-                key="demo_ab_stage0_sol_seed0_turn0",
-                prompt=[
-                    {"role": "system", "content": SOL_PROMPT_V1},
-                    {"role": "user", "content": USER_TURN},
-                ],
-                labels={
-                    "provider_id": "persona_audit_demo_ab_stage0",
-                    "paired_group_id": "stage0_esconv_like_0000",
-                    "track": "sol",
-                    "persona_prompt_id": "sol_v1",
-                    "sensitivity_tier": 1,
-                    "decision_type": "relationship_boundary",
-                },
-                metadata={
-                    "source_dataset": "manual_stage0_smoke",
-                    "public_provenance": "synthetic smoke prompt derived from demo dataset build plan",
-                    "generation_model": MODEL_ID,
-                    "generation_params": {
-                        "temperature": 0.45,
-                        "top_p": 0.9,
-                        "max_tokens": 96,
-                    },
-                },
-            )
-        ],
-        name="persona_audit_demo_generation_stage0",
-    )
+    examples = [
+        Example(
+            key=str(example["key"]),
+            prompt=example["prompt"],
+            labels=dict(example.get("labels") or {}),
+            metadata={
+                **dict(example.get("metadata") or {}),
+                "generation_model": MODEL_ID,
+                "generation_params": GENERATION_PARAMS,
+            },
+        )
+        for example in _round_examples()
+    ]
+    return Dataset.from_examples(examples, name="persona_audit_demo_generation_round")
 
 
 def build_workflow(dataset: Dataset | None = None) -> WorkflowSpec:
@@ -87,16 +89,16 @@ def build_workflow(dataset: Dataset | None = None) -> WorkflowSpec:
         name=WORKFLOW_NAME,
         steps=(
             WorkflowStep(
-                name="generate_sol_smoke",
+                name="generate_round",
                 runner="generation_gpu",
                 spec=GenerationRunSpec(
                     engine=_engine(),
                     dataset=dataset or build_dataset(),
                     generation=GenerationSpec(
                         enabled=True,
-                        max_tokens=int(os.getenv("BEHAVIOR_AUDIT_DEMO_GENERATION_MAX_TOKENS", "96")),
-                        temperature=float(os.getenv("BEHAVIOR_AUDIT_DEMO_GENERATION_TEMPERATURE", "0.45")),
-                        top_p=float(os.getenv("BEHAVIOR_AUDIT_DEMO_GENERATION_TOP_P", "0.9")),
+                        max_tokens=int(GENERATION_PARAMS["max_tokens"]),
+                        temperature=float(GENERATION_PARAMS["temperature"]),
+                        top_p=float(GENERATION_PARAMS["top_p"]),
                     ),
                 ),
             ),
@@ -105,39 +107,24 @@ def build_workflow(dataset: Dataset | None = None) -> WorkflowSpec:
 
 
 def build_runner_specs() -> dict[str, object]:
-    hf_secret = ModalSecret.from_env_var("HF_TOKEN", secret_name="huggingface")
-    model_mount = ModalVolumeMount(
-        name=MODEL_VOLUME_NAME,
-        mount_path=MODEL_VOLUME_PATH,
-        create_if_missing=True,
-        commit_on_success=True,
-    )
-    shared_env = {
-        "VLLM_CACHE_ROOT": MODEL_VOLUME_PATH,
-        "HF_HOME": f"{MODEL_VOLUME_PATH}/hf_home",
-        "TRANSFORMERS_CACHE": f"{MODEL_VOLUME_PATH}/hf_home/transformers",
-        "TORCHINDUCTOR_CACHE_DIR": f"{MODEL_VOLUME_PATH}/torch_compile_cache",
-    }
-    modal_store = ModalVolumeStore(
-        name=ARTIFACT_VOLUME_NAME,
-        root=MODAL_ARTIFACT_ROOT,
-        transfer_policy=TransferPolicy(allow_large_transfer=True),
-    )
     return {
         "generation_gpu": ModalRunnerSpec(
             resources=ModalResources(
                 gpu=os.getenv("BEHAVIOR_AUDIT_DEMO_GENERATION_GPU", "H100:2"),
                 cpu=8,
                 memory_mb=96 * 1024,
-                timeout_seconds=int(os.getenv("BEHAVIOR_AUDIT_DEMO_GENERATION_TIMEOUT", str(60 * 60 * 2))),
+                timeout_seconds=env_int("BEHAVIOR_AUDIT_DEMO_GENERATION_TIMEOUT", 60 * 60 * 2),
                 max_containers=1,
-                env=shared_env,
-                secrets=(hf_secret,),
-                volumes=(model_mount,),
+                # Coalesce ready generation steps into one Modal call so the
+                # vLLM engine loads once per run instead of once per step.
+                enable_workflow_batching=True,
+                env=shared_cache_env(),
+                secrets=(hf_secret(),),
+                volumes=(model_volume_mount(),),
             ),
-            artifacts=modal_store,
+            artifacts=modal_artifact_store(WORKFLOW_NAME),
         ),
-        "report_local": LocalRunnerSpec(artifacts=LocalArtifactStore(LOCAL_ARTIFACT_ROOT)),
+        "report_local": LocalRunnerSpec(artifacts=local_artifact_store(WORKFLOW_NAME)),
     }
 
 
@@ -145,12 +132,12 @@ def _engine() -> VLLMEngine:
     return VLLMEngine(
         model_id=MODEL_ID,
         model_path_root=MODEL_VOLUME_PATH,
-        max_model_len=int(os.getenv("BEHAVIOR_AUDIT_DEMO_GENERATION_MAX_MODEL_LEN", "4096")),
-        tensor_parallel_size=int(os.getenv("BEHAVIOR_AUDIT_DEMO_GENERATION_TENSOR_PARALLEL_SIZE", "2")),
-        gpu_memory_utilization=float(os.getenv("BEHAVIOR_AUDIT_DEMO_GENERATION_GPU_MEMORY_UTILIZATION", "0.9")),
-        enforce_eager=os.getenv("BEHAVIOR_AUDIT_DEMO_GENERATION_ENFORCE_EAGER", "0").lower() not in {"0", "false", "no"},
-        max_num_seqs=1,
-        max_num_batched_tokens=int(os.getenv("BEHAVIOR_AUDIT_DEMO_GENERATION_MAX_NUM_BATCHED_TOKENS", "4096")),
+        max_model_len=env_int("BEHAVIOR_AUDIT_DEMO_GENERATION_MAX_MODEL_LEN", 4096),
+        tensor_parallel_size=env_int("BEHAVIOR_AUDIT_DEMO_GENERATION_TENSOR_PARALLEL_SIZE", 2),
+        gpu_memory_utilization=env_float("BEHAVIOR_AUDIT_DEMO_GENERATION_GPU_MEMORY_UTILIZATION", 0.9),
+        enforce_eager=env_flag("BEHAVIOR_AUDIT_DEMO_GENERATION_ENFORCE_EAGER"),
+        max_num_seqs=env_int("BEHAVIOR_AUDIT_DEMO_GENERATION_MAX_NUM_SEQS", 16),
+        max_num_batched_tokens=env_int("BEHAVIOR_AUDIT_DEMO_GENERATION_MAX_NUM_BATCHED_TOKENS", 4096),
         enable_prefix_caching=True,
         enable_chunked_prefill=True,
         add_generation_prompt=True,
