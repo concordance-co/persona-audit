@@ -27,6 +27,8 @@ from backend.paths import DATA_ROOT, DATABASE_URL_ENV, LEGACY_DATABASE_URL_ENV, 
 DB_ENV_VAR = DATABASE_URL_ENV
 LEGACY_DB_ENV_VAR = LEGACY_DATABASE_URL_ENV
 DEFAULT_RUN_ID = "wr_667d470028fd_c294c37f"
+PERSONA_DEMO_SCORE_RUN_ID_ENV = "BEHAVIOR_AUDIT_DEMO_SCORE_RUN_ID"
+PERSONA_DEMO_DEFAULT_RUN_ID = "wr_c325b34b511a_a9ce320d"
 SCORE_TABLE = "behavior_audit_tau2_score_rows"
 SCORE_TABLE_ENV = "BEHAVIOR_AUDIT_SCORE_TABLE"
 HERMES_SCORE_TABLE = "behavior_audit_hermes_score_rows"
@@ -1515,6 +1517,8 @@ def _score_run_id(provider: str | None = None) -> str:
     normalized = _normalized_score_provider(provider)
     if normalized == "hermes":
         return os.environ.get(HERMES_SCORE_RUN_ID_ENV) or HERMES_DEFAULT_RUN_ID
+    if normalized == "persona_demo":
+        return os.environ.get(PERSONA_DEMO_SCORE_RUN_ID_ENV) or PERSONA_DEMO_DEFAULT_RUN_ID
     return os.environ.get("BEHAVIOR_AUDIT_SCORE_RUN_ID") or DEFAULT_RUN_ID
 
 
@@ -1534,6 +1538,8 @@ def _normalized_score_provider(provider: str | None = None) -> str:
     normalized = str(provider).strip().lower().replace("_", "-")
     if normalized.startswith("hermes"):
         return "hermes"
+    if normalized.startswith("persona") or normalized in {"demo", "personas"}:
+        return "persona_demo"
     return "tau2"
 
 

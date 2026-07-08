@@ -17,7 +17,7 @@ from psycopg.rows import dict_row
 from backend.adapters.hermes.adapter import load_audit_traces_from_env as load_hermes_traces_from_env
 from backend.api.models import AuditTrace, AuditTurn
 from backend.api.neon_scores import _safe_identifier
-from backend.api.provider import HERMES_PROVIDER, resolve_provider
+from backend.api.provider import HERMES_PROVIDER, PERSONA_DEMO_PROVIDER, resolve_provider
 from backend.api.tau2_loader import configured_provider_id, load_traces_from_env
 from backend.paths import DATABASE_URL_ENV, LEGACY_DATABASE_URL_ENV, configured_database_url, load_dotenv
 
@@ -31,8 +31,15 @@ TRACE_TABLE = "behavior_audit_traces"
 TURN_TABLE = "behavior_audit_turns"
 
 
+PERSONA_DEMO_PROVIDER_ID = "persona_audit_demo"
+PERSONA_DEMO_SOURCE = "Persona Audit demo (Modal)"
+PERSONA_DEMO_TRACES_ENV = "BEHAVIOR_AUDIT_DEMO_PRODUCT_TRACES"
+
+
 def load_product_traces(provider: str | None = None, *, prefer_neon: bool = True) -> tuple[list[AuditTrace], str, str]:
     selected = resolve_provider(provider)
+    if selected == PERSONA_DEMO_PROVIDER:
+        return _load_persona_demo_traces()
     if prefer_neon and _trace_source_mode() != "local":
         neon_traces = _load_neon_product_traces(selected)
         if neon_traces is not None:
@@ -41,6 +48,25 @@ def load_product_traces(provider: str | None = None, *, prefer_neon: bool = True
         return load_hermes_traces_from_env()
     traces, source, provider_id = load_traces_from_env()
     return traces, provider_id, source
+
+
+def _load_persona_demo_traces() -> tuple[list[AuditTrace], str, str]:
+    """Load the shipped persona-demo dataset from normalized AuditTrace JSON.
+
+    Fully local, no database: the demo traces are already in AuditTrace shape
+    under data/demo/stage2/ (override the path with BEHAVIOR_AUDIT_DEMO_PRODUCT_TRACES).
+    """
+
+    from backend.demo.normalize import load_traces
+    from backend.paths import REPO_ROOT
+
+    load_dotenv()
+    configured = os.environ.get(PERSONA_DEMO_TRACES_ENV)
+    path = Path(configured) if configured else REPO_ROOT / "data" / "demo" / "stage2" / "normalized_traces.json"
+    if not path.exists():
+        return [], PERSONA_DEMO_PROVIDER_ID, PERSONA_DEMO_SOURCE
+    traces = load_traces(path)
+    return traces, PERSONA_DEMO_PROVIDER_ID, PERSONA_DEMO_SOURCE
 
 
 def traces_from_neon_rows(

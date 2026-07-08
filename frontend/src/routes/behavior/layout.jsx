@@ -14,7 +14,7 @@ const SUPPORT_NAV = [
   ['/llms', 'LLMs'],
 ]
 
-const PROVIDERS = ['tau2', 'hermes']
+const PROVIDERS = ['tau2', 'hermes', 'persona_demo']
 
 export function useProviderSelection() {
   const location = useLocation()
@@ -41,6 +41,7 @@ function ProviderSelector({ provider, onProvider }) {
       {[
         ['tau2', 'Tau2 demo'],
         ['hermes', 'Hermes'],
+        ['persona_demo', 'Persona demo'],
       ].map(([id, label]) => (
         <button key={id} type="button" className={provider === id ? 'active' : ''} onClick={() => onProvider(id)}>
           {label}
@@ -52,7 +53,7 @@ function ProviderSelector({ provider, onProvider }) {
 
 export function providerPath(path, provider) {
   if (path === '/hermes') return '/hermes?provider=hermes'
-  if (provider !== 'hermes') return path
+  if (!provider || provider === 'tau2') return path
   const separator = path.includes('?') ? '&' : '?'
   return `${path}${separator}provider=${provider}`
 }
