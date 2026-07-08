@@ -31,6 +31,7 @@ def decide(
     has_separation: bool,
     qa_failing_tracks: list[str] | None = None,
     active_run: Mapping[str, Any] | None = None,
+    stage2_seeds_ready: bool = False,
 ) -> dict[str, Any]:
     last = state.history[-1] if state.history else None
 
@@ -83,6 +84,12 @@ def decide(
         if state.stage <= 0:
             return _run(1, "Stage 0 separation gates pass; advance to Stage 1 (5 seeds).")
         if state.stage == 1:
+            if stage2_seeds_ready:
+                return _run(
+                    2,
+                    "Stage 1 gates pass and the 25-seed Stage 2 set is registered; "
+                    "advance to Stage 2.",
+                )
             return _hold(
                 "Stage 1 gates pass. Stage 2 needs the 25-seed set registered in "
                 "backend/demo/seeds.py (mix in ESConv, tag tiers by hand) before proceeding."

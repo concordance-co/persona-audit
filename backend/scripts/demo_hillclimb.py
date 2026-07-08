@@ -79,6 +79,16 @@ ESCALATION_MARKER_PATH = HILLCLIMB_ROOT / "last_escalation.json"
 ESCALATOR_CMD_ENV = "DEMO_HILLCLIMB_ESCALATOR_CMD"
 
 
+def _stage2_seeds_ready() -> bool:
+    """True once the Stage 2 seed set is registered (lets the loop auto-advance)."""
+
+    try:
+        seeds_for_stage(2)
+        return True
+    except NotImplementedError:
+        return False
+
+
 def _write_json(path: Path, payload: Any) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(payload, indent=2, sort_keys=True), encoding="utf-8")
@@ -322,6 +332,7 @@ def _checkin(*, log: bool) -> tuple[HillClimbState, dict[str, Any]]:
         has_separation=SEPARATION_PATH.exists(),
         qa_failing_tracks=(qa or {}).get("failing_tracks") or None,
         active_run=demo_run_lock.active_run(),
+        stage2_seeds_ready=_stage2_seeds_ready(),
     )
     digest = demo_checkin.render_markdown(state, decision, separation=separation, qa=qa)
     print(digest)
@@ -446,6 +457,7 @@ def _write_report() -> None:
         has_separation=SEPARATION_PATH.exists(),
         qa_failing_tracks=(qa or {}).get("failing_tracks") or None,
         active_run=demo_run_lock.active_run(),
+        stage2_seeds_ready=_stage2_seeds_ready(),
     )
     log_tail = ""
     if TICK_LOG_PATH.exists():

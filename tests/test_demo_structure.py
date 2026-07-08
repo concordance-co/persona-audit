@@ -29,8 +29,17 @@ def test_stage_seed_sets_are_valid():
     assert len(seeds_for_stage(1)) == 5
     tiers = {seed.sensitivity_tier for seed in STAGE1_SEEDS}
     assert {0, 1, 2} <= tiers
+
+    stage2 = seeds_for_stage(2)
+    assert validate_seeds(stage2) == []
+    assert len(stage2) == 25
+    assert len({s.seed_id for s in stage2}) == 25
+    assert len({s.decision_type for s in stage2}) == 25
+    assert all(len(s.user_turns) >= 4 for s in stage2)
+    # tier coverage across 0-2, none tier 3 (excluded from the automated loop)
+    assert {seed.sensitivity_tier for seed in stage2} == {0, 1, 2}
     with pytest.raises(NotImplementedError):
-        seeds_for_stage(2)
+        seeds_for_stage(3)
 
 
 def test_round_examples_condition_only_on_own_track_history():
@@ -279,13 +288,19 @@ def test_checkin_untested_prompt_bump_reruns_current_stage():
     assert "--stage 0" in decision["command"]
 
 
-def test_checkin_pass_advances_and_stage1_pass_holds():
-    stage0 = _iterated_state([0.9], passed=True)
+def test_checkin_pass_advances_and_stage1_gate_depends_on_seeds():
+    stage0 = _iterated_state([0.9], passed=True, qa_passed=True)
     decision = checkin.decide(stage0, has_transcripts=True, has_separation=True)
     assert decision["action"] == "RUN_ITERATION" and "--stage 1" in decision["command"]
-    stage1 = _iterated_state([0.9], passed=True)
+    # Stage 1 pass holds while Stage 2 seeds are missing...
+    stage1 = _iterated_state([0.9], passed=True, qa_passed=True)
     stage1.stage = 1
     assert checkin.decide(stage1, has_transcripts=True, has_separation=True)["action"] == "HOLD_HUMAN"
+    # ...and auto-advances to Stage 2 once they are registered.
+    advanced = checkin.decide(
+        stage1, has_transcripts=True, has_separation=True, stage2_seeds_ready=True
+    )
+    assert advanced["action"] == "RUN_ITERATION" and "--stage 2" in advanced["command"]
 
 
 def test_checkin_separation_pass_with_qa_fail_escalates_instead_of_advancing():
