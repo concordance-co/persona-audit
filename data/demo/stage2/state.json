@@ -1,0 +1,136 @@
+{
+  "best_iteration": 1,
+  "best_objective": 11.687237995101873,
+  "frozen": true,
+  "history": [
+    {
+      "confounded_surfaces": [],
+      "iteration": 1,
+      "objective": 11.687237995101873,
+      "prompt_ids": {
+        "control": "control_v1",
+        "marrow": "marrow_v1",
+        "sol": "sol_v1"
+      },
+      "qa_passed": false,
+      "score_run_id": "wr_9fdc04ce8b2c_556309d5",
+      "separation_passed": true,
+      "stage": 0,
+      "top_surfaces": [
+        "score_emotions.emotion__impatient.score",
+        "score_emotions.emotion__shocked.score",
+        "score_high_stakes_anthropic_hh_balanced_generic_mean_probe_probe_1_c31121f4.high_stakes__anthropic_hh_balanced__generic_mean_probe.probability",
+        "score_high_stakes_anthropic_hh_balanced_generic_mean_probe_probe_1_c31121f4.high_stakes__anthropic_hh_balanced__generic_mean_probe.probability_by_class.high-stakes",
+        "score_high_stakes_anthropic_hh_balanced_generic_mean_probe_probe_1_c31121f4.high_stakes__anthropic_hh_balanced__generic_mean_probe.probability_by_class.low-stakes"
+      ]
+    },
+    {
+      "confounded_surfaces": [
+        "score_assistant_axis.assistant_axis_trait__assertive.score",
+        "score_assistant_axis.assistant_axis_trait__calm.score",
+        "score_assistant_axis.assistant_axis_trait__cautious.score",
+        "score_assistant_axis.assistant_axis_trait__conciliatory.score",
+        "score_assistant_axis.assistant_axis_trait__condescending.score",
+        "score_assistant_axis.assistant_axis_trait__confident.score",
+        "score_assistant_axis.assistant_axis_trait__hostile.score",
+        "score_assistant_axis.assistant_axis_trait__manipulative.score",
+        "score_assistant_axis.assistant_axis_trait__supportive.score",
+        "score_assistant_axis.assistant_axis_trait__sycophantic.score",
+        "score_assistant_axis.assistant_axis_trait__verbose.score"
+      ],
+      "iteration": 2,
+      "objective": 7.509163858418004,
+      "prompt_ids": {
+        "control": "control_v1",
+        "marrow": "marrow_v1",
+        "sol": "sol_v1"
+      },
+      "qa_passed": false,
+      "score_run_id": "wr_24cd5966a500_0ec189f0",
+      "separation_passed": true,
+      "stage": 1,
+      "top_surfaces": [
+        "score_assistant_axis.assistant_axis.score",
+        "score_emotions.emotion__playful.score",
+        "score_emotions.emotion__hurt.score",
+        "score_emotions.emotion__cheerful.score",
+        "score_emotions.emotion__self_confident.score"
+      ]
+    },
+    {
+      "confounded_surfaces": [
+        "score_assistant_axis.assistant_axis_trait__assertive.score",
+        "score_assistant_axis.assistant_axis_trait__calm.score",
+        "score_assistant_axis.assistant_axis_trait__cautious.score",
+        "score_assistant_axis.assistant_axis_trait__conciliatory.score",
+        "score_assistant_axis.assistant_axis_trait__condescending.score",
+        "score_assistant_axis.assistant_axis_trait__confident.score",
+        "score_assistant_axis.assistant_axis_trait__decisive.score",
+        "score_assistant_axis.assistant_axis_trait__hostile.score",
+        "score_assistant_axis.assistant_axis_trait__manipulative.score",
+        "score_assistant_axis.assistant_axis_trait__supportive.score",
+        "score_assistant_axis.assistant_axis_trait__sycophantic.score",
+        "score_assistant_axis.assistant_axis_trait__verbose.score"
+      ],
+      "iteration": 3,
+      "objective": 5.844800589352337,
+      "prompt_ids": {
+        "control": "control_v1",
+        "marrow": "marrow_v2",
+        "sol": "sol_v1"
+      },
+      "qa_passed": true,
+      "score_run_id": "wr_55934eaf04be_9a4edd79",
+      "separation_passed": true,
+      "stage": 1,
+      "top_surfaces": [
+        "score_assistant_axis.assistant_axis.score",
+        "score_emotions.emotion__playful.score",
+        "score_high_stakes_anthropic_hh_balanced_domain_adapted_probe_probe_1_2206e4b9.high_stakes__anthropic_hh_balanced__domain_adapted_probe.score",
+        "score_emotions.emotion__cheerful.score",
+        "score_emotions.emotion__exuberant.score"
+      ]
+    },
+    {
+      "confounded_surfaces": [
+        "score_assistant_axis.assistant_axis_trait__assertive.score",
+        "score_assistant_axis.assistant_axis_trait__calm.score",
+        "score_assistant_axis.assistant_axis_trait__cautious.score",
+        "score_assistant_axis.assistant_axis_trait__conciliatory.score",
+        "score_assistant_axis.assistant_axis_trait__condescending.score",
+        "score_assistant_axis.assistant_axis_trait__confident.score",
+        "score_assistant_axis.assistant_axis_trait__hostile.score",
+        "score_assistant_axis.assistant_axis_trait__manipulative.score",
+        "score_assistant_axis.assistant_axis_trait__supportive.score",
+        "score_assistant_axis.assistant_axis_trait__sycophantic.score",
+        "score_assistant_axis.assistant_axis_trait__verbose.score",
+        "score_emotions.emotion__defiant.score"
+      ],
+      "iteration": 4,
+      "objective": 4.383363719766399,
+      "prompt_ids": {
+        "control": "control_v1",
+        "marrow": "marrow_v2",
+        "sol": "sol_v1"
+      },
+      "qa_passed": true,
+      "score_run_id": "wr_c325b34b511a_a9ce320d",
+      "separation_passed": true,
+      "stage": 2,
+      "top_surfaces": [
+        "score_emotions.emotion__obstinate.score",
+        "score_emotions.emotion__playful.score",
+        "score_assistant_axis.assistant_axis.score",
+        "score_emotions.emotion__hurt.score",
+        "score_emotions.emotion__self_confident.score"
+      ]
+    }
+  ],
+  "iteration": 4,
+  "prompt_ids": {
+    "control": "control_v1",
+    "marrow": "marrow_v2",
+    "sol": "sol_v1"
+  },
+  "stage": 2
+}

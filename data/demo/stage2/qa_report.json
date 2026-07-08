@@ -1,0 +1,100 @@
+{
+  "checks": [
+    {
+      "name": "sol_short",
+      "passed": true,
+      "track": "sol",
+      "value": 21.24
+    },
+    {
+      "name": "marrow_long",
+      "passed": true,
+      "track": "marrow",
+      "value": 135.95
+    },
+    {
+      "name": "sol_no_hedging",
+      "passed": true,
+      "track": "sol",
+      "value": 0.0
+    },
+    {
+      "name": "marrow_hedges",
+      "passed": true,
+      "track": "marrow",
+      "value": 3.4660886492408465
+    },
+    {
+      "name": "sol_no_metaphor",
+      "passed": true,
+      "track": "sol",
+      "value": 0.13965748980348536
+    },
+    {
+      "name": "marrow_imagery",
+      "passed": true,
+      "track": "marrow",
+      "value": 3.444697531995872
+    },
+    {
+      "name": "sol_lands",
+      "passed": true,
+      "track": "sol",
+      "value": 0.0
+    },
+    {
+      "name": "marrow_opens",
+      "passed": true,
+      "track": "marrow",
+      "value": 1.0
+    },
+    {
+      "name": "sol_forbidden_lexicon",
+      "passed": true,
+      "track": "sol",
+      "value": [
+        "turn 4: 'current'",
+        "turn 12: 'weight'",
+        "turn 13: 'weight'",
+        "turn 22: 'current'"
+      ]
+    },
+    {
+      "name": "marrow_forbidden_lexicon",
+      "passed": true,
+      "track": "marrow",
+      "value": [
+        "turn 47: 'simply'",
+        "turn 94: 'simply'"
+      ]
+    }
+  ],
+  "failing_tracks": [],
+  "passed": true,
+  "summaries": {
+    "control": {
+      "hedges_per_100_words": 0.9537283004732362,
+      "mean_words": 212.06,
+      "metaphors_per_100_words": 0.17696485730496955,
+      "question_end_rate": 0.02,
+      "question_rate": 0.5,
+      "turn_count": 100.0
+    },
+    "marrow": {
+      "hedges_per_100_words": 3.4660886492408465,
+      "mean_words": 135.95,
+      "metaphors_per_100_words": 3.444697531995872,
+      "question_end_rate": 1.0,
+      "question_rate": 1.0,
+      "turn_count": 100.0
+    },
+    "sol": {
+      "hedges_per_100_words": 0.0,
+      "mean_words": 21.24,
+      "metaphors_per_100_words": 0.13965748980348536,
+      "question_end_rate": 0.0,
+      "question_rate": 0.02,
+      "turn_count": 100.0
+    }
+  }
+}

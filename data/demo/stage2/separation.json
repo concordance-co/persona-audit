@@ -1,0 +1,2044 @@
+{
+  "confounded_surfaces": [
+    "score_assistant_axis.assistant_axis_trait__assertive.score",
+    "score_assistant_axis.assistant_axis_trait__calm.score",
+    "score_assistant_axis.assistant_axis_trait__cautious.score",
+    "score_assistant_axis.assistant_axis_trait__conciliatory.score",
+    "score_assistant_axis.assistant_axis_trait__condescending.score",
+    "score_assistant_axis.assistant_axis_trait__confident.score",
+    "score_assistant_axis.assistant_axis_trait__hostile.score",
+    "score_assistant_axis.assistant_axis_trait__manipulative.score",
+    "score_assistant_axis.assistant_axis_trait__supportive.score",
+    "score_assistant_axis.assistant_axis_trait__sycophantic.score",
+    "score_assistant_axis.assistant_axis_trait__verbose.score",
+    "score_emotions.emotion__defiant.score"
+  ],
+  "gates": {
+    "max_length_correlation": 0.6,
+    "min_control_d": 0.3,
+    "min_objective_d": 0.8,
+    "min_separated_surfaces": 3,
+    "min_surface_d": 0.8,
+    "top_k": 5
+  },
+  "objective": 4.383363719766399,
+  "passed": true,
+  "per_surface": {
+    "score_assistant_axis.assistant_axis.score": {
+      "d_marrow_control": -5.500338556001232,
+      "d_sol_control": -2.474605257537043,
+      "d_sol_marrow": 4.388698772985661,
+      "length_confounded": false,
+      "length_correlation": 0.25360364467776597,
+      "n_pairs": 100.0
+    },
+    "score_assistant_axis.assistant_axis_trait__analytical.score": {
+      "d_marrow_control": -2.491315786647785,
+      "d_sol_control": -1.4995666601487778,
+      "d_sol_marrow": 1.7042151307388376,
+      "length_confounded": false,
+      "length_correlation": 0.42595528837326296,
+      "n_pairs": 100.0
+    },
+    "score_assistant_axis.assistant_axis_trait__assertive.score": {
+      "d_marrow_control": -1.0751084122944732,
+      "d_sol_control": 2.3347198999361125,
+      "d_sol_marrow": 3.368404227878727,
+      "length_confounded": true,
+      "length_correlation": -0.6782096116030116,
+      "n_pairs": 100.0
+    },
+    "score_assistant_axis.assistant_axis_trait__calm.score": {
+      "d_marrow_control": -1.7607017498861346,
+      "d_sol_control": -2.6777944553439577,
+      "d_sol_marrow": -1.9095867570654201,
+      "length_confounded": true,
+      "length_correlation": 0.8689709284084053,
+      "n_pairs": 100.0
+    },
+    "score_assistant_axis.assistant_axis_trait__cautious.score": {
+      "d_marrow_control": -0.2548404247158556,
+      "d_sol_control": -3.4268899969013487,
+      "d_sol_marrow": -2.3307110001474354,
+      "length_confounded": true,
+      "length_correlation": 0.8318803795936245,
+      "n_pairs": 100.0
+    },
+    "score_assistant_axis.assistant_axis_trait__conciliatory.score": {
+      "d_marrow_control": -1.480941013510483,
+      "d_sol_control": -2.7481921918838323,
+      "d_sol_marrow": -2.122717502090529,
+      "length_confounded": true,
+      "length_correlation": 0.8685848602691718,
+      "n_pairs": 100.0
+    },
+    "score_assistant_axis.assistant_axis_trait__condescending.score": {
+      "d_marrow_control": 2.1792836891912324,
+      "d_sol_control": 2.568744063679298,
+      "d_sol_marrow": 1.4137815637607951,
+      "length_confounded": true,
+      "length_correlation": -0.8554305820396485,
+      "n_pairs": 100.0
+    },
+    "score_assistant_axis.assistant_axis_trait__confident.score": {
+      "d_marrow_control": -0.41703288642677144,
+      "d_sol_control": 3.29896227799503,
+      "d_sol_marrow": 3.0057635230706437,
+      "length_confounded": true,
+      "length_correlation": -0.8152662321057467,
+      "n_pairs": 100.0
+    },
+    "score_assistant_axis.assistant_axis_trait__decisive.score": {
+      "d_marrow_control": -2.202706611403563,
+      "d_sol_control": 2.0263207298699877,
+      "d_sol_marrow": 3.5713123819934345,
+      "length_confounded": false,
+      "length_correlation": -0.5817647347469856,
+      "n_pairs": 100.0
+    },
+    "score_assistant_axis.assistant_axis_trait__hostile.score": {
+      "d_marrow_control": 0.5462604197862376,
+      "d_sol_control": 2.63262512725485,
+      "d_sol_marrow": 2.9459969970228514,
+      "length_confounded": true,
+      "length_correlation": -0.8502939977827502,
+      "n_pairs": 100.0
+    },
+    "score_assistant_axis.assistant_axis_trait__manipulative.score": {
+      "d_marrow_control": 2.095224740649011,
+      "d_sol_control": 1.8121222271400774,
+      "d_sol_marrow": 0.1964196519014528,
+      "length_confounded": true,
+      "length_correlation": -0.6771166065318147,
+      "n_pairs": 100.0
+    },
+    "score_assistant_axis.assistant_axis_trait__supportive.score": {
+      "d_marrow_control": -1.0266309981437114,
+      "d_sol_control": -3.343500276268992,
+      "d_sol_marrow": -3.0539904258873785,
+      "length_confounded": true,
+      "length_correlation": 0.8987176642387003,
+      "n_pairs": 100.0
+    },
+    "score_assistant_axis.assistant_axis_trait__sycophantic.score": {
+      "d_marrow_control": 1.7190751426185311,
+      "d_sol_control": 2.197639545347775,
+      "d_sol_marrow": 0.2939003148518959,
+      "length_confounded": true,
+      "length_correlation": -0.6909753167446175,
+      "n_pairs": 100.0
+    },
+    "score_assistant_axis.assistant_axis_trait__technical.score": {
+      "d_marrow_control": 0.1016837307555864,
+      "d_sol_control": -0.8500527939706286,
+      "d_sol_marrow": -1.0483016415778366,
+      "length_confounded": false,
+      "length_correlation": 0.4845958012375523,
+      "n_pairs": 100.0
+    },
+    "score_assistant_axis.assistant_axis_trait__verbose.score": {
+      "d_marrow_control": -0.20073254205703392,
+      "d_sol_control": -4.999346198906016,
+      "d_sol_marrow": -2.8810346221752168,
+      "length_confounded": true,
+      "length_correlation": 0.8766293200578684,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__afraid.score": {
+      "d_marrow_control": 0.9240593412660746,
+      "d_sol_control": -0.7980935635290477,
+      "d_sol_marrow": -1.368941175755729,
+      "length_confounded": false,
+      "length_correlation": 0.2748899650511994,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__alarmed.score": {
+      "d_marrow_control": -0.03656690311940349,
+      "d_sol_control": -1.5308585704123148,
+      "d_sol_marrow": -1.1477005011879937,
+      "length_confounded": false,
+      "length_correlation": 0.4963189012155628,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__alert.score": {
+      "d_marrow_control": -0.8051470197783456,
+      "d_sol_control": 0.21221919180550672,
+      "d_sol_marrow": 0.7856230380553436,
+      "length_confounded": false,
+      "length_correlation": -0.07378246241319115,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__amazed.score": {
+      "d_marrow_control": 3.741995567914391,
+      "d_sol_control": -0.5531403465771987,
+      "d_sol_marrow": -3.7659586651154773,
+      "length_confounded": false,
+      "length_correlation": 0.18356162640082543,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__amused.score": {
+      "d_marrow_control": -3.323964829497975,
+      "d_sol_control": -0.6180222435994097,
+      "d_sol_marrow": 2.373984093971035,
+      "length_confounded": false,
+      "length_correlation": 0.038808147039068694,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__angry.score": {
+      "d_marrow_control": -0.21521674135825758,
+      "d_sol_control": 1.9794753152080016,
+      "d_sol_marrow": 1.5168337305312323,
+      "length_confounded": false,
+      "length_correlation": -0.45877843492433706,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__annoyed.score": {
+      "d_marrow_control": -0.854611448673014,
+      "d_sol_control": 0.02636357428711104,
+      "d_sol_marrow": 0.7951004446976746,
+      "length_confounded": false,
+      "length_correlation": -0.042037754238419475,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__anxious.score": {
+      "d_marrow_control": 0.6868656138028698,
+      "d_sol_control": -0.6645117635841215,
+      "d_sol_marrow": -1.1057901149394533,
+      "length_confounded": false,
+      "length_correlation": 0.26372570174007354,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__aroused.score": {
+      "d_marrow_control": 3.9020179764357064,
+      "d_sol_control": 0.40486525682655944,
+      "d_sol_marrow": -3.11402056596103,
+      "length_confounded": false,
+      "length_correlation": 0.04878660187201381,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__ashamed.score": {
+      "d_marrow_control": 0.6975814934749407,
+      "d_sol_control": -0.3701818646965619,
+      "d_sol_marrow": -0.9776049798841708,
+      "length_confounded": false,
+      "length_correlation": 0.15310374284604847,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__astonished.score": {
+      "d_marrow_control": 1.1775300775324322,
+      "d_sol_control": -0.7392115452543795,
+      "d_sol_marrow": -1.5195404000904542,
+      "length_confounded": false,
+      "length_correlation": 0.2531959411144362,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__at_ease.score": {
+      "d_marrow_control": -0.9905677825051767,
+      "d_sol_control": -0.9518281157820547,
+      "d_sol_marrow": 0.1621589586751269,
+      "length_confounded": false,
+      "length_correlation": 0.2638156997203388,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__awestruck.score": {
+      "d_marrow_control": 3.0627977137160225,
+      "d_sol_control": -1.389136933913631,
+      "d_sol_marrow": -3.5905377759543526,
+      "length_confounded": false,
+      "length_correlation": 0.3049303852078959,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__bewildered.score": {
+      "d_marrow_control": 1.1026244992597607,
+      "d_sol_control": -0.9272385135883653,
+      "d_sol_marrow": -1.5925860284573072,
+      "length_confounded": false,
+      "length_correlation": 0.3326875983570596,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__bitter.score": {
+      "d_marrow_control": 1.021407982785927,
+      "d_sol_control": 0.752879315089649,
+      "d_sol_marrow": -0.26696920524856665,
+      "length_confounded": false,
+      "length_correlation": -0.2098067558719746,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__blissful.score": {
+      "d_marrow_control": -0.4202503927105899,
+      "d_sol_control": -0.7234265403385015,
+      "d_sol_marrow": -0.22787947841324083,
+      "length_confounded": false,
+      "length_correlation": 0.24664188072073256,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__bored.score": {
+      "d_marrow_control": -0.7969655331545346,
+      "d_sol_control": 0.3022267090060371,
+      "d_sol_marrow": 0.9289840633625555,
+      "length_confounded": false,
+      "length_correlation": -0.12496126542909639,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__brooding.score": {
+      "d_marrow_control": 2.2987723225736527,
+      "d_sol_control": 1.2937804649672857,
+      "d_sol_marrow": -0.7753558542796672,
+      "length_confounded": false,
+      "length_correlation": -0.3370031621327774,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__calm.score": {
+      "d_marrow_control": 0.9052651783631458,
+      "d_sol_control": -0.05304625980262529,
+      "d_sol_marrow": -0.8948221922875963,
+      "length_confounded": false,
+      "length_correlation": 0.06519754543502132,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__cheerful.score": {
+      "d_marrow_control": -4.0825786417094045,
+      "d_sol_control": -0.21133100215491998,
+      "d_sol_marrow": 3.7851288144000717,
+      "length_confounded": false,
+      "length_correlation": -0.07650992768594761,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__compassionate.score": {
+      "d_marrow_control": -0.7145527384357971,
+      "d_sol_control": -0.19394311829365804,
+      "d_sol_marrow": 0.43431550092951393,
+      "length_confounded": false,
+      "length_correlation": 0.046630149060451175,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__contemptuous.score": {
+      "d_marrow_control": -3.237554917460456,
+      "d_sol_control": 0.8591637584250993,
+      "d_sol_marrow": 3.6056405413330217,
+      "length_confounded": false,
+      "length_correlation": -0.2406768417403424,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__content.score": {
+      "d_marrow_control": -1.3758826318578847,
+      "d_sol_control": -0.980797323245945,
+      "d_sol_marrow": 0.4758368220522002,
+      "length_confounded": false,
+      "length_correlation": 0.23700950704323256,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__defiant.score": {
+      "d_marrow_control": -1.4373332215087171,
+      "d_sol_control": 2.5518671438241882,
+      "d_sol_marrow": 3.428488510628579,
+      "length_confounded": true,
+      "length_correlation": -0.6009578576809765,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__delighted.score": {
+      "d_marrow_control": -1.2449767678326489,
+      "d_sol_control": -0.6895846084093358,
+      "d_sol_marrow": 0.49628028275486713,
+      "length_confounded": false,
+      "length_correlation": 0.176085572645255,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__dependent.score": {
+      "d_marrow_control": 0.9456515284551592,
+      "d_sol_control": -0.8485835741530061,
+      "d_sol_marrow": -1.5604319501131128,
+      "length_confounded": false,
+      "length_correlation": 0.2878617627841736,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__depressed.score": {
+      "d_marrow_control": -0.0013143035914815544,
+      "d_sol_control": 0.3578770387754871,
+      "d_sol_marrow": 0.3041086335720385,
+      "length_confounded": false,
+      "length_correlation": -0.1333602187912039,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__desperate.score": {
+      "d_marrow_control": -1.2442456767397165,
+      "d_sol_control": -0.1972374048410893,
+      "d_sol_marrow": 1.0198995936698367,
+      "length_confounded": false,
+      "length_correlation": 0.013785203454810721,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__disdainful.score": {
+      "d_marrow_control": -2.5983028231769723,
+      "d_sol_control": 0.8076580494861746,
+      "d_sol_marrow": 3.07968698001267,
+      "length_confounded": false,
+      "length_correlation": -0.24505375333418902,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__disgusted.score": {
+      "d_marrow_control": 0.117467913009587,
+      "d_sol_control": -0.26025557517663384,
+      "d_sol_marrow": -0.3243171913832621,
+      "length_confounded": false,
+      "length_correlation": 0.10688882310303173,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__disoriented.score": {
+      "d_marrow_control": 0.806740794200819,
+      "d_sol_control": -0.015307961885304094,
+      "d_sol_marrow": -0.6595088868530847,
+      "length_confounded": false,
+      "length_correlation": 0.055132251728558374,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__dispirited.score": {
+      "d_marrow_control": 0.5567759528618533,
+      "d_sol_control": 0.22872305063058276,
+      "d_sol_marrow": -0.2685783618432357,
+      "length_confounded": false,
+      "length_correlation": -0.07759800719729754,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__distressed.score": {
+      "d_marrow_control": 1.8968569486540385,
+      "d_sol_control": 0.1326346864915798,
+      "d_sol_marrow": -1.5627094748885848,
+      "length_confounded": false,
+      "length_correlation": 0.039809434109217536,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__disturbed.score": {
+      "d_marrow_control": 2.0524180912146197,
+      "d_sol_control": -0.8024557094792882,
+      "d_sol_marrow": -2.524148252685816,
+      "length_confounded": false,
+      "length_correlation": 0.2738818917496368,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__docile.score": {
+      "d_marrow_control": 2.535996595245019,
+      "d_sol_control": 0.45304637370226425,
+      "d_sol_marrow": -2.0179317862042776,
+      "length_confounded": false,
+      "length_correlation": -0.015351390960802227,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__droopy.score": {
+      "d_marrow_control": 0.5056886901974924,
+      "d_sol_control": -0.11406139021976898,
+      "d_sol_marrow": -0.518063798819288,
+      "length_confounded": false,
+      "length_correlation": 0.04225250905735688,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__dumbstruck.score": {
+      "d_marrow_control": 2.2760928934842193,
+      "d_sol_control": -0.8992624458492652,
+      "d_sol_marrow": -2.549007295853787,
+      "length_confounded": false,
+      "length_correlation": 0.2708654365028097,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__eager.score": {
+      "d_marrow_control": -0.24296510031059276,
+      "d_sol_control": 0.30806127170956743,
+      "d_sol_marrow": 0.42082695677780335,
+      "length_confounded": false,
+      "length_correlation": -0.08973690419850057,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__ecstatic.score": {
+      "d_marrow_control": -2.059492256811315,
+      "d_sol_control": 0.02014623489276432,
+      "d_sol_marrow": 1.8390036430209542,
+      "length_confounded": false,
+      "length_correlation": -0.08552926324394651,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__elated.score": {
+      "d_marrow_control": -0.7293593400517856,
+      "d_sol_control": 0.04379887450874113,
+      "d_sol_marrow": 0.6746181797037435,
+      "length_confounded": false,
+      "length_correlation": -0.055683901877656886,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__embarrassed.score": {
+      "d_marrow_control": -1.5053241910879827,
+      "d_sol_control": -1.2123716161350997,
+      "d_sol_marrow": 0.3320538188555597,
+      "length_confounded": false,
+      "length_correlation": 0.3266812985511603,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__empathetic.score": {
+      "d_marrow_control": -1.5585942197048053,
+      "d_sol_control": -0.20689997349104602,
+      "d_sol_marrow": 1.0619121706917365,
+      "length_confounded": false,
+      "length_correlation": 0.006160606852867305,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__energized.score": {
+      "d_marrow_control": -1.3472900674237742,
+      "d_sol_control": 0.6311527124101655,
+      "d_sol_marrow": 1.7172929979667328,
+      "length_confounded": false,
+      "length_correlation": -0.23594183034823377,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__enraged.score": {
+      "d_marrow_control": -1.1652208685126788,
+      "d_sol_control": 2.1774016219217933,
+      "d_sol_marrow": 2.7694571224718234,
+      "length_confounded": false,
+      "length_correlation": -0.48163375026445643,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__enthusiastic.score": {
+      "d_marrow_control": -2.9967553791352244,
+      "d_sol_control": -0.14345704233711995,
+      "d_sol_marrow": 2.525191385088236,
+      "length_confounded": false,
+      "length_correlation": -0.06382429342941189,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__envious.score": {
+      "d_marrow_control": 1.398312927182084,
+      "d_sol_control": -0.4068223397391664,
+      "d_sol_marrow": -1.8467713166319921,
+      "length_confounded": false,
+      "length_correlation": 0.1725030346695068,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__euphoric.score": {
+      "d_marrow_control": -1.8381069990076966,
+      "d_sol_control": 0.08985527215945657,
+      "d_sol_marrow": 1.740165481002925,
+      "length_confounded": false,
+      "length_correlation": -0.1041573419399389,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__exasperated.score": {
+      "d_marrow_control": -2.310003751482594,
+      "d_sol_control": 0.11790795658467458,
+      "d_sol_marrow": 2.052603218753399,
+      "length_confounded": false,
+      "length_correlation": -0.10020729288464467,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__excited.score": {
+      "d_marrow_control": 1.2675654613579277,
+      "d_sol_control": -0.2872387482491683,
+      "d_sol_marrow": -1.261114123269114,
+      "length_confounded": false,
+      "length_correlation": 0.13150008196929952,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__exuberant.score": {
+      "d_marrow_control": -4.362617936598194,
+      "d_sol_control": -0.146125648067058,
+      "d_sol_marrow": 3.94370967798908,
+      "length_confounded": false,
+      "length_correlation": -0.08369710956608963,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__frightened.score": {
+      "d_marrow_control": 0.09773291715601026,
+      "d_sol_control": -0.9075475884414682,
+      "d_sol_marrow": -0.7240138631424223,
+      "length_confounded": false,
+      "length_correlation": 0.30329431418945135,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__frustrated.score": {
+      "d_marrow_control": 0.8970411012348222,
+      "d_sol_control": -0.03418592540265951,
+      "d_sol_marrow": -0.830704104449378,
+      "length_confounded": false,
+      "length_correlation": 0.07060620844844036,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__fulfilled.score": {
+      "d_marrow_control": -1.2554139107634978,
+      "d_sol_control": -0.40770456712153097,
+      "d_sol_marrow": 0.7631995387266166,
+      "length_confounded": false,
+      "length_correlation": 0.08015151375864281,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__furious.score": {
+      "d_marrow_control": -0.3998080175536836,
+      "d_sol_control": 1.8579061465029216,
+      "d_sol_marrow": 1.6976039719679579,
+      "length_confounded": false,
+      "length_correlation": -0.4538912542861082,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__gloomy.score": {
+      "d_marrow_control": -0.9208741995852674,
+      "d_sol_control": 0.6140439557527714,
+      "d_sol_marrow": 1.2943827789033784,
+      "length_confounded": false,
+      "length_correlation": -0.2670620356823837,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__grateful.score": {
+      "d_marrow_control": 0.5662763682514008,
+      "d_sol_control": -0.34986798838915406,
+      "d_sol_marrow": -0.8071257095328535,
+      "length_confounded": false,
+      "length_correlation": 0.1605021391403827,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__greedy.score": {
+      "d_marrow_control": -0.6095071359161446,
+      "d_sol_control": 0.8612446141966826,
+      "d_sol_marrow": 0.9984361217449315,
+      "length_confounded": false,
+      "length_correlation": -0.2366994468035412,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__grief_stricken.score": {
+      "d_marrow_control": 2.2676527936802495,
+      "d_sol_control": 0.5670310908355273,
+      "d_sol_marrow": -1.2699837442129527,
+      "length_confounded": false,
+      "length_correlation": -0.08580105804206332,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__grumpy.score": {
+      "d_marrow_control": -2.2222696337416608,
+      "d_sol_control": 0.40721905791067164,
+      "d_sol_marrow": 2.2772624198655387,
+      "length_confounded": false,
+      "length_correlation": -0.18878930911813452,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__guilty.score": {
+      "d_marrow_control": 1.1149592381599134,
+      "d_sol_control": -0.6466550289521084,
+      "d_sol_marrow": -1.7014337231882743,
+      "length_confounded": false,
+      "length_correlation": 0.2421042546169716,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__happy.score": {
+      "d_marrow_control": 0.050581466721663436,
+      "d_sol_control": -0.8696355163459009,
+      "d_sol_marrow": -0.7560655437222626,
+      "length_confounded": false,
+      "length_correlation": 0.31693650801269274,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__hateful.score": {
+      "d_marrow_control": -1.8141646837309886,
+      "d_sol_control": 1.56767867673495,
+      "d_sol_marrow": 3.0240529937985747,
+      "length_confounded": false,
+      "length_correlation": -0.3922905782735632,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__heartbroken.score": {
+      "d_marrow_control": 3.326907893808082,
+      "d_sol_control": -0.586681435148837,
+      "d_sol_marrow": -3.371055890898879,
+      "length_confounded": false,
+      "length_correlation": 0.19142628312540255,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__hope.score": {
+      "d_marrow_control": 2.0421668897525307,
+      "d_sol_control": 0.17766313782631454,
+      "d_sol_marrow": -1.5794130743252346,
+      "length_confounded": false,
+      "length_correlation": 0.015126299885164255,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__hopeful.score": {
+      "d_marrow_control": 0.5356036757403487,
+      "d_sol_control": -0.08178628390626273,
+      "d_sol_marrow": -0.5248598548533207,
+      "length_confounded": false,
+      "length_correlation": 0.043963366723479703,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__horrified.score": {
+      "d_marrow_control": -0.6002763728195519,
+      "d_sol_control": -0.6033447536554973,
+      "d_sol_marrow": 0.05840315441615897,
+      "length_confounded": false,
+      "length_correlation": 0.17974377781939999,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__hostile.score": {
+      "d_marrow_control": -1.2967576519374169,
+      "d_sol_control": 1.5866752372032538,
+      "d_sol_marrow": 2.4670773117871856,
+      "length_confounded": false,
+      "length_correlation": -0.38624451479927097,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__humiliated.score": {
+      "d_marrow_control": -0.22951449578796826,
+      "d_sol_control": -0.7890276090167657,
+      "d_sol_marrow": -0.49109971543836034,
+      "length_confounded": false,
+      "length_correlation": 0.26060009634434306,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__hurt.score": {
+      "d_marrow_control": 4.070931637292112,
+      "d_sol_control": -0.5256258118140511,
+      "d_sol_marrow": -4.281884165772044,
+      "length_confounded": false,
+      "length_correlation": 0.17527329481184484,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__hysterical.score": {
+      "d_marrow_control": -1.5505963266796723,
+      "d_sol_control": -0.08361179470937746,
+      "d_sol_marrow": 1.2083648908804656,
+      "length_confounded": false,
+      "length_correlation": -0.01503346616165107,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__impatient.score": {
+      "d_marrow_control": -2.924470399458401,
+      "d_sol_control": 0.1986926295724274,
+      "d_sol_marrow": 2.4920284296944066,
+      "length_confounded": false,
+      "length_correlation": -0.11596685836187776,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__indifferent.score": {
+      "d_marrow_control": 0.2990782241586872,
+      "d_sol_control": 1.443993599581986,
+      "d_sol_marrow": 0.9568256911108816,
+      "length_confounded": false,
+      "length_correlation": -0.45705123273948567,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__indignant.score": {
+      "d_marrow_control": -2.9593013833697954,
+      "d_sol_control": 1.1650600039925505,
+      "d_sol_marrow": 3.6594481771963037,
+      "length_confounded": false,
+      "length_correlation": -0.2728781959049809,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__infatuated.score": {
+      "d_marrow_control": 2.6021463335020534,
+      "d_sol_control": -0.32941904816311696,
+      "d_sol_marrow": -2.315176010280397,
+      "length_confounded": false,
+      "length_correlation": 0.1592514245872592,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__inspired.score": {
+      "d_marrow_control": 2.988425735163598,
+      "d_sol_control": 0.20677548158174464,
+      "d_sol_marrow": -2.384509157231043,
+      "length_confounded": false,
+      "length_correlation": 0.038207355101212,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__insulted.score": {
+      "d_marrow_control": -0.3212304909355263,
+      "d_sol_control": -0.09034275172245906,
+      "d_sol_marrow": 0.25056016762001837,
+      "length_confounded": false,
+      "length_correlation": 0.024320783561333503,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__invigorated.score": {
+      "d_marrow_control": -0.1577823518411327,
+      "d_sol_control": 0.3532513023815789,
+      "d_sol_marrow": 0.45019298484720305,
+      "length_confounded": false,
+      "length_correlation": -0.13471322275372138,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__irate.score": {
+      "d_marrow_control": -0.9738270451927323,
+      "d_sol_control": 1.3141191414282158,
+      "d_sol_marrow": 1.8956161695394242,
+      "length_confounded": false,
+      "length_correlation": -0.34266433940714186,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__irritated.score": {
+      "d_marrow_control": -0.4176990397102915,
+      "d_sol_control": 0.6178353208238878,
+      "d_sol_marrow": 0.8102645188529998,
+      "length_confounded": false,
+      "length_correlation": -0.19876321750545883,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__jealous.score": {
+      "d_marrow_control": 0.3408041131954544,
+      "d_sol_control": -0.5792853318930455,
+      "d_sol_marrow": -0.8938181267752943,
+      "length_confounded": false,
+      "length_correlation": 0.20662717224553195,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__joyful.score": {
+      "d_marrow_control": -2.3228041778873534,
+      "d_sol_control": -0.2985907563440372,
+      "d_sol_marrow": 1.861635506370812,
+      "length_confounded": false,
+      "length_correlation": -0.008316139722073713,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__jubilant.score": {
+      "d_marrow_control": -2.6455966998928586,
+      "d_sol_control": 0.03241409175370115,
+      "d_sol_marrow": 2.3973026391045393,
+      "length_confounded": false,
+      "length_correlation": -0.09904489559862494,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__kind.score": {
+      "d_marrow_control": 0.4550723358091277,
+      "d_sol_control": -0.6103454209512301,
+      "d_sol_marrow": -0.970003181332545,
+      "length_confounded": false,
+      "length_correlation": 0.2746855851947937,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__lazy.score": {
+      "d_marrow_control": -1.2008286511462936,
+      "d_sol_control": 0.15017521424164054,
+      "d_sol_marrow": 1.1720613062074345,
+      "length_confounded": false,
+      "length_correlation": -0.10230262384481777,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__listless.score": {
+      "d_marrow_control": -0.5065767883867232,
+      "d_sol_control": 0.6729969450078653,
+      "d_sol_marrow": 0.9722465366231956,
+      "length_confounded": false,
+      "length_correlation": -0.23634842843561965,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__lonely.score": {
+      "d_marrow_control": 1.618248414209532,
+      "d_sol_control": 0.773194312235639,
+      "d_sol_marrow": -0.5646753490974675,
+      "length_confounded": false,
+      "length_correlation": -0.20074038239827333,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__loving.score": {
+      "d_marrow_control": 1.0820458080927937,
+      "d_sol_control": -0.5742422332810264,
+      "d_sol_marrow": -1.4779308551942385,
+      "length_confounded": false,
+      "length_correlation": 0.24813770608265112,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__mad.score": {
+      "d_marrow_control": -0.792356394958129,
+      "d_sol_control": 1.2218035096920925,
+      "d_sol_marrow": 1.6319354114780833,
+      "length_confounded": false,
+      "length_correlation": -0.33042346662608085,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__melancholy.score": {
+      "d_marrow_control": 2.780133978642467,
+      "d_sol_control": 0.3608567839180319,
+      "d_sol_marrow": -1.8932507580806102,
+      "length_confounded": false,
+      "length_correlation": -0.014656719588154928,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__miserable.score": {
+      "d_marrow_control": 1.8022676503718722,
+      "d_sol_control": 0.3469799285036715,
+      "d_sol_marrow": -1.236841469449496,
+      "length_confounded": false,
+      "length_correlation": -0.04173064366222915,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__mortified.score": {
+      "d_marrow_control": -1.448962873957828,
+      "d_sol_control": -0.9109929607665525,
+      "d_sol_marrow": 0.6311311459548262,
+      "length_confounded": false,
+      "length_correlation": 0.20647328609797258,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__mystified.score": {
+      "d_marrow_control": 0.3432051983477355,
+      "d_sol_control": -0.8022292701594611,
+      "d_sol_marrow": -0.868423483794297,
+      "length_confounded": false,
+      "length_correlation": 0.2830088803778972,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__nervous.score": {
+      "d_marrow_control": 1.0351139151016095,
+      "d_sol_control": -0.8439443787837698,
+      "d_sol_marrow": -1.4267659094677667,
+      "length_confounded": false,
+      "length_correlation": 0.299829568246239,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__nostalgic.score": {
+      "d_marrow_control": 1.8205752049778277,
+      "d_sol_control": 0.15782943568168573,
+      "d_sol_marrow": -1.4763442327339384,
+      "length_confounded": false,
+      "length_correlation": 0.013950235910128662,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__obstinate.score": {
+      "d_marrow_control": -3.180990436797675,
+      "d_sol_control": 2.3371529430781433,
+      "d_sol_marrow": 4.554690950278822,
+      "length_confounded": false,
+      "length_correlation": -0.419231369472418,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__offended.score": {
+      "d_marrow_control": 1.0101826131156388,
+      "d_sol_control": 0.6124210540142351,
+      "d_sol_marrow": -0.5456441369390815,
+      "length_confounded": false,
+      "length_correlation": -0.1228595542165161,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__on_edge.score": {
+      "d_marrow_control": -1.062691132030205,
+      "d_sol_control": -0.8991239806958367,
+      "d_sol_marrow": 0.0947333888302219,
+      "length_confounded": false,
+      "length_correlation": 0.29576110217740625,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__optimistic.score": {
+      "d_marrow_control": -2.5980207363148873,
+      "d_sol_control": -0.43495530302477775,
+      "d_sol_marrow": 1.964719984275275,
+      "length_confounded": false,
+      "length_correlation": 0.008210924530905208,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__outraged.score": {
+      "d_marrow_control": -1.0777325246428924,
+      "d_sol_control": 1.0453698114670145,
+      "d_sol_marrow": 1.776900978891472,
+      "length_confounded": false,
+      "length_correlation": -0.2835824548533023,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__overwhelmed.score": {
+      "d_marrow_control": 0.41312422561914947,
+      "d_sol_control": -1.3532255161363584,
+      "d_sol_marrow": -1.440150098238824,
+      "length_confounded": false,
+      "length_correlation": 0.4457029130712206,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__panicked.score": {
+      "d_marrow_control": 0.14362949093814684,
+      "d_sol_control": -0.9491126268439369,
+      "d_sol_marrow": -0.8130367403682142,
+      "length_confounded": false,
+      "length_correlation": 0.32518922626360675,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__paranoid.score": {
+      "d_marrow_control": -2.664380848501007,
+      "d_sol_control": -1.2101075700927135,
+      "d_sol_marrow": 1.274252768865677,
+      "length_confounded": false,
+      "length_correlation": 0.23549868945433064,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__patient.score": {
+      "d_marrow_control": 2.3159626291244964,
+      "d_sol_control": 0.2780269421128251,
+      "d_sol_marrow": -1.8628377028742429,
+      "length_confounded": false,
+      "length_correlation": 0.019545630996391682,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__peaceful.score": {
+      "d_marrow_control": 1.3653978059821579,
+      "d_sol_control": 0.1565020670071495,
+      "d_sol_marrow": -1.1401220627583106,
+      "length_confounded": false,
+      "length_correlation": 0.010697214085167626,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__perplexed.score": {
+      "d_marrow_control": -0.25494128428215806,
+      "d_sol_control": -1.2658473097130265,
+      "d_sol_marrow": -0.8517284232273644,
+      "length_confounded": false,
+      "length_correlation": 0.44395954536466126,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__playful.score": {
+      "d_marrow_control": -4.518820159885448,
+      "d_sol_control": -0.06796136400939443,
+      "d_sol_marrow": 4.413343845931511,
+      "length_confounded": false,
+      "length_correlation": -0.09887495767903402,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__pleased.score": {
+      "d_marrow_control": 0.42249005213492374,
+      "d_sol_control": -0.6128441121458233,
+      "d_sol_marrow": -0.8860401347209078,
+      "length_confounded": false,
+      "length_correlation": 0.21985234960423358,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__proud.score": {
+      "d_marrow_control": 0.4540448478708501,
+      "d_sol_control": 0.6586051542781886,
+      "d_sol_marrow": 0.22424480682418063,
+      "length_confounded": false,
+      "length_correlation": -0.2539377960087307,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__puzzled.score": {
+      "d_marrow_control": 2.290992322857133,
+      "d_sol_control": -1.0823040435303048,
+      "d_sol_marrow": -2.8223431796992333,
+      "length_confounded": false,
+      "length_correlation": 0.32058448799374295,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__rattled.score": {
+      "d_marrow_control": 2.3506079506018707,
+      "d_sol_control": -0.9753156457207871,
+      "d_sol_marrow": -2.720741949099762,
+      "length_confounded": false,
+      "length_correlation": 0.3126531872553356,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__reflective.score": {
+      "d_marrow_control": 2.3628567866450223,
+      "d_sol_control": -0.18622676528567617,
+      "d_sol_marrow": -1.9454730357163155,
+      "length_confounded": false,
+      "length_correlation": 0.10102074466677584,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__refreshed.score": {
+      "d_marrow_control": -0.8270680155654381,
+      "d_sol_control": -0.4011027385586454,
+      "d_sol_marrow": 0.3933002592559113,
+      "length_confounded": false,
+      "length_correlation": 0.09542719654490446,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__regretful.score": {
+      "d_marrow_control": 2.281650260444426,
+      "d_sol_control": -0.23518552514119195,
+      "d_sol_marrow": -2.2669763909821574,
+      "length_confounded": false,
+      "length_correlation": 0.12406530945056408,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__rejuvenated.score": {
+      "d_marrow_control": -0.05466852445254546,
+      "d_sol_control": -0.18454508417522342,
+      "d_sol_marrow": -0.10680701790448145,
+      "length_confounded": false,
+      "length_correlation": 0.060477021130482145,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__relaxed.score": {
+      "d_marrow_control": -0.9579129890325381,
+      "d_sol_control": -0.6868050800691508,
+      "d_sol_marrow": 0.37779086000148854,
+      "length_confounded": false,
+      "length_correlation": 0.1602803163982097,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__relieved.score": {
+      "d_marrow_control": 2.872154456986873,
+      "d_sol_control": -0.23150680632718335,
+      "d_sol_marrow": -2.754319385653161,
+      "length_confounded": false,
+      "length_correlation": 0.13626774971471411,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__remorseful.score": {
+      "d_marrow_control": 1.6783790795819151,
+      "d_sol_control": 0.2762355855295104,
+      "d_sol_marrow": -1.2694362748991592,
+      "length_confounded": false,
+      "length_correlation": -0.015157184067660937,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__resentful.score": {
+      "d_marrow_control": -0.29394887712470286,
+      "d_sol_control": 0.7115960295758113,
+      "d_sol_marrow": 0.909481087636159,
+      "length_confounded": false,
+      "length_correlation": -0.24493980581178287,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__resigned.score": {
+      "d_marrow_control": 3.187199005768007,
+      "d_sol_control": 0.6313259852136532,
+      "d_sol_marrow": -2.1793459788484495,
+      "length_confounded": false,
+      "length_correlation": -0.05744818273529296,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__restless.score": {
+      "d_marrow_control": -1.7900697166105721,
+      "d_sol_control": 0.4122292388524129,
+      "d_sol_marrow": 2.06861900536311,
+      "length_confounded": false,
+      "length_correlation": -0.17658165837651868,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__sad.score": {
+      "d_marrow_control": 3.588355708448984,
+      "d_sol_control": 0.48183509036419225,
+      "d_sol_marrow": -2.683729703123529,
+      "length_confounded": false,
+      "length_correlation": -0.0017185583536850008,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__safe.score": {
+      "d_marrow_control": 0.8938765480945103,
+      "d_sol_control": -0.7011133994152051,
+      "d_sol_marrow": -1.335879861639996,
+      "length_confounded": false,
+      "length_correlation": 0.27006855373439037,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__satisfied.score": {
+      "d_marrow_control": 0.7634364792951944,
+      "d_sol_control": -0.7865610428618929,
+      "d_sol_marrow": -1.2757473811591935,
+      "length_confounded": false,
+      "length_correlation": 0.27893942007941425,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__scared.score": {
+      "d_marrow_control": 0.8443267171577415,
+      "d_sol_control": -0.9157516251170521,
+      "d_sol_marrow": -1.3764660357805947,
+      "length_confounded": false,
+      "length_correlation": 0.3084921533873502,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__scornful.score": {
+      "d_marrow_control": -1.8933008738897907,
+      "d_sol_control": 0.4273778090370695,
+      "d_sol_marrow": 2.1475841894545487,
+      "length_confounded": false,
+      "length_correlation": -0.1657358829863748,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__self_confident.score": {
+      "d_marrow_control": -3.998255954852388,
+      "d_sol_control": 1.137854171364102,
+      "d_sol_marrow": 4.278200863863959,
+      "length_confounded": false,
+      "length_correlation": -0.2755713153029617,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__self_conscious.score": {
+      "d_marrow_control": -1.0759062734819291,
+      "d_sol_control": -0.896695354958983,
+      "d_sol_marrow": 0.27517102727655235,
+      "length_confounded": false,
+      "length_correlation": 0.2629836963632401,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__self_critical.score": {
+      "d_marrow_control": -0.016862979398269067,
+      "d_sol_control": -0.06878839034513887,
+      "d_sol_marrow": -0.04111988477412291,
+      "length_confounded": false,
+      "length_correlation": 0.015448652769392819,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__sensitive.score": {
+      "d_marrow_control": 1.3845475945543992,
+      "d_sol_control": 0.17373448317383577,
+      "d_sol_marrow": -1.1069406835451612,
+      "length_confounded": false,
+      "length_correlation": 0.016076139101385927,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__sentimental.score": {
+      "d_marrow_control": 2.114197540410006,
+      "d_sol_control": 0.04737742233304999,
+      "d_sol_marrow": -1.5916478375264786,
+      "length_confounded": false,
+      "length_correlation": 0.04753561923442978,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__serene.score": {
+      "d_marrow_control": 1.5710536249311864,
+      "d_sol_control": 0.39981724616448017,
+      "d_sol_marrow": -1.1714083832823246,
+      "length_confounded": false,
+      "length_correlation": -0.05622179953550295,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__shaken.score": {
+      "d_marrow_control": 2.5377616548325497,
+      "d_sol_control": -1.0506244510525464,
+      "d_sol_marrow": -2.9287019073240956,
+      "length_confounded": false,
+      "length_correlation": 0.2900374221416552,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__shocked.score": {
+      "d_marrow_control": 2.9413171034339465,
+      "d_sol_control": -0.7299091880391672,
+      "d_sol_marrow": -3.0199604172124896,
+      "length_confounded": false,
+      "length_correlation": 0.22483980802746048,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__skeptical.score": {
+      "d_marrow_control": 0.3942329422192317,
+      "d_sol_control": -1.342652073684638,
+      "d_sol_marrow": -1.5370288951182374,
+      "length_confounded": false,
+      "length_correlation": 0.4223301363236227,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__sleepy.score": {
+      "d_marrow_control": -1.1488638810416116,
+      "d_sol_control": 0.8063340322604411,
+      "d_sol_marrow": 1.4046258563382257,
+      "length_confounded": false,
+      "length_correlation": -0.25765955128622353,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__sluggish.score": {
+      "d_marrow_control": -2.0049608858883694,
+      "d_sol_control": 0.6613936658724644,
+      "d_sol_marrow": 2.109222535764313,
+      "length_confounded": false,
+      "length_correlation": -0.22821097159755255,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__smug.score": {
+      "d_marrow_control": -2.058920603727633,
+      "d_sol_control": 0.744123246231865,
+      "d_sol_marrow": 2.1976168705191053,
+      "length_confounded": false,
+      "length_correlation": -0.24718307336035206,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__sorry.score": {
+      "d_marrow_control": 3.587569821637734,
+      "d_sol_control": -0.5010490790848634,
+      "d_sol_marrow": -3.956963021253152,
+      "length_confounded": false,
+      "length_correlation": 0.1617863067958316,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__spiteful.score": {
+      "d_marrow_control": -1.1628360541692015,
+      "d_sol_control": 1.0200142431538883,
+      "d_sol_marrow": 1.9249802122161226,
+      "length_confounded": false,
+      "length_correlation": -0.30802822868397717,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__stimulated.score": {
+      "d_marrow_control": 1.2416438512079397,
+      "d_sol_control": -0.2798630087599347,
+      "d_sol_marrow": -1.1817403608804393,
+      "length_confounded": false,
+      "length_correlation": 0.11253141731976923,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__stressed.score": {
+      "d_marrow_control": -0.9553476398529291,
+      "d_sol_control": -1.376674875903482,
+      "d_sol_marrow": -0.38702017786407256,
+      "length_confounded": false,
+      "length_correlation": 0.4397110148384628,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__stubborn.score": {
+      "d_marrow_control": -0.06601500693136483,
+      "d_sol_control": 2.1115003543027857,
+      "d_sol_marrow": 1.9306877200983446,
+      "length_confounded": false,
+      "length_correlation": -0.5414577380389651,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__stuck.score": {
+      "d_marrow_control": 3.2238806853252515,
+      "d_sol_control": -0.6133808641155567,
+      "d_sol_marrow": -3.803136702518219,
+      "length_confounded": false,
+      "length_correlation": 0.20162386061601875,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__sullen.score": {
+      "d_marrow_control": 0.5096288770678842,
+      "d_sol_control": 0.8889417636866651,
+      "d_sol_marrow": 0.3538922259944327,
+      "length_confounded": false,
+      "length_correlation": -0.32362950166616744,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__surprised.score": {
+      "d_marrow_control": 2.300532736689458,
+      "d_sol_control": -1.2673356469207144,
+      "d_sol_marrow": -2.871549738898682,
+      "length_confounded": false,
+      "length_correlation": 0.3349023769400732,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__suspicious.score": {
+      "d_marrow_control": 0.5376559979796613,
+      "d_sol_control": -1.0912319837623161,
+      "d_sol_marrow": -1.315606702439264,
+      "length_confounded": false,
+      "length_correlation": 0.33443658404164595,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__sympathetic.score": {
+      "d_marrow_control": -0.4284490328106967,
+      "d_sol_control": -0.2692801813976141,
+      "d_sol_marrow": 0.12543750245490046,
+      "length_confounded": false,
+      "length_correlation": 0.06983165666676622,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__tense.score": {
+      "d_marrow_control": -0.4583690679116789,
+      "d_sol_control": -0.625660909550193,
+      "d_sol_marrow": -0.08011858809897963,
+      "length_confounded": false,
+      "length_correlation": 0.2254377288358474,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__terrified.score": {
+      "d_marrow_control": 0.04501320564642725,
+      "d_sol_control": -0.7468866647493434,
+      "d_sol_marrow": -0.5558816175687838,
+      "length_confounded": false,
+      "length_correlation": 0.2511875119028341,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__thankful.score": {
+      "d_marrow_control": 1.3884695896139478,
+      "d_sol_control": -0.7298627398562629,
+      "d_sol_marrow": -1.8280610322968203,
+      "length_confounded": false,
+      "length_correlation": 0.28120186969180566,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__thrilled.score": {
+      "d_marrow_control": -0.1411002653761132,
+      "d_sol_control": -0.4803278367717663,
+      "d_sol_marrow": -0.29685042739647866,
+      "length_confounded": false,
+      "length_correlation": 0.1658199867207569,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__tired.score": {
+      "d_marrow_control": -0.7314332390883433,
+      "d_sol_control": 0.5369714678063869,
+      "d_sol_marrow": 0.8953041287672642,
+      "length_confounded": false,
+      "length_correlation": -0.18289989137621612,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__tormented.score": {
+      "d_marrow_control": 2.0801009923483167,
+      "d_sol_control": -0.5267548675218794,
+      "d_sol_marrow": -2.420472834207804,
+      "length_confounded": false,
+      "length_correlation": 0.21071644153807847,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__trapped.score": {
+      "d_marrow_control": 3.375503248057684,
+      "d_sol_control": -0.554352465259175,
+      "d_sol_marrow": -3.6441264338883737,
+      "length_confounded": false,
+      "length_correlation": 0.19954867834103307,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__triumphant.score": {
+      "d_marrow_control": -1.3723337225060712,
+      "d_sol_control": 0.73999761023739,
+      "d_sol_marrow": 1.7865351990280338,
+      "length_confounded": false,
+      "length_correlation": -0.2836889785323563,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__troubled.score": {
+      "d_marrow_control": 2.115879017646297,
+      "d_sol_control": -0.82534975877038,
+      "d_sol_marrow": -2.5725553092932185,
+      "length_confounded": false,
+      "length_correlation": 0.2859453735625783,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__uneasy.score": {
+      "d_marrow_control": 1.2430642107855236,
+      "d_sol_control": -0.3884824624150364,
+      "d_sol_marrow": -1.3516705721456463,
+      "length_confounded": false,
+      "length_correlation": 0.19097849667501307,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__unhappy.score": {
+      "d_marrow_control": 2.1438174611935743,
+      "d_sol_control": 0.03526720112813888,
+      "d_sol_marrow": -1.9428481643866111,
+      "length_confounded": false,
+      "length_correlation": 0.06342522021347148,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__unnerved.score": {
+      "d_marrow_control": 0.13124897627927556,
+      "d_sol_control": -1.277048579230913,
+      "d_sol_marrow": -1.0835752531879372,
+      "length_confounded": false,
+      "length_correlation": 0.452570359801786,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__unsettled.score": {
+      "d_marrow_control": 1.524820847520734,
+      "d_sol_control": -0.6537084183637543,
+      "d_sol_marrow": -1.7455822742384233,
+      "length_confounded": false,
+      "length_correlation": 0.263565268404808,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__upset.score": {
+      "d_marrow_control": 3.1934636351968484,
+      "d_sol_control": 0.38357184480644596,
+      "d_sol_marrow": -2.6532854939440162,
+      "length_confounded": false,
+      "length_correlation": 0.03515768893033632,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__valiant.score": {
+      "d_marrow_control": -1.3469783361647432,
+      "d_sol_control": 1.5497584161573048,
+      "d_sol_marrow": 2.2474035258802867,
+      "length_confounded": false,
+      "length_correlation": -0.5026667068122357,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__vengeful.score": {
+      "d_marrow_control": 0.3338540880001009,
+      "d_sol_control": 1.8703696047695384,
+      "d_sol_marrow": 1.2732202228619784,
+      "length_confounded": false,
+      "length_correlation": -0.4966237940208852,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__vibrant.score": {
+      "d_marrow_control": -3.0673578742222145,
+      "d_sol_control": -0.04342835527751866,
+      "d_sol_marrow": 2.7699292807386042,
+      "length_confounded": false,
+      "length_correlation": -0.09025878292942488,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__vigilant.score": {
+      "d_marrow_control": -0.6830269504429803,
+      "d_sol_control": 0.859725998381487,
+      "d_sol_marrow": 1.1980181962800116,
+      "length_confounded": false,
+      "length_correlation": -0.21519606737133398,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__vindictive.score": {
+      "d_marrow_control": -1.8650201845819947,
+      "d_sol_control": 1.6128955636639495,
+      "d_sol_marrow": 3.040468165291787,
+      "length_confounded": false,
+      "length_correlation": -0.39831338414463513,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__vulnerable.score": {
+      "d_marrow_control": 0.6871876215203719,
+      "d_sol_control": -0.9490760350733843,
+      "d_sol_marrow": -1.3807101603977148,
+      "length_confounded": false,
+      "length_correlation": 0.3164932408034014,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__weary.score": {
+      "d_marrow_control": -0.6395629843089095,
+      "d_sol_control": 0.4859867185624533,
+      "d_sol_marrow": 0.8987731216717492,
+      "length_confounded": false,
+      "length_correlation": -0.20181600005207184,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__worn_out.score": {
+      "d_marrow_control": 0.3819897218336524,
+      "d_sol_control": -0.10749917215001889,
+      "d_sol_marrow": -0.38768818312282943,
+      "length_confounded": false,
+      "length_correlation": 0.04535831163100586,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__worried.score": {
+      "d_marrow_control": 1.7781837838078718,
+      "d_sol_control": -1.266266322751983,
+      "d_sol_marrow": -2.499150751256746,
+      "length_confounded": false,
+      "length_correlation": 0.38675335479096046,
+      "n_pairs": 100.0
+    },
+    "score_emotions.emotion__worthless.score": {
+      "d_marrow_control": 1.1366284772182182,
+      "d_sol_control": -0.09184601942145133,
+      "d_sol_marrow": -1.0099456077542623,
+      "length_confounded": false,
+      "length_correlation": 0.06169768221676337,
+      "n_pairs": 100.0
+    },
+    "score_high_stakes_anthropic_hh_balanced_domain_adapted_probe_probe_1_2206e4b9.high_stakes__anthropic_hh_balanced__domain_adapted_probe.probability": {
+      "d_marrow_control": 0.044541754970720944,
+      "d_sol_control": 0.665878991424629,
+      "d_sol_marrow": 0.6209723437790255,
+      "length_confounded": false,
+      "length_correlation": -0.29939642308790454,
+      "n_pairs": 100.0
+    },
+    "score_high_stakes_anthropic_hh_balanced_domain_adapted_probe_probe_1_2206e4b9.high_stakes__anthropic_hh_balanced__domain_adapted_probe.probability_by_class.high-stakes": {
+      "d_marrow_control": -0.044541754970720944,
+      "d_sol_control": -0.665878991424629,
+      "d_sol_marrow": -0.6209723437790255,
+      "length_confounded": false,
+      "length_correlation": 0.29939642308790454,
+      "n_pairs": 100.0
+    },
+    "score_high_stakes_anthropic_hh_balanced_domain_adapted_probe_probe_1_2206e4b9.high_stakes__anthropic_hh_balanced__domain_adapted_probe.probability_by_class.low-stakes": {
+      "d_marrow_control": 0.044541754970720944,
+      "d_sol_control": 0.665878991424629,
+      "d_sol_marrow": 0.6209723437790255,
+      "length_confounded": false,
+      "length_correlation": -0.29939642308790454,
+      "n_pairs": 100.0
+    },
+    "score_high_stakes_anthropic_hh_balanced_domain_adapted_probe_probe_1_2206e4b9.high_stakes__anthropic_hh_balanced__domain_adapted_probe.score": {
+      "d_marrow_control": -0.2534794650379828,
+      "d_sol_control": 1.7030006488121494,
+      "d_sol_marrow": 2.086660328486933,
+      "length_confounded": false,
+      "length_correlation": -0.3283709934992907,
+      "n_pairs": 100.0
+    },
+    "score_high_stakes_anthropic_hh_balanced_generic_mean_probe_probe_1_c31121f4.high_stakes__anthropic_hh_balanced__generic_mean_probe.probability": {
+      "d_marrow_control": -0.6523547743649302,
+      "d_sol_control": 0.11541098760629617,
+      "d_sol_marrow": 0.7475839822833629,
+      "length_confounded": false,
+      "length_correlation": -0.08814218277904998,
+      "n_pairs": 100.0
+    },
+    "score_high_stakes_anthropic_hh_balanced_generic_mean_probe_probe_1_c31121f4.high_stakes__anthropic_hh_balanced__generic_mean_probe.probability_by_class.high-stakes": {
+      "d_marrow_control": 0.6523547743649302,
+      "d_sol_control": -0.11541098760629617,
+      "d_sol_marrow": -0.7475839822833629,
+      "length_confounded": false,
+      "length_correlation": 0.08814218277904998,
+      "n_pairs": 100.0
+    },
+    "score_high_stakes_anthropic_hh_balanced_generic_mean_probe_probe_1_c31121f4.high_stakes__anthropic_hh_balanced__generic_mean_probe.probability_by_class.low-stakes": {
+      "d_marrow_control": -0.6523547743649302,
+      "d_sol_control": 0.11541098760629617,
+      "d_sol_marrow": 0.7475839822833629,
+      "length_confounded": false,
+      "length_correlation": -0.08814218277904998,
+      "n_pairs": 100.0
+    },
+    "score_high_stakes_anthropic_hh_balanced_generic_mean_probe_probe_1_c31121f4.high_stakes__anthropic_hh_balanced__generic_mean_probe.score": {
+      "d_marrow_control": -1.393022029545495,
+      "d_sol_control": 0.4086210373772375,
+      "d_sol_marrow": 2.108833019416942,
+      "length_confounded": false,
+      "length_correlation": -0.13586226705114718,
+      "n_pairs": 100.0
+    },
+    "score_high_stakes_aya_redteaming_balanced_domain_adapted_probe_probe_1_b709e5ad.high_stakes__aya_redteaming_balanced__domain_adapted_probe.probability": {
+      "d_marrow_control": -0.635897945572321,
+      "d_sol_control": -0.41349825904656673,
+      "d_sol_marrow": 0.2947325824224509,
+      "length_confounded": false,
+      "length_correlation": 0.1074358806427091,
+      "n_pairs": 100.0
+    },
+    "score_high_stakes_aya_redteaming_balanced_domain_adapted_probe_probe_1_b709e5ad.high_stakes__aya_redteaming_balanced__domain_adapted_probe.probability_by_class.high-stakes": {
+      "d_marrow_control": 0.635897945572321,
+      "d_sol_control": 0.41349825904656673,
+      "d_sol_marrow": -0.2947325824224509,
+      "length_confounded": false,
+      "length_correlation": -0.10743588064270908,
+      "n_pairs": 100.0
+    },
+    "score_high_stakes_aya_redteaming_balanced_domain_adapted_probe_probe_1_b709e5ad.high_stakes__aya_redteaming_balanced__domain_adapted_probe.probability_by_class.low-stakes": {
+      "d_marrow_control": -0.635897945572321,
+      "d_sol_control": -0.41349825904656673,
+      "d_sol_marrow": 0.2947325824224509,
+      "length_confounded": false,
+      "length_correlation": 0.1074358806427091,
+      "n_pairs": 100.0
+    },
+    "score_high_stakes_aya_redteaming_balanced_domain_adapted_probe_probe_1_b709e5ad.high_stakes__aya_redteaming_balanced__domain_adapted_probe.score": {
+      "d_marrow_control": -1.3864213555801508,
+      "d_sol_control": -0.6858400420101006,
+      "d_sol_marrow": 0.7013109446003831,
+      "length_confounded": false,
+      "length_correlation": 0.11321707108079816,
+      "n_pairs": 100.0
+    },
+    "score_high_stakes_finance_cfpb_domain_adapted_probe_probe_1_bb998787.high_stakes__finance_cfpb__domain_adapted_probe.probability": {
+      "d_marrow_control": -0.5311261755209395,
+      "d_sol_control": 0.5591341157435175,
+      "d_sol_marrow": 0.9559530081788299,
+      "length_confounded": false,
+      "length_correlation": -0.2520270500268061,
+      "n_pairs": 100.0
+    },
+    "score_high_stakes_finance_cfpb_domain_adapted_probe_probe_1_bb998787.high_stakes__finance_cfpb__domain_adapted_probe.probability_by_class.high-stakes": {
+      "d_marrow_control": 0.5311261755209395,
+      "d_sol_control": -0.5591341157435175,
+      "d_sol_marrow": -0.9559530081788299,
+      "length_confounded": false,
+      "length_correlation": 0.2520270500268061,
+      "n_pairs": 100.0
+    },
+    "score_high_stakes_finance_cfpb_domain_adapted_probe_probe_1_bb998787.high_stakes__finance_cfpb__domain_adapted_probe.probability_by_class.low-stakes": {
+      "d_marrow_control": -0.5311261755209395,
+      "d_sol_control": 0.5591341157435175,
+      "d_sol_marrow": 0.9559530081788299,
+      "length_confounded": false,
+      "length_correlation": -0.2520270500268061,
+      "n_pairs": 100.0
+    },
+    "score_high_stakes_finance_cfpb_domain_adapted_probe_probe_1_bb998787.high_stakes__finance_cfpb__domain_adapted_probe.score": {
+      "d_marrow_control": -0.994419217162162,
+      "d_sol_control": 1.7168369082691983,
+      "d_sol_marrow": 2.6675929633207365,
+      "length_confounded": false,
+      "length_correlation": -0.3345676949585016,
+      "n_pairs": 100.0
+    },
+    "score_high_stakes_finance_cfpb_finance_baseline_mean_probe_probe_1_f625de85.high_stakes__finance_cfpb__finance_baseline_mean_probe.probability": {
+      "d_marrow_control": -0.5127417930381983,
+      "d_sol_control": 0.38871566876677194,
+      "d_sol_marrow": 0.7925388184495934,
+      "length_confounded": false,
+      "length_correlation": -0.20190199026778582,
+      "n_pairs": 100.0
+    },
+    "score_high_stakes_finance_cfpb_finance_baseline_mean_probe_probe_1_f625de85.high_stakes__finance_cfpb__finance_baseline_mean_probe.probability_by_class.high-stakes": {
+      "d_marrow_control": 0.5127417930381983,
+      "d_sol_control": -0.38871566876677194,
+      "d_sol_marrow": -0.7925388184495934,
+      "length_confounded": false,
+      "length_correlation": 0.2019019902677858,
+      "n_pairs": 100.0
+    },
+    "score_high_stakes_finance_cfpb_finance_baseline_mean_probe_probe_1_f625de85.high_stakes__finance_cfpb__finance_baseline_mean_probe.probability_by_class.low-stakes": {
+      "d_marrow_control": -0.5127417930381983,
+      "d_sol_control": 0.38871566876677194,
+      "d_sol_marrow": 0.7925388184495934,
+      "length_confounded": false,
+      "length_correlation": -0.20190199026778582,
+      "n_pairs": 100.0
+    },
+    "score_high_stakes_finance_cfpb_finance_baseline_mean_probe_probe_1_f625de85.high_stakes__finance_cfpb__finance_baseline_mean_probe.score": {
+      "d_marrow_control": -0.8828941011974586,
+      "d_sol_control": 1.0588688699883972,
+      "d_sol_marrow": 2.2179377265955718,
+      "length_confounded": false,
+      "length_correlation": -0.2755714156897179,
+      "n_pairs": 100.0
+    },
+    "score_high_stakes_finance_cfpb_generic_mean_probe_probe_1_b0a85399.high_stakes__finance_cfpb__generic_mean_probe.probability": {
+      "d_marrow_control": -0.5127417930381983,
+      "d_sol_control": 0.38871566876677194,
+      "d_sol_marrow": 0.7925388184495934,
+      "length_confounded": false,
+      "length_correlation": -0.20190199026778582,
+      "n_pairs": 100.0
+    },
+    "score_high_stakes_finance_cfpb_generic_mean_probe_probe_1_b0a85399.high_stakes__finance_cfpb__generic_mean_probe.probability_by_class.high-stakes": {
+      "d_marrow_control": 0.5127417930381983,
+      "d_sol_control": -0.38871566876677194,
+      "d_sol_marrow": -0.7925388184495934,
+      "length_confounded": false,
+      "length_correlation": 0.2019019902677858,
+      "n_pairs": 100.0
+    },
+    "score_high_stakes_finance_cfpb_generic_mean_probe_probe_1_b0a85399.high_stakes__finance_cfpb__generic_mean_probe.probability_by_class.low-stakes": {
+      "d_marrow_control": -0.5127417930381983,
+      "d_sol_control": 0.38871566876677194,
+      "d_sol_marrow": 0.7925388184495934,
+      "length_confounded": false,
+      "length_correlation": -0.20190199026778582,
+      "n_pairs": 100.0
+    },
+    "score_high_stakes_finance_cfpb_generic_mean_probe_probe_1_b0a85399.high_stakes__finance_cfpb__generic_mean_probe.score": {
+      "d_marrow_control": -0.8828941011974586,
+      "d_sol_control": 1.0588688699883972,
+      "d_sol_marrow": 2.2179377265955718,
+      "length_confounded": false,
+      "length_correlation": -0.2755714156897179,
+      "n_pairs": 100.0
+    },
+    "score_high_stakes_mental_health_balanced_domain_adapted_probe_probe_1_167a0b0d.high_stakes__mental_health_balanced__domain_adapted_probe.probability": {
+      "d_marrow_control": -0.9,
+      "d_sol_control": -0.5366274489185905,
+      "d_sol_marrow": 0.45333725150242166,
+      "length_confounded": false,
+      "length_correlation": 0.16888036279759341,
+      "n_pairs": 100.0
+    },
+    "score_high_stakes_mental_health_balanced_domain_adapted_probe_probe_1_167a0b0d.high_stakes__mental_health_balanced__domain_adapted_probe.probability_by_class.high-stakes": {
+      "d_marrow_control": 0.9,
+      "d_sol_control": 0.5366274489185905,
+      "d_sol_marrow": -0.45333725150242166,
+      "length_confounded": false,
+      "length_correlation": -0.16888036279759341,
+      "n_pairs": 100.0
+    },
+    "score_high_stakes_mental_health_balanced_domain_adapted_probe_probe_1_167a0b0d.high_stakes__mental_health_balanced__domain_adapted_probe.probability_by_class.low-stakes": {
+      "d_marrow_control": -0.9,
+      "d_sol_control": -0.5366274489185905,
+      "d_sol_marrow": 0.45333725150242166,
+      "length_confounded": false,
+      "length_correlation": 0.16888036279759341,
+      "n_pairs": 100.0
+    },
+    "score_high_stakes_mental_health_balanced_domain_adapted_probe_probe_1_167a0b0d.high_stakes__mental_health_balanced__domain_adapted_probe.score": {
+      "d_marrow_control": -1.899498410782016,
+      "d_sol_control": -0.8937192844847532,
+      "d_sol_marrow": 1.4713931965879432,
+      "length_confounded": false,
+      "length_correlation": 0.12746524254518815,
+      "n_pairs": 100.0
+    },
+    "score_high_stakes_mt_balanced_domain_adapted_probe_probe_1_4fb322bc.high_stakes__mt_balanced__domain_adapted_probe.probability": {
+      "d_marrow_control": -0.6669210834585517,
+      "d_sol_control": -0.21777393130171369,
+      "d_sol_marrow": 0.5437961803049794,
+      "length_confounded": false,
+      "length_correlation": 0.032204768941358215,
+      "n_pairs": 100.0
+    },
+    "score_high_stakes_mt_balanced_domain_adapted_probe_probe_1_4fb322bc.high_stakes__mt_balanced__domain_adapted_probe.probability_by_class.high-stakes": {
+      "d_marrow_control": 0.6669210834585517,
+      "d_sol_control": 0.21777393130171369,
+      "d_sol_marrow": -0.5437961803049794,
+      "length_confounded": false,
+      "length_correlation": -0.032204768941358215,
+      "n_pairs": 100.0
+    },
+    "score_high_stakes_mt_balanced_domain_adapted_probe_probe_1_4fb322bc.high_stakes__mt_balanced__domain_adapted_probe.probability_by_class.low-stakes": {
+      "d_marrow_control": -0.6669210834585517,
+      "d_sol_control": -0.21777393130171369,
+      "d_sol_marrow": 0.5437961803049794,
+      "length_confounded": false,
+      "length_correlation": 0.032204768941358215,
+      "n_pairs": 100.0
+    },
+    "score_high_stakes_mt_balanced_domain_adapted_probe_probe_1_4fb322bc.high_stakes__mt_balanced__domain_adapted_probe.score": {
+      "d_marrow_control": -1.2751669418048823,
+      "d_sol_control": -0.25345896864247586,
+      "d_sol_marrow": 1.2924023440534416,
+      "length_confounded": false,
+      "length_correlation": -0.010699456418151662,
+      "n_pairs": 100.0
+    },
+    "score_high_stakes_mt_balanced_generic_mean_probe_probe_1_84281953.high_stakes__mt_balanced__generic_mean_probe.probability": {
+      "d_marrow_control": -0.6523547743649302,
+      "d_sol_control": 0.11541098760629617,
+      "d_sol_marrow": 0.7475839822833629,
+      "length_confounded": false,
+      "length_correlation": -0.08814218277904998,
+      "n_pairs": 100.0
+    },
+    "score_high_stakes_mt_balanced_generic_mean_probe_probe_1_84281953.high_stakes__mt_balanced__generic_mean_probe.probability_by_class.high-stakes": {
+      "d_marrow_control": 0.6523547743649302,
+      "d_sol_control": -0.11541098760629617,
+      "d_sol_marrow": -0.7475839822833629,
+      "length_confounded": false,
+      "length_correlation": 0.08814218277904998,
+      "n_pairs": 100.0
+    },
+    "score_high_stakes_mt_balanced_generic_mean_probe_probe_1_84281953.high_stakes__mt_balanced__generic_mean_probe.probability_by_class.low-stakes": {
+      "d_marrow_control": -0.6523547743649302,
+      "d_sol_control": 0.11541098760629617,
+      "d_sol_marrow": 0.7475839822833629,
+      "length_confounded": false,
+      "length_correlation": -0.08814218277904998,
+      "n_pairs": 100.0
+    },
+    "score_high_stakes_mt_balanced_generic_mean_probe_probe_1_84281953.high_stakes__mt_balanced__generic_mean_probe.score": {
+      "d_marrow_control": -1.393022029545495,
+      "d_sol_control": 0.4086210373772375,
+      "d_sol_marrow": 2.108833019416942,
+      "length_confounded": false,
+      "length_correlation": -0.13586226705114718,
+      "n_pairs": 100.0
+    },
+    "score_high_stakes_mts_balanced_domain_adapted_probe_probe_1_a0e26444.high_stakes__mts_balanced__domain_adapted_probe.probability": {
+      "d_marrow_control": -0.6985465501174903,
+      "d_sol_control": -0.4830189816694122,
+      "d_sol_marrow": 0.2947421778456314,
+      "length_confounded": false,
+      "length_correlation": 0.1588760433551432,
+      "n_pairs": 100.0
+    },
+    "score_high_stakes_mts_balanced_domain_adapted_probe_probe_1_a0e26444.high_stakes__mts_balanced__domain_adapted_probe.probability_by_class.high-stakes": {
+      "d_marrow_control": 0.6985465501174903,
+      "d_sol_control": 0.48301898166941226,
+      "d_sol_marrow": -0.2947421778456314,
+      "length_confounded": false,
+      "length_correlation": -0.1588760433551432,
+      "n_pairs": 100.0
+    },
+    "score_high_stakes_mts_balanced_domain_adapted_probe_probe_1_a0e26444.high_stakes__mts_balanced__domain_adapted_probe.probability_by_class.low-stakes": {
+      "d_marrow_control": -0.6985465501174903,
+      "d_sol_control": -0.4830189816694122,
+      "d_sol_marrow": 0.2947421778456314,
+      "length_confounded": false,
+      "length_correlation": 0.1588760433551432,
+      "n_pairs": 100.0
+    },
+    "score_high_stakes_mts_balanced_domain_adapted_probe_probe_1_a0e26444.high_stakes__mts_balanced__domain_adapted_probe.score": {
+      "d_marrow_control": -1.2467521846884324,
+      "d_sol_control": -1.1063378052909354,
+      "d_sol_marrow": 0.39819028115205246,
+      "length_confounded": false,
+      "length_correlation": 0.20231694620751528,
+      "n_pairs": 100.0
+    },
+    "score_high_stakes_mts_balanced_generic_mean_probe_probe_1_38cac2e9.high_stakes__mts_balanced__generic_mean_probe.probability": {
+      "d_marrow_control": -0.6523547743649302,
+      "d_sol_control": 0.11541098760629617,
+      "d_sol_marrow": 0.7475839822833629,
+      "length_confounded": false,
+      "length_correlation": -0.08814218277904998,
+      "n_pairs": 100.0
+    },
+    "score_high_stakes_mts_balanced_generic_mean_probe_probe_1_38cac2e9.high_stakes__mts_balanced__generic_mean_probe.probability_by_class.high-stakes": {
+      "d_marrow_control": 0.6523547743649302,
+      "d_sol_control": -0.11541098760629617,
+      "d_sol_marrow": -0.7475839822833629,
+      "length_confounded": false,
+      "length_correlation": 0.08814218277904998,
+      "n_pairs": 100.0
+    },
+    "score_high_stakes_mts_balanced_generic_mean_probe_probe_1_38cac2e9.high_stakes__mts_balanced__generic_mean_probe.probability_by_class.low-stakes": {
+      "d_marrow_control": -0.6523547743649302,
+      "d_sol_control": 0.11541098760629617,
+      "d_sol_marrow": 0.7475839822833629,
+      "length_confounded": false,
+      "length_correlation": -0.08814218277904998,
+      "n_pairs": 100.0
+    },
+    "score_high_stakes_mts_balanced_generic_mean_probe_probe_1_38cac2e9.high_stakes__mts_balanced__generic_mean_probe.score": {
+      "d_marrow_control": -1.393022029545495,
+      "d_sol_control": 0.4086210373772375,
+      "d_sol_marrow": 2.108833019416942,
+      "length_confounded": false,
+      "length_correlation": -0.13586226705114718,
+      "n_pairs": 100.0
+    },
+    "score_high_stakes_synthetic_test_generic_mean_probe_probe_1_bfdeeb8f.high_stakes__synthetic_test__generic_mean_probe.probability": {
+      "d_marrow_control": -0.6523547743649302,
+      "d_sol_control": 0.11541098760629617,
+      "d_sol_marrow": 0.7475839822833629,
+      "length_confounded": false,
+      "length_correlation": -0.08814218277904998,
+      "n_pairs": 100.0
+    },
+    "score_high_stakes_synthetic_test_generic_mean_probe_probe_1_bfdeeb8f.high_stakes__synthetic_test__generic_mean_probe.probability_by_class.high-stakes": {
+      "d_marrow_control": 0.6523547743649302,
+      "d_sol_control": -0.11541098760629617,
+      "d_sol_marrow": -0.7475839822833629,
+      "length_confounded": false,
+      "length_correlation": 0.08814218277904998,
+      "n_pairs": 100.0
+    },
+    "score_high_stakes_synthetic_test_generic_mean_probe_probe_1_bfdeeb8f.high_stakes__synthetic_test__generic_mean_probe.probability_by_class.low-stakes": {
+      "d_marrow_control": -0.6523547743649302,
+      "d_sol_control": 0.11541098760629617,
+      "d_sol_marrow": 0.7475839822833629,
+      "length_confounded": false,
+      "length_correlation": -0.08814218277904998,
+      "n_pairs": 100.0
+    },
+    "score_high_stakes_synthetic_test_generic_mean_probe_probe_1_bfdeeb8f.high_stakes__synthetic_test__generic_mean_probe.score": {
+      "d_marrow_control": -1.393022029545495,
+      "d_sol_control": 0.4086210373772375,
+      "d_sol_marrow": 2.108833019416942,
+      "length_confounded": false,
+      "length_correlation": -0.13586226705114718,
+      "n_pairs": 100.0
+    },
+    "score_high_stakes_toolace_balanced_domain_adapted_probe_probe_1_42149475.high_stakes__toolace_balanced__domain_adapted_probe.probability": {
+      "d_marrow_control": -0.6513721780101713,
+      "d_sol_control": 0.19302026462673175,
+      "d_sol_marrow": 0.7807439724226893,
+      "length_confounded": false,
+      "length_correlation": -0.11419573166194613,
+      "n_pairs": 100.0
+    },
+    "score_high_stakes_toolace_balanced_domain_adapted_probe_probe_1_42149475.high_stakes__toolace_balanced__domain_adapted_probe.probability_by_class.high-stakes": {
+      "d_marrow_control": 0.6513721780101713,
+      "d_sol_control": -0.19302026462673175,
+      "d_sol_marrow": -0.7807439724226893,
+      "length_confounded": false,
+      "length_correlation": 0.11419573166194613,
+      "n_pairs": 100.0
+    },
+    "score_high_stakes_toolace_balanced_domain_adapted_probe_probe_1_42149475.high_stakes__toolace_balanced__domain_adapted_probe.probability_by_class.low-stakes": {
+      "d_marrow_control": -0.6513721780101713,
+      "d_sol_control": 0.19302026462673175,
+      "d_sol_marrow": 0.7807439724226893,
+      "length_confounded": false,
+      "length_correlation": -0.11419573166194613,
+      "n_pairs": 100.0
+    },
+    "score_high_stakes_toolace_balanced_domain_adapted_probe_probe_1_42149475.high_stakes__toolace_balanced__domain_adapted_probe.score": {
+      "d_marrow_control": -1.5133335686851828,
+      "d_sol_control": 0.4414389306009991,
+      "d_sol_marrow": 2.2423713072953926,
+      "length_confounded": false,
+      "length_correlation": -0.13327122374765574,
+      "n_pairs": 100.0
+    }
+  },
+  "reasons": [],
+  "separated_surfaces": [
+    "score_assistant_axis.assistant_axis.score",
+    "score_assistant_axis.assistant_axis_trait__analytical.score",
+    "score_assistant_axis.assistant_axis_trait__decisive.score",
+    "score_emotions.emotion__afraid.score",
+    "score_emotions.emotion__amazed.score",
+    "score_emotions.emotion__amused.score",
+    "score_emotions.emotion__anxious.score",
+    "score_emotions.emotion__aroused.score",
+    "score_emotions.emotion__ashamed.score",
+    "score_emotions.emotion__astonished.score",
+    "score_emotions.emotion__awestruck.score",
+    "score_emotions.emotion__bewildered.score",
+    "score_emotions.emotion__bored.score",
+    "score_emotions.emotion__contemptuous.score",
+    "score_emotions.emotion__dependent.score",
+    "score_emotions.emotion__disdainful.score",
+    "score_emotions.emotion__disturbed.score",
+    "score_emotions.emotion__docile.score",
+    "score_emotions.emotion__dumbstruck.score",
+    "score_emotions.emotion__energized.score",
+    "score_emotions.emotion__enraged.score",
+    "score_emotions.emotion__envious.score",
+    "score_emotions.emotion__furious.score",
+    "score_emotions.emotion__gloomy.score",
+    "score_emotions.emotion__grateful.score",
+    "score_emotions.emotion__greedy.score",
+    "score_emotions.emotion__grief_stricken.score",
+    "score_emotions.emotion__grumpy.score",
+    "score_emotions.emotion__guilty.score",
+    "score_emotions.emotion__hateful.score",
+    "score_emotions.emotion__heartbroken.score",
+    "score_emotions.emotion__hostile.score",
+    "score_emotions.emotion__hurt.score",
+    "score_emotions.emotion__indignant.score",
+    "score_emotions.emotion__infatuated.score",
+    "score_emotions.emotion__irate.score",
+    "score_emotions.emotion__irritated.score",
+    "score_emotions.emotion__jealous.score",
+    "score_emotions.emotion__kind.score",
+    "score_emotions.emotion__listless.score",
+    "score_emotions.emotion__loving.score",
+    "score_emotions.emotion__mad.score",
+    "score_emotions.emotion__melancholy.score",
+    "score_emotions.emotion__miserable.score",
+    "score_emotions.emotion__mystified.score",
+    "score_emotions.emotion__nervous.score",
+    "score_emotions.emotion__obstinate.score",
+    "score_emotions.emotion__optimistic.score",
+    "score_emotions.emotion__outraged.score",
+    "score_emotions.emotion__overwhelmed.score",
+    "score_emotions.emotion__paranoid.score",
+    "score_emotions.emotion__pleased.score",
+    "score_emotions.emotion__puzzled.score",
+    "score_emotions.emotion__rattled.score",
+    "score_emotions.emotion__resigned.score",
+    "score_emotions.emotion__restless.score",
+    "score_emotions.emotion__sad.score",
+    "score_emotions.emotion__safe.score",
+    "score_emotions.emotion__satisfied.score",
+    "score_emotions.emotion__scared.score",
+    "score_emotions.emotion__scornful.score",
+    "score_emotions.emotion__self_confident.score",
+    "score_emotions.emotion__serene.score",
+    "score_emotions.emotion__shaken.score",
+    "score_emotions.emotion__shocked.score",
+    "score_emotions.emotion__skeptical.score",
+    "score_emotions.emotion__sleepy.score",
+    "score_emotions.emotion__sluggish.score",
+    "score_emotions.emotion__smug.score",
+    "score_emotions.emotion__sorry.score",
+    "score_emotions.emotion__spiteful.score",
+    "score_emotions.emotion__stuck.score",
+    "score_emotions.emotion__surprised.score",
+    "score_emotions.emotion__suspicious.score",
+    "score_emotions.emotion__thankful.score",
+    "score_emotions.emotion__tired.score",
+    "score_emotions.emotion__tormented.score",
+    "score_emotions.emotion__trapped.score",
+    "score_emotions.emotion__triumphant.score",
+    "score_emotions.emotion__troubled.score",
+    "score_emotions.emotion__uneasy.score",
+    "score_emotions.emotion__unsettled.score",
+    "score_emotions.emotion__upset.score",
+    "score_emotions.emotion__valiant.score",
+    "score_emotions.emotion__vengeful.score",
+    "score_emotions.emotion__vigilant.score",
+    "score_emotions.emotion__vindictive.score",
+    "score_emotions.emotion__vulnerable.score",
+    "score_emotions.emotion__weary.score",
+    "score_emotions.emotion__worried.score",
+    "score_high_stakes_anthropic_hh_balanced_generic_mean_probe_probe_1_c31121f4.high_stakes__anthropic_hh_balanced__generic_mean_probe.score",
+    "score_high_stakes_finance_cfpb_domain_adapted_probe_probe_1_bb998787.high_stakes__finance_cfpb__domain_adapted_probe.probability",
+    "score_high_stakes_finance_cfpb_domain_adapted_probe_probe_1_bb998787.high_stakes__finance_cfpb__domain_adapted_probe.probability_by_class.high-stakes",
+    "score_high_stakes_finance_cfpb_domain_adapted_probe_probe_1_bb998787.high_stakes__finance_cfpb__domain_adapted_probe.probability_by_class.low-stakes",
+    "score_high_stakes_finance_cfpb_domain_adapted_probe_probe_1_bb998787.high_stakes__finance_cfpb__domain_adapted_probe.score",
+    "score_high_stakes_finance_cfpb_finance_baseline_mean_probe_probe_1_f625de85.high_stakes__finance_cfpb__finance_baseline_mean_probe.score",
+    "score_high_stakes_finance_cfpb_generic_mean_probe_probe_1_b0a85399.high_stakes__finance_cfpb__generic_mean_probe.score",
+    "score_high_stakes_mental_health_balanced_domain_adapted_probe_probe_1_167a0b0d.high_stakes__mental_health_balanced__domain_adapted_probe.score",
+    "score_high_stakes_mt_balanced_generic_mean_probe_probe_1_84281953.high_stakes__mt_balanced__generic_mean_probe.score",
+    "score_high_stakes_mts_balanced_generic_mean_probe_probe_1_38cac2e9.high_stakes__mts_balanced__generic_mean_probe.score",
+    "score_high_stakes_synthetic_test_generic_mean_probe_probe_1_bfdeeb8f.high_stakes__synthetic_test__generic_mean_probe.score",
+    "score_high_stakes_toolace_balanced_domain_adapted_probe_probe_1_42149475.high_stakes__toolace_balanced__domain_adapted_probe.score"
+  ],
+  "top_surfaces": [
+    "score_emotions.emotion__obstinate.score",
+    "score_emotions.emotion__playful.score",
+    "score_assistant_axis.assistant_axis.score",
+    "score_emotions.emotion__hurt.score",
+    "score_emotions.emotion__self_confident.score"
+  ]
+}

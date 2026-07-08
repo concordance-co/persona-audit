@@ -16,11 +16,12 @@ from typing import Any, Mapping, Sequence
 REFRESH_SECONDS = 60
 
 _DECISION_STATUS = {
+    "DONE": ("good", "&#10003;", "complete: dataset frozen and saved"),
     "RUN_ITERATION": ("good", "&#9654;", "running mechanically"),
     "FINISH_ITERATION": ("good", "&#9654;", "finishing pipeline tail"),
     "WAIT_RUNNING": ("warning", "&#8987;", "iteration in progress"),
     "ESCALATE_PROMPT": ("serious", "&#9998;", "prompt revision needed"),
-    "HOLD_HUMAN": ("critical", "&#9995;", "parked for human"),
+    "HOLD_HUMAN": ("warning", "&#9995;", "waiting on human curation"),
 }
 
 _CSS = """
@@ -247,6 +248,20 @@ def render(
     confounded = (separation or {}).get("confounded_surfaces") or []
     reasons = (separation or {}).get("reasons") or []
 
+    # A frozen state is success, not a block: show it as DONE, not "needs human".
+    frozen = bool(state.get("frozen"))
+    display_action = "DONE" if frozen else str(decision.get("action"))
+
+    done_banner = ""
+    if frozen:
+        done_banner = (
+            '<div class="card wide" style="border-color:var(--good)">'
+            '<h2 style="color:var(--good)">&#10003; Complete</h2>'
+            '<div class="reason">The hill climb is finished. Prompts are frozen and the demo '
+            "dataset is saved under <code>data/demo/stage2/</code>. The loop intentionally "
+            "stops here; nothing further is required.</div></div>"
+        )
+
     run_panel = ""
     if active_run:
         run_panel = (
@@ -303,8 +318,10 @@ def render(
   <div class="tile"><div class="label">Transcript QA</div>
     <div class="value">{'<span class="pass">pass</span>' if last.get("qa_passed") else '<span class="fail">fail</span>'}</div>
     <div class="hint">{_esc(", ".join((qa or {}).get("failing_tracks") or []) or "all tracks clean")}</div></div>
-  <div class="tile"><div class="label">Decision</div><div class="value" style="font-size:15px">{_status_chip(str(decision.get("action")))}</div></div>
+  <div class="tile"><div class="label">Decision</div><div class="value" style="font-size:15px">{_status_chip(display_action)}</div></div>
 </div>
+
+{done_banner}
 
 {run_panel}
 
