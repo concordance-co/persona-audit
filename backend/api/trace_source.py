@@ -55,6 +55,8 @@ def _load_persona_demo_traces() -> tuple[list[AuditTrace], str, str]:
 
     Fully local, no database: the demo traces are already in AuditTrace shape
     under data/demo/stage2/ (override the path with BEHAVIOR_AUDIT_DEMO_PRODUCT_TRACES).
+    Each trace is then mapped onto the product's generic grouping dimensions so
+    the existing UI browses by persona; see _shape_persona_demo_trace.
     """
 
     from backend.demo.normalize import load_traces
@@ -65,8 +67,36 @@ def _load_persona_demo_traces() -> tuple[list[AuditTrace], str, str]:
     path = Path(configured) if configured else REPO_ROOT / "data" / "demo" / "stage2" / "normalized_traces.json"
     if not path.exists():
         return [], PERSONA_DEMO_PROVIDER_ID, PERSONA_DEMO_SOURCE
-    traces = load_traces(path)
+    traces = [_shape_persona_demo_trace(trace) for trace in load_traces(path)]
     return traces, PERSONA_DEMO_PROVIDER_ID, PERSONA_DEMO_SOURCE
+
+
+def _shape_persona_demo_trace(trace: AuditTrace) -> AuditTrace:
+    """Project persona labels onto the dimensions the analytics layer groups by.
+
+    The product-analytics layer reads ``domain``, ``user_id`` and the
+    ``metadata`` keys ``workflow``/``final_action`` (backend/api/audit_data.py),
+    never ``labels``. The demo's persona is in ``labels['track']``, so without
+    this mapping every track collapses into one segment and Marrow/control are
+    unreachable. This is presentation glue only — the shipped dataset keeps the
+    persona in ``labels`` and is not modified.
+
+    - domain / user_id / final_action -> track (Sol / Marrow / control), so the
+      "Track" axis, the persona cohort page, and the sessions ``?domain=`` filter
+      all split three ways.
+    - workflow -> decision_type, so the "decision type by persona" matrix carries
+      the real decision types (the delta cards need >=7 per group and stay sparse
+      at 3 traces/type, but the matrix has no such gate).
+    - task_id is left as the seed id so the same seed answered by each track still
+      groups as a paired/repeated task.
+    """
+
+    from dataclasses import replace
+
+    track = str(trace.labels.get("track") or "unknown")
+    decision_type = str(trace.labels.get("decision_type") or "unknown")
+    metadata = {**dict(trace.metadata), "workflow": decision_type, "final_action": track}
+    return replace(trace, domain=track, user_id=track, metadata=metadata)
 
 
 def traces_from_neon_rows(

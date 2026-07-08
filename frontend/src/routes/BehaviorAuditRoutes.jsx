@@ -1508,7 +1508,10 @@ function SessionAnalyticsGrid({ analytics, scoreDetails, projectionThresholds })
 
 function Overview() {
   const [provider] = useProviderSelection()
-  const [segmentMode, setSegmentMode] = useState('workflow')
+  // Persona demo leads with the Track lens (Sol/Marrow/control), which has
+  // ample n per group; its decision-type segments are 3 traces each and read
+  // better as per-trace labels than as aggregate deltas.
+  const [segmentMode, setSegmentMode] = useState(provider === 'persona_demo' ? 'final_action' : 'workflow')
   const [selectedPersona, setSelectedPersona] = useState('sycophantic')
   const [selectedEmotion, setSelectedEmotion] = useState('fear_and_overwhelm')
   const [showAllEmotions, setShowAllEmotions] = useState(false)
