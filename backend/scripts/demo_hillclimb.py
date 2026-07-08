@@ -305,10 +305,20 @@ def cmd_evaluate(_: argparse.Namespace) -> int:
             "score_run_id": score_run.get("run_id"),
         }
     )
-    if report["passed"] and state.stage >= 2:
+    froze = report["passed"] and state.stage >= 2 and not state.frozen
+    if froze:
         state.frozen = True
-        print("Stage 2 gate passed: prompts are now FROZEN. Scale with volume, not tuning.")
+        print("Stage 2 gate passed: prompts are now FROZEN. Dataset is demo-ready.")
     save_state(state)
+
+    if froze:
+        _write_snapshot(
+            f"stage{state.stage}",
+            note=(
+                f"Auto-saved on Stage {state.stage} freeze: separation and QA gates passed, "
+                "prompts frozen. Shippable demo dataset."
+            ),
+        )
 
     print(f"objective (mean |d| top surfaces): {report['objective']:.3f}")
     print(f"separated surfaces: {report['separated_surfaces']}")
@@ -498,19 +508,20 @@ _SNAPSHOT_FILES = (
 )
 
 
-def cmd_snapshot(ns: argparse.Namespace) -> int:
+def _write_snapshot(label: str, note: str = "") -> Path:
     """Freeze the current validated artifacts into a committed fallback under data/demo/.
 
     The live artifacts under artifacts/demo_hillclimb/ are gitignored and get
     overwritten by the next iteration; this copies them (plus the exact prompt
     texts and a manifest) into a tracked, self-describing directory so a stage
-    can be restored or shipped without re-running Modal.
+    can be restored or shipped without re-running Modal. Called by `snapshot`
+    and automatically on the Stage 2 freeze.
     """
 
     from datetime import datetime, timezone
 
     state = load_state()
-    dest = SNAPSHOT_ROOT / ns.label
+    dest = SNAPSHOT_ROOT / label
     dest.mkdir(parents=True, exist_ok=True)
 
     copied: list[str] = []
@@ -532,10 +543,11 @@ def cmd_snapshot(ns: argparse.Namespace) -> int:
     qa = _read_json(QA_REPORT_PATH) if QA_REPORT_PATH.exists() else {}
     last = state.history[-1] if state.history else {}
     manifest = {
-        "label": ns.label,
+        "label": label,
         "created_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "stage": state.stage,
         "iteration": state.iteration,
+        "frozen": state.frozen,
         "prompt_ids": dict(state.prompt_ids),
         "prompts": prompts,
         "objective": last.get("objective"),
@@ -544,7 +556,7 @@ def cmd_snapshot(ns: argparse.Namespace) -> int:
         "gates": separation.get("gates"),
         "top_surfaces": separation.get("top_surfaces"),
         "files": copied,
-        "note": ns.note,
+        "note": note,
         "provenance": "Generated via backend/scripts/demo_hillclimb.py on Modal; see docs/demo-hillclimb.md.",
     }
     _write_json(dest / "manifest.json", manifest)
@@ -552,19 +564,24 @@ def cmd_snapshot(ns: argparse.Namespace) -> int:
     obj = manifest["objective"]
     obj_text = f"{obj:.3f}" if isinstance(obj, (int, float)) else "n/a"
     readme = (
-        f"# Demo dataset snapshot: {ns.label}\n\n"
+        f"# Demo dataset snapshot: {label}\n\n"
         f"Frozen {manifest['created_at']} from stage {state.stage}, iteration {state.iteration}.\n\n"
         f"- Separation gate: {'PASS' if separation.get('passed') else 'FAIL'} (objective {obj_text})\n"
         f"- Transcript QA: {'PASS' if qa.get('passed') else 'FAIL'}\n"
         f"- Prompts: {', '.join(f'{t}={p}' for t, p in sorted(state.prompt_ids.items()))}\n\n"
-        f"{ns.note + chr(10) + chr(10) if ns.note else ''}"
+        f"{note + chr(10) + chr(10) if note else ''}"
         "`normalized_traces.json` is the shippable dataset (AuditTrace rows). "
         "`manifest.json` carries the exact prompt texts and gate results. "
         "Regenerate with `demo_hillclimb run-iteration`; see docs/demo-hillclimb.md.\n"
     )
     (dest / "README.md").write_text(readme, encoding="utf-8")
 
-    print(f"snapshot '{ns.label}' -> {dest} ({len(copied)} artifacts + manifest + README)")
+    print(f"snapshot '{label}' -> {dest} ({len(copied)} artifacts + manifest + README)")
+    return dest
+
+
+def cmd_snapshot(ns: argparse.Namespace) -> int:
+    _write_snapshot(ns.label, ns.note)
     return 0
 
 
@@ -578,6 +595,15 @@ def cmd_tick(_: argparse.Namespace) -> int:
 
     state, decision = _checkin(log=True)
     _write_report()
+
+    # Safety net: a frozen stage must always have its committed snapshot, even
+    # if the run that froze it missed the auto-save (e.g. older code in-flight).
+    if state.frozen and not (SNAPSHOT_ROOT / f"stage{state.stage}").exists():
+        _write_snapshot(
+            f"stage{state.stage}",
+            note=f"Backfilled snapshot for frozen Stage {state.stage} (auto-save safety net).",
+        )
+
     action = decision["action"]
     try:
         if action == "WAIT_RUNNING":

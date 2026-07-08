@@ -53,8 +53,9 @@ def decide(
         }
     if state.frozen:
         return _hold(
-            "Stage 2 passed and prompts are frozen. Stage 3 is human work: curate the "
-            "100-200 seed set (ESConv + manual tier 3), then "
+            "Done: Stage 2 passed, prompts are frozen, and the demo dataset is saved "
+            "under data/demo/stage2/ (25 conversations x 3 tracks). The loop stops here. "
+            "Stage 3 is optional volume only (more seeds, same frozen prompts): "
             f"`{_DRIVER} generate --stage 3 --allow-frozen`."
         )
     if last is None and not has_transcripts:
