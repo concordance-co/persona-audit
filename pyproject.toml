@@ -1,0 +1,49 @@
+[project]
+name = "persona-audit"
+version = "0.1.0"
+description = "Persona and behavior audit dashboard for LLM conversation traces, built on xenon (activation scoring via pipelines_v2 on Modal)."
+readme = "README.md"
+requires-python = ">=3.13"
+license = "MIT"
+dependencies = [
+    "fastapi>=0.115.0",
+    "numpy>=1.26.0",
+    "psycopg[binary]>=3.2.0",
+    "scikit-learn>=1.5",
+    "uvicorn[standard]>=0.30.0",
+    "xenon[modal] @ git+https://github.com/concordance-co/xenon.git@ee1fa286a4df5a374edbc268ba2a72f17f7911e6",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0",
+    "ruff>=0.8",
+]
+
+[tool.uv]
+package = false
+
+
+[build-system]
+requires = ["setuptools>=77", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["backend*", "factory*"]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
+markers = [
+    "modal_live: opt-in tests that execute real GPU runs on Modal (costs money; excluded by default and never run in push/PR CI)",
+]
+addopts = "-m 'not modal_live'"
+
+[tool.ruff]
+line-length = 120
+target-version = "py313"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "W", "UP"]
+# Long literal strings (SQL, UI copy) are allowed; ruff format owns code layout.
+ignore = ["E501"]

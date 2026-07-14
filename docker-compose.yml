@@ -1,0 +1,23 @@
+# Dev-only local Postgres. The persona/persona credentials match the example
+# DSN in README.md and are for localhost development only — never expose this
+# service or reuse these credentials in a shared deployment.
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: persona_audit
+      POSTGRES_USER: persona
+      POSTGRES_PASSWORD: persona
+    ports:
+      - "5432:5432"
+    volumes:
+      - persona_audit_postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U persona -d persona_audit"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  persona_audit_postgres:
+

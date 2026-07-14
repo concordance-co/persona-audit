@@ -1,0 +1,35 @@
+name: Modal live tests
+
+# Maintainer-triggered only. These tests execute real GPU workloads on Modal
+# (Llama-3.3-70B scoring and generation) and cost real money per run. They
+# never run on push or pull_request.
+on:
+  workflow_dispatch:
+
+jobs:
+  modal-live:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: persona-audit
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: persona-audit
+      - name: Check out xenon (source mount for the Modal runner)
+        uses: actions/checkout@v4
+        with:
+          repository: concordance-co/xenon
+          path: xenon
+      - uses: astral-sh/setup-uv@v5
+        with:
+          python-version: "3.13"
+      - run: uv sync --dev
+      - name: Run live Modal tests
+        env:
+          MODAL_TOKEN_ID: ${{ secrets.MODAL_TOKEN_ID }}
+          MODAL_TOKEN_SECRET: ${{ secrets.MODAL_TOKEN_SECRET }}
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+          PERSONA_AUDIT_LIVE_TESTS: "1"
+          XENON_WORKSPACE_ROOT: ${{ github.workspace }}/xenon
+        run: uv run pytest -m modal_live -v
