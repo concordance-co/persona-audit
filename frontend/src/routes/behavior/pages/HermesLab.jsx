@@ -128,6 +128,10 @@ function HermesTodayTab({ data }) {
           </div>
           <div className="hermes-tell-foot">{data.tell?.status || 'waiting_for_reasoning_scores'}</div>
         </div>
+        <p className="muted-copy compact">
+          Trait-by-trait character analysis of this corpus lives on the shared{' '}
+          <Link to={providerPath('/character', 'hermes')}>Character page</Link>.
+        </p>
       </div>
       <div className="card enterprise-panel hermes-panel">
         <div className="card-heading-row">

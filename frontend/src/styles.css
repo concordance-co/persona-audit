@@ -742,11 +742,17 @@ a:hover {
   color: var(--audit-text-secondary);
 }
 
+.findings-strip {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  margin-bottom: var(--space-md);
+}
+
 .findings-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
   gap: var(--space-md);
-  margin-bottom: var(--space-md);
 }
 
 .finding-card {
@@ -765,6 +771,44 @@ a:hover {
 .finding-card:hover {
   border-color: var(--surface-border-strong);
   box-shadow: 0 2px 8px rgba(8, 8, 8, 0.12);
+}
+
+.finding-card.lead {
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-lg);
+  padding: var(--space-md) var(--space-lg);
+  border-left: 3px solid var(--brand-red);
+}
+
+.finding-card.lead .finding-text {
+  max-width: 860px;
+  font-family: var(--font-display);
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.finding-cta {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: var(--radius-pill);
+  background: var(--brand-ink);
+  color: var(--brand-white);
+  font-family: var(--font-mono);
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+}
+
+.finding-card.lead:hover .finding-cta {
+  background: var(--audit-accent-hover);
 }
 
 .finding-kicker {
@@ -787,6 +831,13 @@ a:hover {
   font-family: var(--font-mono);
   font-size: var(--font-size-xs);
   color: var(--audit-text-secondary);
+}
+
+@media (max-width: 900px) {
+  .finding-card.lead {
+    flex-direction: column;
+    align-items: flex-start;
+  }
 }
 
 .overview-hero {

@@ -133,6 +133,43 @@ def test_behavior_audit_sessions_include_drilldown_payloads() -> None:
         assert {"session", "expected_mean", "global_percentile"}.issubset(deviation)
 
 
+def test_behavior_audit_sessions_carry_ranked_activation_signals() -> None:
+    """Contract for the session `signal` block: shape, ordering, fallback.
+
+    The persona demo ships bundled scores, so it deterministically exercises
+    the scored path; the default provider (which may lack scores in a smoke
+    environment) pins the null-signal fallback.
+    """
+
+    response = client.get("/api/audit/sessions", params={"provider": "persona_demo"})
+    assert response.status_code == 200
+    sessions = response.json()
+    assert sessions
+    assert all("signal" in session for session in sessions)
+
+    signals = [session["signal"] for session in sessions if session["signal"] is not None]
+    assert signals, "persona demo ships bundled scores; expected non-null signals"
+    for signal in signals:
+        assert {"outlier_score", "family", "vector", "coordinate", "z", "polarity", "baseline_scope"}.issubset(signal)
+        assert signal["family"] in {"persona", "emotion_cluster"}
+        assert signal["polarity"] in {"low", "high"}
+        assert float(signal["outlier_score"]) >= 0.0
+
+    # Worst-first: rows sort by outlier score descending, null signals last.
+    scores = [float((session["signal"] or {}).get("outlier_score") or 0.0) for session in sessions]
+    assert scores == sorted(scores, reverse=True)
+
+    # Filters preserve the contract (and the ordering within the subset).
+    filtered = client.get("/api/audit/sessions", params={"provider": "persona_demo", "risk": "low"}).json()
+    assert all("signal" in session for session in filtered)
+    filtered_scores = [float((session["signal"] or {}).get("outlier_score") or 0.0) for session in filtered]
+    assert filtered_scores == sorted(filtered_scores, reverse=True)
+
+    # Every provider serves the key even when its corpus has no scores.
+    default_rows = client.get("/api/audit/sessions").json()
+    assert all("signal" in session for session in default_rows)
+
+
 def test_behavior_audit_users_group_tau2_sessions() -> None:
     response = client.get("/api/audit/users")
     assert response.status_code == 200

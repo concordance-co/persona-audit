@@ -14,22 +14,29 @@ import { tailModeHeadline } from './Tail.jsx'
 import { getCharacter, getProductAnalytics, getTail } from '../../../api'
 import { providerPath, useProviderSelection } from '../layout'
 import { useAsyncResource } from '../../../hooks/useAsyncResource'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
-function FindingCard({ kicker, metric, to, onClick, children }) {
+// One promoted lead finding (the dataset's exemplar) plus at most three
+// compact cards — headline hierarchy, not headline overload.
+function FindingCard({ finding, lead = false }) {
+  const className = `card finding-card${lead ? ' lead' : ''}`
   const body = (
     <>
-      <div className="finding-kicker">{kicker}</div>
-      <p className="finding-text">{children}</p>
-      {metric && <div className="finding-metric">{metric}</div>}
+      <div>
+        <div className="finding-kicker">{finding.kicker}</div>
+        <p className="finding-text">{finding.body}</p>
+        {finding.metric && <div className="finding-metric">{finding.metric}</div>}
+      </div>
+      {lead && finding.cta && <span className="finding-cta">{finding.cta} <span aria-hidden="true">→</span></span>}
     </>
   )
-  if (to) return <Link className="card finding-card" to={to}>{body}</Link>
-  return <button type="button" className="card finding-card" onClick={onClick}>{body}</button>
+  if (finding.to) return <Link className={className} to={finding.to}>{body}</Link>
+  return <button type="button" className={className} onClick={finding.onClick}>{body}</button>
 }
 
-// One sentence per deep-dive page, each composed with the same helpers those
-// pages use, so the strip and the destination always agree.
+// One finding per deep-dive page, each composed with the same helpers those
+// pages use, so the strip and the destination always agree. Builders return
+// plain objects so the render step can promote the provider's exemplar.
 function characterFinding(char, provider) {
   if (!char) return null
   const meta = char.meta || {}
@@ -39,26 +46,36 @@ function characterFinding(char, provider) {
       .map(report => ({ track: trackTitle(report.track), higher: trackSignatureSummary(report).higher.slice(0, 2) }))
       .filter(part => part.higher.length)
     if (!parts.length) return null
-    return (
-      <FindingCard key="character" kicker="Character" metric="vs control on the same seeds" to={providerPath('/character', provider)}>
-        {parts.map((part, index) => (
-          <span key={part.track}>
-            {index > 0 && ' '}
-            <strong>{part.track}</strong> adds {joinTraits(part.higher.map(p => p.label))}.
-          </span>
-        ))}
-      </FindingCard>
-    )
+    return {
+      key: 'character',
+      kicker: 'Character',
+      metric: 'vs control on the same seeds',
+      to: providerPath('/character', provider),
+      cta: 'Compare persona character',
+      body: parts.map((part, index) => (
+        <span key={part.track}>
+          {index > 0 && ' '}
+          <strong>{part.track}</strong> adds {joinTraits(part.higher.map(p => p.label))}.
+        </span>
+      )),
+    }
   }
   if (meta.self_reference) return null
   const { distinctive, suppressed } = signatureSummary(char.points || [])
   if (!distinctive.length) return null
-  return (
-    <FindingCard key="character" kicker="Character" metric={`vs ${meta.reference_provider} reference`} to={providerPath('/character', provider)}>
-      Markedly more <strong>{joinTraits(distinctive.map(p => p.label))}</strong>
-      {suppressed.length > 0 && <> — and less {joinTraits(suppressed.map(p => p.label))}</>}.
-    </FindingCard>
-  )
+  return {
+    key: 'character',
+    kicker: 'Character',
+    metric: `vs ${meta.reference_provider} reference`,
+    to: providerPath('/character', provider),
+    cta: 'Open Character',
+    body: (
+      <>
+        Markedly more <strong>{joinTraits(distinctive.map(p => p.label))}</strong>
+        {suppressed.length > 0 && <> — and less {joinTraits(suppressed.map(p => p.label))}</>}.
+      </>
+    ),
+  }
 }
 
 function tailFinding(tail, provider) {
@@ -66,17 +83,19 @@ function tailFinding(tail, provider) {
   if (!modes.length) return null
   const concerning = modes.filter(mode => mode.concerning)
   const lead = concerning[0] || modes[0]
-  return (
-    <FindingCard
-      key="tail"
-      kicker="Tail risk"
-      metric={`${modes.length} extreme patterns · ${concerning.length} concerning`}
-      to={providerPath('/tail', provider)}
-    >
-      {concerning.length ? 'Worst recurring pattern: ' : 'Most common extreme: '}
-      <strong>{tailModeHeadline(lead)}</strong>.
-    </FindingCard>
-  )
+  return {
+    key: 'tail',
+    kicker: 'Tail risk',
+    metric: `${modes.length} extreme patterns · ${concerning.length} concerning`,
+    to: providerPath('/tail', provider),
+    cta: 'Inspect the tail',
+    body: (
+      <>
+        {concerning.length ? 'Worst recurring pattern: ' : 'Most common extreme: '}
+        <strong>{tailModeHeadline(lead)}</strong>.
+      </>
+    ),
+  }
 }
 
 function triageFinding(outliers, provider) {
@@ -91,40 +110,60 @@ function triageFinding(outliers, provider) {
     baseline_scope: row.baseline_scope || 'workflow',
     source: 'overview_findings',
   }), provider)
-  return (
-    <FindingCard key="triage" kicker="Start reading" metric={`aggregate score ${fmt(row.outlier_score)}`} to={link}>
-      <strong>{row.trace_id}</strong> is the strongest outlier: {deviationLabel(top)}, {fmt(top.z)}σ from its segment baseline.
-    </FindingCard>
-  )
+  return {
+    key: 'triage',
+    kicker: 'Start reading',
+    metric: `aggregate score ${fmt(row.outlier_score)}`,
+    to: link,
+    cta: 'Open the session',
+    body: (
+      <>
+        <strong>{row.trace_id}</strong> is the strongest outlier: {deviationLabel(top)}, {fmt(top.z)}σ from its segment baseline.
+      </>
+    ),
+  }
 }
 
-function separationFinding(comparison, onShowSeparation) {
+function separationFinding(comparison, provider) {
   const lead = (comparison?.vectors || [])[0]
   const eta = Number(lead?.eta_squared)
   if (!lead || !Number.isFinite(eta)) return null
-  return (
-    <FindingCard key="separation" kicker="Persona separation" metric={`η² ${fmt(eta)}`} onClick={onShowSeparation}>
-      Which persona is speaking explains <strong>{pct(eta)}</strong> of the spread in {vectorLabel(lead.vector)}.
-    </FindingCard>
-  )
+  return {
+    key: 'separation',
+    kicker: 'Persona separation',
+    metric: `η² ${fmt(eta)}`,
+    to: providerPath('/character', provider),
+    cta: 'Compare persona character',
+    body: (
+      <>
+        Which persona is speaking explains <strong>{pct(eta)}</strong> of the spread in {vectorLabel(lead.vector)} — the section below compares the tracks trait by trait.
+      </>
+    ),
+  }
 }
 
 function outcomeFinding(rows) {
   const lead = (rows || [])[0]
   if (!lead) return null
   const more = Number(lead.delta_fail_minus_pass) > 0
-  return (
-    <FindingCard
-      key="outcome"
-      kicker="Outcome link"
-      metric={`Cohen's d ${fmt(Math.abs(Number(lead.cohen_d_fail_vs_pass)))}`}
-      onClick={() => document.getElementById('outcome-behavior')?.scrollIntoView({ behavior: 'smooth' })}
-    >
-      Failed <strong>{segmentLabel(lead.workflow, 'workflow')}</strong> sessions read {more ? 'more' : 'less'}{' '}
-      <strong>{vectorLabel(lead.vector)}</strong> than passing ones.
-    </FindingCard>
-  )
+  return {
+    key: 'outcome',
+    kicker: 'Outcome link',
+    metric: `Cohen's d ${fmt(Math.abs(Number(lead.cohen_d_fail_vs_pass)))}`,
+    onClick: () => document.getElementById('outcome-behavior')?.scrollIntoView({ behavior: 'smooth' }),
+    cta: 'See outcome coupling',
+    body: (
+      <>
+        Failed <strong>{segmentLabel(lead.workflow, 'workflow')}</strong> sessions read {more ? 'more' : 'less'}{' '}
+        <strong>{vectorLabel(lead.vector)}</strong> than passing ones.
+      </>
+    ),
+  }
 }
+
+// Which finding leads for each dataset — its exemplar, the thing this seed
+// uniquely demonstrates. Everything else renders as a compact card (max 3).
+const LEAD_FINDING_BY_PROVIDER = { persona_demo: 'separation', tau2: 'outcome', hermes: 'character' }
 
 // The tau2 exemplar: the computed-but-previously-hidden coupling between
 // behavior and task outcome. Only renders when a corpus carries rewards.
@@ -175,12 +214,20 @@ function Overview() {
   // its decision-type segments are 3 traces each and get dropped by the
   // min-n gate on segment deltas.
   const [segmentMode, setSegmentMode] = useState(provider === 'persona_demo' ? 'final_action' : 'workflow')
-  // Every dataset lands on the same view (Behavior Baselines); Persona
-  // Separation is an opt-in mode that only lights up for track corpora.
-  const [viewMode, setViewMode] = useState('baselines')
+  // Approved exception to the shared-defaults rule (July 2026 focus-group
+  // merge): the persona demo leads with its paired-track separation view —
+  // the one thing that corpus uniquely demonstrates. Every other dataset
+  // lands on Behavior Baselines, and the mode stays visible everywhere.
+  const [viewMode, setViewMode] = useState(provider === 'persona_demo' ? 'separation' : 'baselines')
   const [selectedTrait, setSelectedTrait] = useState('sycophantic')
   const [showAllEmotions, setShowAllEmotions] = useState(false)
   const [queueFamily, setQueueFamily] = useState('persona')
+  // Provider switches don't remount this page, so the per-provider defaults
+  // must be re-applied when the lens changes.
+  useEffect(() => {
+    setSegmentMode(provider === 'persona_demo' ? 'final_action' : 'workflow')
+    setViewMode(provider === 'persona_demo' ? 'separation' : 'baselines')
+  }, [provider])
   const { data, error } = useAsyncResource(() => getProductAnalytics(provider), [provider])
   // Character and Tail are cached server-side; their headlines feed the
   // findings strip. A failure here only hides the strip's card.
@@ -238,10 +285,12 @@ function Overview() {
   const findings = [
     characterFinding(characterData, provider),
     tailFinding(tailData, provider),
-    separationAvailable ? separationFinding(trackComparison, () => setViewMode('separation')) : null,
+    separationAvailable ? separationFinding(trackComparison, provider) : null,
     outcomeFinding(outcomeRows),
     triageFinding(persona.outliers, provider),
   ].filter(Boolean)
+  const leadFinding = findings.find(finding => finding.key === LEAD_FINDING_BY_PROVIDER[provider]) || findings[0]
+  const compactFindings = findings.filter(finding => finding !== leadFinding).slice(0, 3)
 
   return (
     <div>
@@ -267,9 +316,14 @@ function Overview() {
         </div>
       </div>
 
-      {findings.length > 0 && (
-        <div className="findings-grid" aria-label="What stands out">
-          {findings}
+      {leadFinding && (
+        <div className="findings-strip" aria-label="What stands out">
+          <FindingCard finding={leadFinding} lead />
+          {compactFindings.length > 0 && (
+            <div className="findings-grid">
+              {compactFindings.map(finding => <FindingCard key={finding.key} finding={finding} />)}
+            </div>
+          )}
         </div>
       )}
 

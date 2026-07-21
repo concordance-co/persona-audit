@@ -39,6 +39,11 @@ src/styles.css                   all styling (plain CSS, class-per-component)
    apply to the active dataset render disabled with a hint (`ModeSwitch` in
    `behavior/shared.jsx`) — driven by descriptor features and payload signals
    (`meta.tracks`, `meta.self_reference`), never by forked component trees.
+   One deliberate exception (approved in the July 2026 focus-group merge):
+   the persona demo's Overview *defaults* to its Persona Separation view —
+   the exemplar that corpus exists to demonstrate — while every other
+   dataset defaults to Behavior Baselines. The mode switch itself stays
+   identical everywhere; only the starting position differs.
 5. Score-derived views key off `score_family` + `coordinate` on score rows;
    the shaping lives in `behavior/helpers.js`.
 
