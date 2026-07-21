@@ -1,9 +1,8 @@
-// Overview/system chart components (baselines, trace-order series, outliers).
-// Moved verbatim from BehaviorAuditRoutes.jsx (pure reorganization).
+// Overview chart components (baseline heatmap, outlier previews).
 import { CHART_GRID_COLOR, fmt } from './helpers'
 import { CartesianGrid, Legend, Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
-import { Fragment, useState } from 'react'
-import { InfoHint, actionLabel, compactMetricNumber, compactNumber, deltaColor, deviationLabel, emotionClusterDetail, rowsByGroupAndVector, sessionFocusLink, topVectorsByDelta, vectorLabel, zColor, zValue } from './shared.jsx'
+import { Fragment } from 'react'
+import { InfoHint, actionLabel, deviationLabel, rowsByGroupAndVector, sessionFocusLink, topVectorsByDelta, vectorLabel, zColor, zValue } from './shared.jsx'
 import { Link } from 'react-router-dom'
 import { providerPath } from './layout'
 
@@ -15,61 +14,6 @@ function PersonaMetric({ label, value, detail, compact = false }) {
         <InfoHint text={detail} />
       </div>
       <div className={`persona-metric-value${compact ? ' compact-value' : ''}`}>{value}</div>
-    </div>
-  )
-}
-
-function TraceOrderSeriesChart({ rows, vectors }) {
-  const defaultVectors = ['assertive', 'decisive', 'cautious', 'conciliatory']
-  const availableVectors = vectors?.length ? vectors : defaultVectors
-  const [selectedVectors, setSelectedVectors] = useState(defaultVectors.filter(vector => availableVectors.includes(vector)))
-  const chartRows = rows.map(row => ({
-    ...row,
-    displayLabel: `${row.label} ${row.mode}`,
-  }))
-
-  function toggleVector(vector) {
-    setSelectedVectors(current => (
-      current.includes(vector)
-        ? current.filter(item => item !== vector)
-        : [...current, vector]
-    ))
-  }
-
-  return (
-    <div className="card full-width-card">
-      <div className="vector-toggle-row">
-        {availableVectors.map(vector => (
-          <label key={vector} className="vector-toggle">
-            <input type="checkbox" checked={selectedVectors.includes(vector)} onChange={() => toggleVector(vector)} />
-            <span>{vectorLabel(vector)}</span>
-          </label>
-        ))}
-      </div>
-      <ResponsiveContainer width="100%" height={340}>
-        <LineChart data={chartRows}>
-          <CartesianGrid strokeDasharray="3 3" stroke={CHART_GRID_COLOR} />
-          <XAxis dataKey="displayLabel" tick={{ fontSize: 10 }} interval={0} angle={-18} textAnchor="end" height={76} />
-          <YAxis domain={[0, 1]} tick={{ fontSize: 11 }} />
-          <Tooltip formatter={(value, name) => [fmt(value), vectorLabel(name)]} labelFormatter={(label, items) => {
-            const row = items?.[0]?.payload
-            return row ? `${row.label}: ${row.mode} segment, source n=${row.source_n}` : label
-          }} />
-          <Legend wrapperStyle={{ fontSize: 11 }} />
-          {selectedVectors.map(vector => (
-            <Line
-              key={`simulated-${vector}`}
-              type="monotone"
-              dataKey={vector}
-              connectNulls
-              stroke={deltaColor(vector)}
-              strokeWidth={2}
-              dot={{ r: 3 }}
-              isAnimationActive={false}
-            />
-          ))}
-        </LineChart>
-      </ResponsiveContainer>
     </div>
   )
 }
@@ -120,19 +64,6 @@ function OutlierTraceChart({ trace, provider }) {
       {topDeviation && (
         <div className="stat-label">Largest turn deviation: {deviationLabel(topDeviation)} z={fmt(topDeviation.z)}</div>
       )}
-    </div>
-  )
-}
-
-function SystemStateCards({ data, reward, scoreRowCount, providerInfo = {} }) {
-  const families = data.score_source?.families || []
-  const familyCount = families.length
-  const cohortLabel = providerInfo.cohort_plural_label || 'cohorts'
-  return (
-    <div className="stats-grid enterprise-stats">
-      <PersonaMetric label="Traces" value={compactMetricNumber(reward.trace_count || data.trace_count)} detail={`${compactNumber(data.user_count)} ${cohortLabel.toLowerCase()}`} />
-      <PersonaMetric label="Turns" value={compactMetricNumber(reward.assistant_turn_count)} detail="Assistant turns with turn-level scores." />
-      <PersonaMetric label="Score Rows" value={compactMetricNumber(scoreRowCount)} detail={`${familyCount} score families loaded.`} />
     </div>
   )
 }
@@ -196,47 +127,4 @@ function BaselineHeatmap({ title, badge, description, rows = [], vectors = [], g
   )
 }
 
-function GlobalBaselineStrip({ title, description, rows = [], vectors = [] }) {
-  const vectorSet = new Set(vectors)
-  const visibleRows = rows
-    .filter(row => vectorSet.has(row.vector))
-    .sort((a, b) => vectors.indexOf(a.vector) - vectors.indexOf(b.vector))
-  if (!visibleRows.length) return null
-  return (
-    <div className="card global-baseline-strip">
-      <div className="card-heading-row compact-heading">
-        <div className="card-title">{title}</div>
-        <InfoHint text={description || 'Raw/oriented global means. Heatmap cells below are z-deltas from these baselines.'} />
-      </div>
-      <div className="baseline-strip-grid">
-        {visibleRows.map(row => {
-          const clusterDetail = emotionClusterDetail(row)
-          return (
-            <div
-              key={row.vector}
-              className={`baseline-strip-item${clusterDetail ? ' has-popover' : ''}`}
-              data-vector={row.vector}
-              aria-label={clusterDetail?.summary}
-              tabIndex={clusterDetail ? 0 : undefined}
-            >
-              <span>{vectorLabel(row.vector)}</span>
-              <strong>{fmt(row.basis_mean)}</strong>
-              <small>{row.basis_sd != null ? `sd ${fmt(row.basis_sd)} · ` : ''}n={compactNumber(row.n)}</small>
-              {clusterDetail && (
-                <div className="baseline-popover" role="tooltip">
-                  <div className="baseline-popover-title">{clusterDetail.label}</div>
-                  <div className="baseline-popover-subtitle">{clusterDetail.members.length} scored emotion concepts</div>
-                  <div className="baseline-popover-list">
-                    {clusterDetail.members.map(member => <span key={member}>{member}</span>)}
-                  </div>
-                </div>
-              )}
-            </div>
-          )
-        })}
-      </div>
-    </div>
-  )
-}
-
-export { BaselineHeatmap, GlobalBaselineStrip, OutlierTraceChart, PersonaMetric, SystemStateCards, TraceOrderSeriesChart }
+export { BaselineHeatmap, OutlierTraceChart, PersonaMetric }
