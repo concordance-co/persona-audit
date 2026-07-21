@@ -12,7 +12,7 @@ import { useEffect, useMemo, useState } from 'react'
 
 function reviewReason(session) {
   const flags = Number(session.flag_count || 0)
-  if (session.risk_band === 'high') return flags ? `High risk · ${flags} flags` : 'High-risk behavior'
+  if (session.risk_band === 'high') return flags ? `High risk · ${flags} flag${flags === 1 ? '' : 's'}` : 'High-risk behavior'
   if (flags > 0) return `${flags} lexical flag${flags === 1 ? '' : 's'}`
   return 'No lexical flags'
 }
