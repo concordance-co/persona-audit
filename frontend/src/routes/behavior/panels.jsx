@@ -4,7 +4,7 @@ import { Bar, BarChart, CartesianGrid, Cell, Legend, Line, LineChart, ReferenceL
 import { CHART_GRID_COLOR, CHART_ZERO_COLOR, EMOTION_CLUSTER_BY_CONCEPT, EMOTION_SPECTRUM_X_AXIS_STEP, HIGHLIGHT_COLOR, NEGATIVE_COLOR, POSITIVE_COLOR, average, axisIdForCoordinate, buildCoordinateTrajectoryRows, buildEmotionSpectrumData, buildSessionProjectionDistributions, coordinateTitle, defaultTrajectoryCoordinates, emotionConceptKey, evalLabelTitle, familyTitle, fmt, groupByValue, pct, pct1, smoothLinePath, trajectoryCoordinateOptions } from './helpers'
 import { Link } from 'react-router-dom'
 import { PersonaMetric } from './charts.jsx'
-import { actionLabel, clamp01, compactNumber, deviationLabel, scopeLabel, sessionFocusLink, taskGroupLabel, vectorLabel, zValue } from './shared.jsx'
+import { InfoHint, actionLabel, clamp01, compactNumber, deviationLabel, scopeLabel, sessionFocusLink, taskGroupLabel, vectorLabel, zValue } from './shared.jsx'
 import { providerPath } from './layout'
 import { useEffect, useMemo, useState } from 'react'
 
@@ -21,9 +21,9 @@ function TraitDetailChart({ title, readGuide, rows = [], vector, groupLabel = va
   if (!chartRows.length) return null
   return (
     <div className="trait-detail-chart">
-      <div className="card-title">{title}</div>
-      <div className="chart-read-guide">
-        {readGuide || 'Bars show z-score vs global baseline. 0 is typical; positive is higher than baseline; negative is lower.'}
+      <div className="card-title">
+        {title}{' '}
+        <InfoHint text={readGuide || 'Bars show z-score vs global baseline. 0 is typical; positive is higher than baseline; negative is lower.'} />
       </div>
       <ResponsiveContainer width="100%" height={300}>
         <BarChart data={chartRows} margin={{ top: 8, right: 12, left: 0, bottom: 68 }}>
@@ -55,39 +55,45 @@ function InvestigationQueue({ outliers = [], family = 'all', onFamily, provider 
     persona: outliers.filter(row => row.family === 'persona').length,
     emotion_cluster: outliers.filter(row => row.family === 'emotion_cluster').length,
   }
+  // A family toggle with an empty side is noise; so is a Family column when
+  // every visible row would say the same thing.
+  const bothFamilies = counts.persona > 0 && counts.emotion_cluster > 0
   const filtered = outliers.filter(row => {
-    if (family === 'all') return true
+    if (!bothFamilies || family === 'all') return true
     return row.family === family
   })
   return (
     <div className="card enterprise-panel">
       <div className="card-heading-row">
         <div>
-          <div className="card-title">Investigation Queue</div>
-          <p className="muted-copy compact">Primary z is how far the named trait sits from its baseline for this trace (+ above, − below). Aggregate combines every tracked trait in that workflow into one overall deviation. Sorted by largest aggregate.</p>
+          <div className="card-title">
+            Investigation Queue{' '}
+            <InfoHint text="Primary z is how far the named trait sits from its baseline for this trace (+ above, − below). Aggregate combines every tracked trait in that workflow into one overall deviation. Sorted by largest aggregate. Click a trace to inspect the signal turn by turn." />
+          </div>
         </div>
-        <div className="compact-toggle">
-          {[
-            ['persona', `Persona ${counts.persona}`],
-            ['emotion_cluster', `Emotion ${counts.emotion_cluster}`],
-            ['all', `All ${counts.all}`],
-          ].map(([id, label]) => (
-            <button key={id} type="button" className={family === id ? 'active' : ''} onClick={() => onFamily(id)}>
-              {label}
-            </button>
-          ))}
-        </div>
+        {bothFamilies && (
+          <div className="compact-toggle">
+            {[
+              ['persona', `Persona ${counts.persona}`],
+              ['emotion_cluster', `Emotion ${counts.emotion_cluster}`],
+              ['all', `All ${counts.all}`],
+            ].map(([id, label]) => (
+              <button key={id} type="button" className={family === id ? 'active' : ''} onClick={() => onFamily(id)}>
+                {label}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
       <table>
         <thead>
           <tr>
             <th>Trace</th>
             <th>Segment</th>
-            <th>Family</th>
+            {bothFamilies && <th>Family</th>}
             <th>Primary signal</th>
             <th className="num">Primary z</th>
             <th className="num">Aggregate</th>
-            <th>Next step</th>
           </tr>
         </thead>
         <tbody>
@@ -105,11 +111,10 @@ function InvestigationQueue({ outliers = [], family = 'all', onFamily, provider 
               <tr key={row.trace_id}>
                 <td><Link to={providerPath(sessionFocusLink(row.trace_id, context), provider)}>{row.trace_id}</Link></td>
                 <td>{taskGroupLabel(row.workflow)} / {actionLabel(row.final_action)}</td>
-                <td>{row.family === 'emotion_cluster' ? 'Emotion' : 'Persona'}</td>
+                {bothFamilies && <td>{row.family === 'emotion_cluster' ? 'Emotion' : 'Persona'}</td>}
                 <td>{deviationLabel(top)}</td>
                 <td className="num">{fmt(top.z)}</td>
                 <td className="num">{fmt(row.outlier_score)}</td>
-                <td><Link to={providerPath(sessionFocusLink(row.trace_id, context), provider)}>Inspect signal</Link></td>
               </tr>
             )
           })}

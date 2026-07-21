@@ -66,6 +66,13 @@ def main() -> None:
     parser.add_argument("--run-table", default=RUN_TABLE)
     parser.add_argument("--score-table", default=SCORE_TABLE)
     parser.add_argument("--local-cache-dir", type=Path, default=SUPPLEMENTAL_SCORE_DIR)
+    parser.add_argument(
+        "--local-cache-families",
+        default="",
+        help="Comma-separated score families to keep in the local cache file "
+        "(e.g. assistant_axis,reasoning_assistant_axis); default keeps all. "
+        "Neon upload always gets every family.",
+    )
     parser.add_argument("--skip-local-cache", action="store_true")
     parser.add_argument("--skip-neon", action="store_true")
     parser.add_argument("--dry-run", action="store_true")
@@ -98,7 +105,17 @@ def main() -> None:
         return
 
     if not args.skip_local_cache:
-        write_local_cache(payload["local_cache"], args.local_cache_dir)
+        local_cache = payload["local_cache"]
+        families = {name.strip() for name in args.local_cache_families.split(",") if name.strip()}
+        if families:
+            # Ship only the compact families (same repo-size reasoning as the
+            # persona-demo cache: emotion families are ~10x the row count).
+            rows = [row for row in local_cache["rows"] if str(row["score_family"]) in families]
+            counts: dict[str, int] = {}
+            for row in rows:
+                counts[str(row["score_family"])] = counts.get(str(row["score_family"]), 0) + 1
+            local_cache = {**local_cache, "rows": rows, "score_family_counts": counts}
+        write_local_cache(local_cache, args.local_cache_dir)
 
     if args.skip_neon:
         return

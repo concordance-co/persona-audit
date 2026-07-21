@@ -77,7 +77,6 @@ function SessionDetail() {
         <details className="session-collapsible">
           <summary>
             <span className="card-title">Additional Trajectory Signals</span>
-            <span className="stat-label">Opt-in multi-signal projection view.</span>
           </summary>
           <SessionTrajectoryChart
             turns={trace.turns}
@@ -92,7 +91,6 @@ function SessionDetail() {
         <details className="session-collapsible">
           <summary>
             <span className="card-title">Emotion Concept Spectrum</span>
-            <span className="stat-label">Research drilldown; collapsed by default.</span>
           </summary>
           <EmotionSpectrumVisualizer turns={trace.turns} details={scoreDetails} />
         </details>
@@ -100,8 +98,7 @@ function SessionDetail() {
 
       <details className="session-collapsible">
         <summary>
-          <span className="card-title">Legacy Session Analytics</span>
-          <span className="stat-label">Global fit and distribution diagnostics.</span>
+          <span className="card-title">Distribution Diagnostics</span>
         </summary>
         <SessionAnalyticsGrid
           analytics={payload.session_analytics}
@@ -141,22 +138,15 @@ function SessionDetail() {
                 </div>
                 <p>{turn.content}</p>
                 <div className="turn-score-strip">
-                  {projectionChips.length > 0 ? (
-                    projectionChips.map(chip => (
-                      <span key={chip.id} className={`score-chip score-${chip.tone}`}>
-                        {chip.label} <strong>{fmt(chip.value)}</strong>
-                      </span>
-                    ))
-                  ) : (
-                    <span className="empty-chip">None</span>
-                  )}
+                  {projectionChips.map(chip => (
+                    <span key={chip.id} className={`score-chip score-${chip.tone}`}>
+                      {chip.label} <strong>{fmt(chip.value)}</strong>
+                    </span>
+                  ))}
                 </div>
                 <div className="tau2-badge-strip turn-eval-strip">
-                  {providerFeatures.show_tau2_eval !== false && labels.length > 0 ? (
-                    labels.map((label, index) => <Tau2Badge key={`${label.kind}-${label.label}-${index}`} label={label} />)
-                  ) : (
-                    <span className="empty-chip">{providerFeatures.show_tau2_eval === false && turn.role === 'assistant' ? 'Scored turn' : 'None'}</span>
-                  )}
+                  {providerFeatures.show_tau2_eval !== false && labels.length > 0 &&
+                    labels.map((label, index) => <Tau2Badge key={`${label.kind}-${label.label}-${index}`} label={label} />)}
                 </div>
               </div>
             )

@@ -22,7 +22,7 @@ def test_core_audit_endpoints_keep_public_shapes() -> None:
         "/api/audit/users": None,
         "/api/audit/character": {"points", "dropped", "meta"},
         "/api/audit/tail": {"modes", "scatter", "meta"},
-        "/api/audit/score-spaces": {"provider", "capture_input", "capture_plan", "spaces"},
+        "/api/audit/score-spaces": {"provider", "capture_input", "capture_plan", "spaces", "descriptor"},
     }
 
     for path, expected_keys in checks.items():

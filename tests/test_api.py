@@ -159,6 +159,12 @@ def test_behavior_audit_score_spaces_expose_real_provider_and_precomputed_assets
     assert payload["provider"]["trace_count"] >= 8
     assert payload["capture_input"]["record_count"] >= payload["provider"]["trace_count"]
 
+    # The registry descriptor rides along so list-only pages can read
+    # feature flags without a dedicated endpoint.
+    assert payload["descriptor"]["id"] == "tau2"
+    assert payload["descriptor"]["features"]["show_reward"] is True
+    assert payload["descriptor"]["features"]["show_track_comparison"] is False
+
     spaces = {space["family"]: space for space in payload["spaces"]}
     assert spaces["assistant_axis"]["status"] == "workflow_ready"
     assert spaces["assistant_axis"]["coordinate_count"] >= 2

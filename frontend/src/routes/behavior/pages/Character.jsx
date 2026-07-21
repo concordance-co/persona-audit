@@ -6,7 +6,7 @@ import { CharacterTrackHeatmap, trackColor, trackTitle } from '../tracks.jsx'
 import { Link } from 'react-router-dom'
 import { getCharacter, getCharacterTrait } from '../../../api'
 import { providerPath, useProviderSelection } from '../layout'
-import { sessionFocusLink } from '../shared.jsx'
+import { InfoHint, ModeSwitch, sessionFocusLink } from '../shared.jsx'
 import { useEffect, useState } from 'react'
 
 function CharacterScatterTooltip({ active, payload }) {
@@ -68,7 +68,7 @@ function CharacterDistribution({ distribution, label }) {
           ) : (
             <>
               <Bar dataKey="reference" name="Reference" fill={CHARACTER_REFERENCE_COLOR} isAnimationActive={false} />
-              <Bar dataKey="audited" name="This model" fill={CHARACTER_PEARL_COLOR} isAnimationActive={false} />
+              <Bar dataKey="audited" name="This model" fill={CHARACTER_AUDITED_COLOR} isAnimationActive={false} />
             </>
           )}
         </BarChart>
@@ -114,7 +114,7 @@ function CharacterDrift({ drift, label }) {
           ) : (
             <>
               <Line type="monotone" dataKey="reference" name="Reference" stroke={CHARACTER_REFERENCE_COLOR} strokeWidth={2} dot={false} isAnimationActive={false} connectNulls />
-              <Line type="monotone" dataKey="audited" name="This model" stroke={CHARACTER_PEARL_COLOR} strokeWidth={2} dot isAnimationActive={false} connectNulls />
+              <Line type="monotone" dataKey="audited" name="This model" stroke={CHARACTER_AUDITED_COLOR} strokeWidth={2} dot isAnimationActive={false} connectNulls />
             </>
           )}
         </LineChart>
@@ -214,7 +214,7 @@ function CharacterDrilldown({ coordinate, provider, point }) {
   )
 }
 
-const CHARACTER_PEARL_COLOR = '#4A6FE0'
+const CHARACTER_AUDITED_COLOR = '#4A6FE0'
 const CHARACTER_REFERENCE_COLOR = '#B8B1AA'
 
 function characterCoord(entry) {
@@ -228,10 +228,27 @@ function joinTraits(labels) {
   return `${lower.slice(0, -1).join(', ')}, and ${lower[lower.length - 1]}`
 }
 
-function CharacterSignature({ points, meta, selected, onSelect }) {
+// Top distinctive / suppressed traits from a classic (reference-relative)
+// point set. Shared with the Report page.
+function signatureSummary(points = []) {
   const byDistinct = [...points].sort((a, b) => b.distinctiveness - a.distinctiveness)
-  const distinctive = byDistinct.filter(p => p.distinctiveness > 0).slice(0, 3)
-  const suppressed = [...points].sort((a, b) => a.distinctiveness - b.distinctiveness).filter(p => p.distinctiveness < 0).slice(0, 2)
+  return {
+    distinctive: byDistinct.filter(p => p.distinctiveness > 0).slice(0, 3),
+    suppressed: [...points].sort((a, b) => a.distinctiveness - b.distinctiveness).filter(p => p.distinctiveness < 0).slice(0, 2),
+  }
+}
+
+// Top raw-delta traits (vs control) from one track report. Shared with Report.
+function trackSignatureSummary(report = {}) {
+  const points = report.points || []
+  return {
+    higher: [...points].sort((a, b) => b.delta - a.delta).filter(p => p.delta > 0).slice(0, 3),
+    lower: [...points].sort((a, b) => a.delta - b.delta).filter(p => p.delta < 0).slice(0, 2),
+  }
+}
+
+function CharacterSignature({ points, meta, selected, onSelect }) {
+  const { distinctive, suppressed } = signatureSummary(points)
 
   const Chip = ({ point, sign }) => (
     <button
@@ -256,14 +273,12 @@ function CharacterSignature({ points, meta, selected, onSelect }) {
       <div className="character-signature-grid">
         <div className="card">
           <div className="card-title">Most characteristic</div>
-          <p className="muted-copy compact">Traits this model shows far more than the reference.</p>
           <div className="character-chip-row">
             {distinctive.length ? distinctive.map(p => <Chip key={p.coordinate} point={p} sign="up" />) : <span className="muted-copy compact">None above reference.</span>}
           </div>
         </div>
         <div className="card">
           <div className="card-title">Most suppressed</div>
-          <p className="muted-copy compact">Traits this model shows less than the reference.</p>
           <div className="character-chip-row">
             {suppressed.length ? suppressed.map(p => <Chip key={p.coordinate} point={p} sign="down" />) : <span className="muted-copy compact">None below reference.</span>}
           </div>
@@ -274,9 +289,7 @@ function CharacterSignature({ points, meta, selected, onSelect }) {
 }
 
 function TrackCharacterSignature({ report, selected, onSelect }) {
-  const points = report.points || []
-  const higher = [...points].sort((a, b) => b.delta - a.delta).filter(p => p.delta > 0).slice(0, 3)
-  const lower = [...points].sort((a, b) => a.delta - b.delta).filter(p => p.delta < 0).slice(0, 2)
+  const { higher, lower } = trackSignatureSummary(report)
   const subject = trackTitle(report.track)
 
   const Chip = ({ point, sign }) => (
@@ -303,14 +316,12 @@ function TrackCharacterSignature({ report, selected, onSelect }) {
       <div className="character-signature-grid">
         <div className="card">
           <div className="card-title">Furthest above control · {subject}</div>
-          <p className="muted-copy compact">Largest positive raw-score deltas vs the control track.</p>
           <div className="character-chip-row">
             {higher.length ? higher.map(p => <Chip key={p.coordinate} point={p} sign="up" />) : <span className="muted-copy compact">None above control.</span>}
           </div>
         </div>
         <div className="card">
           <div className="card-title">Furthest below control · {subject}</div>
-          <p className="muted-copy compact">Largest negative raw-score deltas vs the control track.</p>
           <div className="character-chip-row">
             {lower.length ? lower.map(p => <Chip key={p.coordinate} point={p} sign="down" />) : <span className="muted-copy compact">None below control.</span>}
           </div>
@@ -468,6 +479,7 @@ function TrackCharacterSpectrum({ reports, selected, onSelect }) {
   )
 }
 
+
 function TrackCharacterLevels({ reports, selected, onSelect }) {
   const data = mergeTrackPoints(reports)
     .map(row => ({
@@ -565,7 +577,7 @@ function CharacterFrequency({ points, selected, onSelect }) {
         <Tooltip cursor={{ fill: 'rgba(8,8,8,0.04)' }} content={<CharacterBarTooltip mode="frequency" />} />
         <Legend wrapperStyle={{ fontSize: 11 }} />
         <Bar dataKey="reference_rate" name="Reference" fill={CHARACTER_REFERENCE_COLOR} radius={[0, 3, 3, 0]} isAnimationActive={false} />
-        <Bar dataKey="frequency" name="This model" fill={CHARACTER_PEARL_COLOR} radius={[0, 3, 3, 0]} isAnimationActive={false} cursor="pointer" onClick={entry => onSelect(characterCoord(entry))}>
+        <Bar dataKey="frequency" name="This model" fill={CHARACTER_AUDITED_COLOR} radius={[0, 3, 3, 0]} isAnimationActive={false} cursor="pointer" onClick={entry => onSelect(characterCoord(entry))}>
           {data.map(point => (
             <Cell
               key={point.coordinate}
@@ -633,25 +645,44 @@ function CharacterPortrait({ points, selected, onSelect }) {
   )
 }
 
+// Every dataset sees the same six modes; availability, not the component
+// tree, changes with the data. The classic trio reads the pooled points
+// (frequency x distinctiveness vs the reference corpus); the track trio
+// overlays per-track raw scores against control and only lights up when
+// the corpus ships paired persona tracks.
 const CHARACTER_MODES = [
   ['portrait', 'Portrait', 'Two measurements of one space: frequency on x, signed distinctiveness on y. Above the line is distinctive, below is suppressed. Click a trait to drill in.'],
   ['signature', 'Signature', 'Traits ranked by signed lift over the reference — the model’s characteristic signature at a glance. Click a bar to drill in.'],
   ['frequency', 'Frequency', 'How often each trait is present in this model vs the reference. Frequency keeps distinctiveness honest. Click a bar to drill in.'],
+  ['track_portrait', 'Track portrait', 'Two raw measurements of one space: how strongly the trait reads (x, mean raw score) and how far that sits from control (y, Δ raw score). The zero line is control. Click a trait to drill in.'],
+  ['track_deltas', 'Track deltas', 'Traits ranked by raw-score delta vs control — each persona’s signature in score units. Click a bar to drill in.'],
+  ['track_levels', 'Track levels', 'Mean raw score per trait for each persona, with control alongside in the same units. Click a bar to drill in.'],
 ]
 
-// Track mode swaps every measure to raw score units: no present-rates, no
-// threshold-crossing counts — mean raw scores and their deltas vs control.
-const TRACK_CHARACTER_MODES = [
-  ['portrait', 'Portrait', 'Two raw measurements of one space: how strongly the trait reads (x, mean raw score) and how far that sits from control (y, Δ raw score). The zero line is control. Click a trait to drill in.'],
-  ['signature', 'Deltas', 'Traits ranked by raw-score delta vs control — each persona’s signature in score units. Click a bar to drill in.'],
-  ['frequency', 'Levels', 'Mean raw score per trait for each persona, with control alongside in the same units. Click a bar to drill in.'],
-]
+const TRACK_MODE_IDS = new Set(['track_portrait', 'track_deltas', 'track_levels'])
+
+function characterModeStates({ hasTracks }) {
+  return CHARACTER_MODES.map(([id, label, caption]) => {
+    if (TRACK_MODE_IDS.has(id) && !hasTracks) {
+      return {
+        id,
+        label,
+        caption,
+        disabled: true,
+        disabledHint: 'This corpus is a single track — nothing to overlay. The Persona demo pairs Sol, Marrow, and control over the same seeds.',
+      }
+    }
+    return { id, label, caption, disabled: false }
+  })
+}
 
 function Character() {
   const [provider] = useProviderSelection()
   const [payload, setPayload] = useState(null)
   const [error, setError] = useState(null)
   const [selected, setSelected] = useState(null)
+  // Every dataset defaults to the same view (Portrait); switching data
+  // sources must never change what the page looks like, only what's in it.
   const [mode, setMode] = useState('portrait')
 
   useEffect(() => {
@@ -659,6 +690,7 @@ function Character() {
     setPayload(null)
     setError(null)
     setSelected(null)
+    setMode('portrait')
     getCharacter(provider)
       .then(data => { if (active) setPayload(data) })
       .catch(err => { if (active) setError(String(err)) })
@@ -678,32 +710,34 @@ function Character() {
   const meta = payload.meta || {}
   // Track-comparison corpora (the persona demo) use the control track as the
   // reference corpus: Sol and Marrow each get the full Character treatment
-  // against control, and the views overlay both personas for direct contrast.
+  // against control, and the track modes overlay both personas for contrast.
   const trackReports = payload.track_reports || []
-  const trackMode = (meta.tracks || []).length > 0 && trackReports.length > 0
+  const hasTracks = (meta.tracks || []).length > 0 && trackReports.length > 0
   const selectedPoint = points.find(p => p.coordinate === selected) || null
-  const modeCopy = (trackMode ? TRACK_CHARACTER_MODES : CHARACTER_MODES).find(([id]) => id === mode)?.[2]
+  const modeStates = characterModeStates({ hasTracks })
+  const activeState = modeStates.find(m => m.id === mode)
+  const activeMode = activeState && !activeState.disabled ? mode : 'portrait'
+  const modeCopy = modeStates.find(m => m.id === activeMode)?.caption
+  const isTrackMode = TRACK_MODE_IDS.has(activeMode)
 
   return (
     <div>
       <h1 className="page-title">Character</h1>
-      {trackMode ? (
+      {hasTracks ? (
         <p className="muted-copy">
-          What each persona does in the common case, measured against the <strong>control track</strong> as
-          the reference — the same seed conversations answered by a plain assistant. Everything here is in
-          raw score units: each persona's mean trait score, the control's mean, and the signed delta
-          between them.
+          What each persona does in the common case, measured against the <strong>control track</strong> —
+          the same seed conversations answered by a plain assistant.{' '}
+          <InfoHint text="Track modes are in raw score units: each persona's mean trait score, the control's mean, and the signed delta between them. The classic modes pool the personas and measure frequency and distinctiveness against control." />
         </p>
       ) : (
         <p className="muted-copy">
-          What this model does in the common case. Each persona trait is measured two ways: how often it
-          shows up ({meta.audited_provider}) and how distinctive that is against the {meta.reference_provider}{' '}
-          reference. The most frequent behavior is the shared helpful-assistant baseline; distinctiveness is
-          what is specific to this model.
+          What this model does in the common case: how often each trait shows up, and how distinctive that
+          is against the {meta.reference_provider} reference.{' '}
+          <InfoHint text="The most frequent behavior is the shared helpful-assistant baseline; distinctiveness (frequency minus the reference's) is what is specific to this model." />
         </p>
       )}
 
-      {!trackMode && meta.self_reference && (
+      {!hasTracks && meta.self_reference && (
         <div className="card">
           <p className="muted-copy">
             Reference and audited corpus are both <strong>{meta.reference_provider}</strong>, so every
@@ -713,7 +747,7 @@ function Character() {
         </div>
       )}
 
-      {trackMode
+      {hasTracks
         ? trackReports.map(report => (
             <TrackCharacterSignature
               key={report.track}
@@ -729,31 +763,27 @@ function Character() {
       <div className="card">
         <div className="card-heading-row">
           <div className="card-title">
-            {trackMode ? `Persona traits vs control · ${points.length} scored` : `Persona traits · ${points.length} scored`}
+            {isTrackMode ? `Persona traits vs control · ${points.length} scored` : `Persona traits · ${points.length} scored`}
           </div>
-          <div className="segmented-control">
-            {(trackMode ? TRACK_CHARACTER_MODES : CHARACTER_MODES).map(([id, label]) => (
-              <button key={id} type="button" className={mode === id ? 'active' : ''} onClick={() => setMode(id)}>{label}</button>
-            ))}
-          </div>
+          <ModeSwitch modes={modeStates} value={activeMode} onChange={setMode} />
         </div>
         <p className="muted-copy compact">{modeCopy}</p>
         {points.length === 0
           ? <p className="muted-copy">No persona traits with a {meta.reference_provider} reference in this corpus.</p>
-          : trackMode
-            ? mode === 'portrait'
-              ? <TrackCharacterPortrait reports={trackReports} selected={selected} onSelect={setSelected} />
-              : mode === 'signature'
-                ? <TrackCharacterSpectrum reports={trackReports} selected={selected} onSelect={setSelected} />
-                : <TrackCharacterLevels reports={trackReports} selected={selected} onSelect={setSelected} />
-            : mode === 'portrait'
-              ? <CharacterPortrait points={points} selected={selected} onSelect={setSelected} />
-              : mode === 'signature'
-                ? <CharacterSpectrum points={points} selected={selected} onSelect={setSelected} />
-                : <CharacterFrequency points={points} selected={selected} onSelect={setSelected} />}
+          : activeMode === 'track_portrait'
+            ? <TrackCharacterPortrait reports={trackReports} selected={selected} onSelect={setSelected} />
+            : activeMode === 'track_deltas'
+              ? <TrackCharacterSpectrum reports={trackReports} selected={selected} onSelect={setSelected} />
+              : activeMode === 'track_levels'
+                ? <TrackCharacterLevels reports={trackReports} selected={selected} onSelect={setSelected} />
+                : activeMode === 'portrait'
+                  ? <CharacterPortrait points={points} selected={selected} onSelect={setSelected} />
+                  : activeMode === 'signature'
+                    ? <CharacterSpectrum points={points} selected={selected} onSelect={setSelected} />
+                    : <CharacterFrequency points={points} selected={selected} onSelect={setSelected} />}
       </div>
 
-      {trackMode && <CharacterTrackHeatmap points={points} meta={meta} />}
+      {hasTracks && <CharacterTrackHeatmap points={points} meta={meta} />}
 
       {selectedPoint && (
         <CharacterDrilldown coordinate={selectedPoint.coordinate} provider={provider} point={selectedPoint} />
@@ -775,4 +805,4 @@ function Character() {
   )
 }
 
-export { CHARACTER_MODES, CHARACTER_PEARL_COLOR, CHARACTER_REFERENCE_COLOR, Character, CharacterBarTooltip, CharacterDistribution, CharacterDistributionTooltip, CharacterDrift, CharacterDrilldown, CharacterFrequency, CharacterPortrait, CharacterScatterTooltip, CharacterSignature, CharacterSpectrum, CharacterTraitLabel, TRACK_CHARACTER_MODES, TrackCharacterLevels, TrackCharacterPortrait, TrackCharacterSignature, TrackCharacterSpectrum, TrackCharacterTooltip, TrackPortraitTooltip, characterCoord, joinTraits, mergeTrackPoints, rawScore }
+export { CHARACTER_MODES, CHARACTER_AUDITED_COLOR, CHARACTER_REFERENCE_COLOR, Character, CharacterBarTooltip, CharacterDistribution, CharacterDistributionTooltip, CharacterDrift, CharacterDrilldown, CharacterFrequency, CharacterPortrait, CharacterScatterTooltip, CharacterSignature, CharacterSpectrum, CharacterTraitLabel, TrackCharacterLevels, TrackCharacterPortrait, TrackCharacterSignature, TrackCharacterSpectrum, TrackCharacterTooltip, TrackPortraitTooltip, characterCoord, joinTraits, mergeTrackPoints, rawScore, signatureSummary, trackSignatureSummary }

@@ -5,6 +5,9 @@ Resolution order:
 2. ``~/.hermes/state.db``, if it exists.
 3. In-memory smoke traces (so the product runs end-to-end with no real data).
 
+``adapter.load_audit_traces_from_env`` slots the bundled demo dataset between
+steps 2 and 3 — the smoke fixture only surfaces when the demo JSON is missing.
+
 Set ``PERSONA_AUDIT_HERMES_PROVIDER`` to label the provider in emitted scores.
 """
 

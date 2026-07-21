@@ -9,6 +9,7 @@ proxied via `vite.config.js`); `npm run build` for a production bundle.
 src/main.jsx / App.jsx           entry; App renders the route table
 src/api.js                       every backend call (thin fetch wrappers)
 src/hooks/useAsyncResource.js    fetch-on-mount hook: {data, error} + deps
+src/hooks/useProviderDescriptor.js  cached provider descriptor (features/copy/labels)
 src/routes/BehaviorAuditRoutes.jsx  route table only (~45 lines)
 src/routes/behavior/
   layout.jsx                     Shell (sidebar/nav), provider selection
@@ -31,8 +32,14 @@ src/styles.css                   all styling (plain CSS, class-per-component)
 3. **Payloads drive the UI.** Report-shaped payloads embed a `provider` block —
    the backend descriptor (`backend/api/providers/<key>.py`) whose `copy` and
    `features` keys control page text and which panels render. Prefer adding a
-   descriptor feature flag over hardcoding provider checks.
-4. Score-derived views key off `score_family` + `coordinate` on score rows;
+   descriptor feature flag over hardcoding provider checks. Pages whose
+   payloads are bare lists read the same descriptor via
+   `useProviderDescriptor` (backed by `/api/audit/score-spaces`).
+4. **Every dataset sees the same pages and modes.** View modes that don't
+   apply to the active dataset render disabled with a hint (`ModeSwitch` in
+   `behavior/shared.jsx`) — driven by descriptor features and payload signals
+   (`meta.tracks`, `meta.self_reference`), never by forked component trees.
+5. Score-derived views key off `score_family` + `coordinate` on score rows;
    the shaping lives in `behavior/helpers.js`.
 
 ## Remixing
@@ -55,4 +62,5 @@ components in `charts.jsx` / `tracks.jsx` for conventions (colors, tooltips,
 
 `npm run build` must pass. There is no JS test suite (by design — the backend
 API tests pin the payload contracts); for visual changes run the app and check
-the affected pages against both `tau2` and `persona_demo` providers.
+the affected pages against all three providers (`persona_demo`, `tau2`,
+`hermes`).

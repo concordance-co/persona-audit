@@ -1,8 +1,11 @@
-// Report page.
-// Moved verbatim from BehaviorAuditRoutes.jsx (pure reorganization).
-import { CharacterDrift, CharacterPortrait, joinTraits } from './Character.jsx'
+// Report page: the shareable artifact. One section skeleton for every
+// dataset — track corpora (the persona demo) render per-persona findings
+// against the control track; single corpora render the classic portrait
+// against the reference corpus.
+import { CharacterDrift, CharacterPortrait, TrackCharacterPortrait, joinTraits, mergeTrackPoints, rawScore, signatureSummary, trackSignatureSummary } from './Character.jsx'
 import { getCharacter, getCharacterTrait, getTail } from '../../../api'
 import { pct, pct1, titleize } from '../helpers'
+import { trackTitle } from '../tracks.jsx'
 import { useEffect, useState } from 'react'
 import { useProviderSelection } from '../layout'
 
@@ -13,6 +16,10 @@ function ReportSection({ n, title, children }) {
       {children}
     </section>
   )
+}
+
+function signedRaw(value) {
+  return `${value >= 0 ? '+' : ''}${rawScore(value)}`
 }
 
 function Report() {
@@ -58,18 +65,25 @@ function Report() {
   const points = char.points || []
   const meta = char.meta || {}
   const dropped = char.dropped || []
+  const trackReports = char.track_reports || []
+  const isTrack = (meta.tracks || []).length > 0 && trackReports.length > 0
   const byDistinct = [...points].sort((a, b) => b.distinctiveness - a.distinctiveness)
-  const distinctive = byDistinct.filter(p => p.distinctiveness > 0).slice(0, 3)
-  const suppressed = [...points].sort((a, b) => a.distinctiveness - b.distinctiveness).filter(p => p.distinctiveness < 0).slice(0, 2)
+  const { distinctive, suppressed } = signatureSummary(points)
+  const trackSummaries = trackReports.map(report => ({
+    track: report.track,
+    subject: trackTitle(report.track),
+    ...trackSignatureSummary(report),
+  }))
+  const mergedTrackPoints = isTrack ? mergeTrackPoints(trackReports) : []
   const concern = new Set(meta.concern_traits || [])
   const concernPoints = points.filter(p => concern.has(p.trait)).sort((a, b) => b.distinctiveness - a.distinctiveness)
-  const topConcern = concernPoints[0] || null
-  const topDetail = topConcern ? details[topConcern.coordinate] : null
   const modes = tail?.modes || []
   const scatter = tail?.scatter
   const tailMeta = tail?.meta || {}
   const tracesScored = points[0]?.audited_total
   const referenceTraces = points[0]?.reference_total
+  const seedCount = trackReports[0]?.points?.[0]?.traces
+  const referenceName = isTrack ? 'the control track' : meta.reference_provider
   const generatedOn = new Date().toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })
 
   return (
@@ -81,16 +95,35 @@ function Report() {
         <header className="report-cover">
           <div className="report-kicker">System Portrait · Behavioral Audit</div>
           <h1 className="report-title">{titleize(meta.audited_provider)} — Behavioral System Portrait</h1>
-          {distinctive.length > 0 && (
-            <p className="report-headline">
-              Against the {meta.reference_provider} reference, this model is markedly more{' '}
-              <strong>{joinTraits(distinctive.map(p => p.label))}</strong>
-              {suppressed.length > 0 && <> — and notably less <strong>{joinTraits(suppressed.map(p => p.label))}</strong></>}.
-            </p>
-          )}
+          {isTrack
+            ? trackSummaries.map(summary => (
+                summary.higher.length > 0 && (
+                  <p key={summary.track} className="report-headline">
+                    Against control, <strong>{summary.subject}</strong> reads highest above on{' '}
+                    <strong>{joinTraits(summary.higher.map(p => p.label))}</strong>
+                    {summary.lower.length > 0 && <> — and furthest below on <strong>{joinTraits(summary.lower.map(p => p.label))}</strong></>}.
+                  </p>
+                )
+              ))
+            : distinctive.length > 0 && (
+                <p className="report-headline">
+                  Against the {meta.reference_provider} reference, this model is markedly more{' '}
+                  <strong>{joinTraits(distinctive.map(p => p.label))}</strong>
+                  {suppressed.length > 0 && <> — and notably less <strong>{joinTraits(suppressed.map(p => p.label))}</strong></>}.
+                </p>
+              )}
           <dl className="report-meta">
-            <div><dt>Model corpus</dt><dd>{titleize(meta.audited_provider)}{tracesScored ? ` · ${tracesScored.toLocaleString()} conversations` : ''}</dd></div>
-            <div><dt>Reference</dt><dd>{titleize(meta.reference_provider)}{referenceTraces ? ` · ${referenceTraces.toLocaleString()} conversations` : ''}</dd></div>
+            {isTrack ? (
+              <>
+                <div><dt>Personas</dt><dd>{trackSummaries.map(s => s.subject).join(' / ')} vs Control</dd></div>
+                <div><dt>Reference</dt><dd>Control track{referenceTraces ? ` · ${referenceTraces.toLocaleString()} conversations` : ''} · same seeds, plain assistant</dd></div>
+              </>
+            ) : (
+              <>
+                <div><dt>Model corpus</dt><dd>{titleize(meta.audited_provider)}{tracesScored ? ` · ${tracesScored.toLocaleString()} conversations` : ''}</dd></div>
+                <div><dt>Reference</dt><dd>{titleize(meta.reference_provider)}{referenceTraces ? ` · ${referenceTraces.toLocaleString()} conversations` : ''}</dd></div>
+              </>
+            )}
             <div><dt>Traits compared</dt><dd>{points.length} scored · {dropped.length} without reference</dd></div>
             <div><dt>Generated</dt><dd>{generatedOn}</dd></div>
           </dl>
@@ -99,77 +132,163 @@ function Report() {
           )}
         </header>
 
-        <ReportSection n="1" title="What this model is">
-          <p className="report-body">
-            This portrait summarizes how the model behaves across {tracesScored ? tracesScored.toLocaleString() : 'its'} conversations,
-            measured along {points.length} persona traits and compared against a reference model. The common case is the shared
-            helpful-assistant baseline; what follows is what is <em>specific</em> to this model.
-          </p>
-          <div className="report-columns">
-            <div>
-              <div className="report-label">Most characteristic</div>
-              <ul className="report-list">
-                {distinctive.length ? distinctive.map(p => (
-                  <li key={p.coordinate}><span>{p.label}</span><strong className="up">+{pct1(p.distinctiveness)}</strong></li>
-                )) : <li><span className="muted-copy">None above reference.</span></li>}
-              </ul>
-            </div>
-            <div>
-              <div className="report-label">Most suppressed</div>
-              <ul className="report-list">
-                {suppressed.length ? suppressed.map(p => (
-                  <li key={p.coordinate}><span>{p.label}</span><strong className="down">{pct1(p.distinctiveness)}</strong></li>
-                )) : <li><span className="muted-copy">None below reference.</span></li>}
-              </ul>
-            </div>
-          </div>
+        <ReportSection n="1" title={isTrack ? 'What each persona is' : 'What this model is'}>
+          {isTrack ? (
+            <>
+              <p className="report-body">
+                Each persona answers the same {seedCount ? seedCount.toLocaleString() : ''} seed conversations
+                as the control track, so every difference below is attributable to the persona, not the prompt mix.
+                Values are raw-score deltas versus control.
+              </p>
+              {trackSummaries.map(summary => (
+                <div key={summary.track} className="report-columns">
+                  <div>
+                    <div className="report-label">Furthest above control · {summary.subject}</div>
+                    <ul className="report-list">
+                      {summary.higher.length ? summary.higher.map(p => (
+                        <li key={p.coordinate}><span>{p.label}</span><strong className="up">{signedRaw(p.delta)}</strong></li>
+                      )) : <li><span className="muted-copy">None above control.</span></li>}
+                    </ul>
+                  </div>
+                  <div>
+                    <div className="report-label">Furthest below control · {summary.subject}</div>
+                    <ul className="report-list">
+                      {summary.lower.length ? summary.lower.map(p => (
+                        <li key={p.coordinate}><span>{p.label}</span><strong className="down">{signedRaw(p.delta)}</strong></li>
+                      )) : <li><span className="muted-copy">None below control.</span></li>}
+                    </ul>
+                  </div>
+                </div>
+              ))}
+            </>
+          ) : (
+            <>
+              <p className="report-body">
+                This portrait summarizes how the model behaves across {tracesScored ? tracesScored.toLocaleString() : 'its'} conversations,
+                measured along {points.length} persona traits and compared against a reference model. The common case is the shared
+                helpful-assistant baseline; what follows is what is <em>specific</em> to this model.
+              </p>
+              <div className="report-columns">
+                <div>
+                  <div className="report-label">Most characteristic</div>
+                  <ul className="report-list">
+                    {distinctive.length ? distinctive.map(p => (
+                      <li key={p.coordinate}><span>{p.label}</span><strong className="up">+{pct1(p.distinctiveness)}</strong></li>
+                    )) : <li><span className="muted-copy">None above reference.</span></li>}
+                  </ul>
+                </div>
+                <div>
+                  <div className="report-label">Most suppressed</div>
+                  <ul className="report-list">
+                    {suppressed.length ? suppressed.map(p => (
+                      <li key={p.coordinate}><span>{p.label}</span><strong className="down">{pct1(p.distinctiveness)}</strong></li>
+                    )) : <li><span className="muted-copy">None below reference.</span></li>}
+                  </ul>
+                </div>
+              </div>
+            </>
+          )}
         </ReportSection>
 
         <ReportSection n="2" title="How to read this">
           <div className="report-box">
-            <p>
-              Every assistant turn is projected into a set of trait vector spaces and scored. A trait is counted
-              <strong> present</strong> in a conversation when its peak score across the conversation's turns exceeds a threshold
-              set at the 80th percentile of the reference model's peak scores for that trait.
-            </p>
-            <p>
-              <strong>Frequency</strong> is the share of this model's conversations where a trait is present.
-              <strong> Distinctiveness</strong> is that frequency minus the reference model's — isolating what is specific to this
-              model rather than common to all assistants. Positive means the model does it more than the reference; negative means
-              it is suppressed relative to the reference.
-            </p>
+            {isTrack ? (
+              <>
+                <p>
+                  Every assistant turn is projected into a set of trait vector spaces and scored. Because the personas and
+                  the control track answer the <strong>same seed conversations</strong>, traits are compared in raw score
+                  units: each persona's mean trait score, the control's mean, and the signed delta between them.
+                </p>
+                <p>
+                  A positive delta means the persona reads more strongly on that trait than a plain assistant given the
+                  identical conversation; a negative delta means the trait is suppressed. No presence thresholds are involved.
+                </p>
+              </>
+            ) : (
+              <>
+                <p>
+                  Every assistant turn is projected into a set of trait vector spaces and scored. A trait is counted
+                  <strong> present</strong> in a conversation when its peak score across the conversation's turns exceeds a threshold
+                  set at the 80th percentile of the reference model's peak scores for that trait.
+                </p>
+                <p>
+                  <strong>Frequency</strong> is the share of this model's conversations where a trait is present.
+                  <strong> Distinctiveness</strong> is that frequency minus the reference model's — isolating what is specific to this
+                  model rather than common to all assistants. Positive means the model does it more than the reference; negative means
+                  it is suppressed relative to the reference.
+                </p>
+              </>
+            )}
           </div>
         </ReportSection>
 
         <ReportSection n="3" title="Character — the common case">
-          <p className="report-body">
-            Each trait is two measurements of one space: how often it appears (frequency) and how distinctive that is
-            (signed lift over reference). Traits above the zero line are characteristic of this model; below it, suppressed.
-          </p>
-          <CharacterPortrait points={points} selected={null} onSelect={() => {}} />
-          <table className="data-table report-table">
-            <thead>
-              <tr><th>Trait</th><th>Frequency</th><th>Reference</th><th>Distinctiveness</th></tr>
-            </thead>
-            <tbody>
-              {byDistinct.map(p => (
-                <tr key={p.coordinate}>
-                  <td>{p.label}</td>
-                  <td>{pct1(p.frequency)}</td>
-                  <td>{pct1(p.reference_rate)}</td>
-                  <td className={p.distinctiveness >= 0 ? 'up' : 'down'}>{p.distinctiveness >= 0 ? '+' : ''}{pct1(p.distinctiveness)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          {isTrack ? (
+            <>
+              <p className="report-body">
+                Each trait is two raw measurements of one space: how strongly it reads (mean raw score) and how far that
+                sits from control (signed delta). The zero line is the control track; points above it are what the persona
+                adds, points below are what it suppresses.
+              </p>
+              <TrackCharacterPortrait reports={trackReports} selected={null} onSelect={() => {}} />
+              <table className="data-table report-table">
+                <thead>
+                  <tr>
+                    <th>Trait</th>
+                    <th>Control mean</th>
+                    {trackSummaries.map(s => <th key={s.track}>{s.subject} Δ</th>)}
+                  </tr>
+                </thead>
+                <tbody>
+                  {mergedTrackPoints.map(row => (
+                    <tr key={row.coordinate}>
+                      <td>{row.label}</td>
+                      <td>{rawScore(row.control_mean_score)}</td>
+                      {trackSummaries.map(s => {
+                        const point = row[s.track]
+                        return (
+                          <td key={s.track} className={point == null ? '' : point.delta >= 0 ? 'up' : 'down'}>
+                            {point == null ? '-' : signedRaw(point.delta)}
+                          </td>
+                        )
+                      })}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </>
+          ) : (
+            <>
+              <p className="report-body">
+                Each trait is two measurements of one space: how often it appears (frequency) and how distinctive that is
+                (signed lift over reference). Traits above the zero line are characteristic of this model; below it, suppressed.
+              </p>
+              <CharacterPortrait points={points} selected={null} onSelect={() => {}} />
+              <table className="data-table report-table">
+                <thead>
+                  <tr><th>Trait</th><th>Frequency</th><th>Reference</th><th>Distinctiveness</th></tr>
+                </thead>
+                <tbody>
+                  {byDistinct.map(p => (
+                    <tr key={p.coordinate}>
+                      <td>{p.label}</td>
+                      <td>{pct1(p.frequency)}</td>
+                      <td>{pct1(p.reference_rate)}</td>
+                      <td className={p.distinctiveness >= 0 ? 'up' : 'down'}>{p.distinctiveness >= 0 ? '+' : ''}{pct1(p.distinctiveness)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </>
+          )}
         </ReportSection>
 
         <ReportSection n="4" title="Tail — the worst case">
           <p className="report-body">
-            The tail — turns more extreme than this model's own 90th-percentile on any trait — clustered by their
+            The tail — turns more extreme than this corpus's own 90th-percentile on any trait — clustered by their
             co-activation pattern into failure modes. A mode is a way the system fails (several traits jointly extreme
-            in the same turn), not a single worst trait. Severity here is read against the model's <em>own</em> distribution,
-            so it is independent of the {meta.reference_provider} reference used for Character. Modes are ordered by how bad a
+            in the same turn), not a single worst trait. Severity here is read against the corpus's <em>own</em> distribution,
+            so it is independent of {referenceName} used for Character. Modes are ordered by how bad a
             typical instance is; reach shows how far the mode goes.
           </p>
           {!tail
@@ -209,12 +328,22 @@ function Report() {
 
         <ReportSection n="5" title="Conversational drift">
           <p className="report-body">
-            Behavior is not static within a conversation. For each risk surface, this shows how the behavior
-            moves from the start of a conversation to the end, averaged across the corpus, against the reference.
-            A rising line means the model intensifies that behavior as conversations progress.
+            {isTrack ? (
+              <>
+                Behavior is not static within a conversation. For each risk surface, this shows how the behavior moves
+                from the start of a conversation to the end, averaged across the corpus, per persona track with control
+                alongside. A rising line means the persona intensifies that behavior as conversations progress.
+              </>
+            ) : (
+              <>
+                Behavior is not static within a conversation. For each risk surface, this shows how the behavior
+                moves from the start of a conversation to the end, averaged across the corpus, against the reference.
+                A rising line means the model intensifies that behavior as conversations progress.
+              </>
+            )}
           </p>
           {concernPoints.length === 0
-            ? <p className="muted-copy">No concern traits with a {meta.reference_provider} reference in this corpus.</p>
+            ? <p className="muted-copy">No concern traits with a {referenceName} reference in this corpus.</p>
             : concernPoints.map(p => (
                 <div key={p.coordinate} className="report-drift-block">
                   <div className="report-label">{p.label} · start → end</div>
@@ -227,11 +356,19 @@ function Report() {
 
         <ReportSection n="6" title="Coverage & limitations">
           <ul className="report-body">
-            <li>
-              <strong>Reference is provisional.</strong> Distinctiveness is measured against the {meta.reference_provider} corpus,
-              a different-domain benchmark used as a cold-start baseline. Some distinctiveness may reflect domain rather than model;
-              a like-for-like base model is planned.
-            </li>
+            {isTrack ? (
+              <li>
+                <strong>Paired reference.</strong> The control track answers the same seed conversations with a plain
+                assistant, so deltas isolate the persona. The seed mix itself is synthetic and small; magnitudes should
+                be read within this corpus, not across datasets.
+              </li>
+            ) : (
+              <li>
+                <strong>Reference is provisional.</strong> Distinctiveness is measured against the {meta.reference_provider} corpus,
+                a different-domain benchmark used as a cold-start baseline. Some distinctiveness may reflect domain rather than model;
+                a like-for-like base model is planned.
+              </li>
+            )}
             <li>
               <strong>Point-in-time snapshot.</strong> This reflects {tracesScored ? tracesScored.toLocaleString() : 'a fixed set of'} conversations
               and does not yet track drift over time.
@@ -247,10 +384,21 @@ function Report() {
 
         <ReportSection n="7" title="Appendix · parameters">
           <dl className="report-meta">
-            <div><dt>Presence rule</dt><dd>Any turn's peak projection score exceeds the trait threshold</dd></div>
-            <div><dt>Threshold</dt><dd>80th percentile of the reference's per-conversation peak distribution, per trait</dd></div>
-            <div><dt>Score family</dt><dd>{meta.score_family}</dd></div>
-            <div><dt>Audited / reference</dt><dd>{meta.audited_provider} / {meta.reference_provider}</dd></div>
+            {isTrack ? (
+              <>
+                <div><dt>Comparison rule</dt><dd>Mean raw trait score per track; signed delta vs the control track</dd></div>
+                <div><dt>Pairing</dt><dd>Every track answers the same seed conversations</dd></div>
+                <div><dt>Score family</dt><dd>{meta.score_family}</dd></div>
+                <div><dt>Audited / reference</dt><dd>{trackSummaries.map(s => s.subject).join(', ')} / control</dd></div>
+              </>
+            ) : (
+              <>
+                <div><dt>Presence rule</dt><dd>Any turn's peak projection score exceeds the trait threshold</dd></div>
+                <div><dt>Threshold</dt><dd>80th percentile of the reference's per-conversation peak distribution, per trait</dd></div>
+                <div><dt>Score family</dt><dd>{meta.score_family}</dd></div>
+                <div><dt>Audited / reference</dt><dd>{meta.audited_provider} / {meta.reference_provider}</dd></div>
+              </>
+            )}
           </dl>
         </ReportSection>
       </article>

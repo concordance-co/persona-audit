@@ -21,6 +21,7 @@ backend/workflows/           Modal scoring workflows; common.py = shared config/
 backend/scripts/             run_xenon_workflow.sh, bootstrap_modal.py, upload CLIs
 backend/scores_io.py         shared score-artifact IO for the upload CLIs
 factory/                     demo dataset factory (worked example; frozen)
+data/hermes_demo/            bundled hermes-agent trajectory sample (see its README)
 frontend/src/routes/     route table + behavior/pages/ (see frontend/README.md)
 docs/                        user-facing; docs/internal/ = maintainer process notes
 tests/                       hermetic + plan tier; tests/live/ = opt-in Modal tier
@@ -88,6 +89,12 @@ provider. Only `data/demo/normalized_traces.json` and its score cache in
 `data/supplemental_scores/` are tracked. It was built by the `factory/`
 pipeline (see `factory/README.md`); factory outputs under `artifacts/` and
 `data/demo/stage*/` are gitignored.
+
+The hermes provider ships its own bundled fallback: `data/hermes_demo/`
+(30 real hermes-agent trajectories sampled from HF
+`lambda/hermes-agent-reasoning-traces`), used whenever no local Hermes
+`state.db` is found. Built by `factory/scripts/build_hermes_demo_traces.py`;
+its score cache run id is `persona_audit_hermes_demo_v1`.
 
 ## Verify
 

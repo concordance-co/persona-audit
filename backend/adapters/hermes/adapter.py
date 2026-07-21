@@ -1,19 +1,55 @@
-"""Map Hermes local-agent sessions into Persona Audit traces."""
+"""Map Hermes local-agent sessions into Persona Audit traces.
+
+Trace resolution order:
+1. A real ``state.db`` (env override or ``~/.hermes/state.db``).
+2. The bundled demo dataset (``data/hermes_demo/normalized_traces.json``,
+   a sample of real hermes-agent trajectories; override the path with
+   ``PERSONA_AUDIT_HERMES_DEMO_TRACES``).
+3. In-memory smoke traces (last resort; keeps the product bootable).
+"""
 
 from __future__ import annotations
 
 from collections import Counter
 from collections.abc import Sequence
+from pathlib import Path
 from typing import Any
 
 from backend.adapters.hermes.models import HermesTrace, HermesTurn
 from backend.adapters.hermes.state_db_loader import load_traces_from_env
+from backend.api.cache import data_cache
 from backend.api.models import AuditTrace, AuditTurn
+from backend.api.trace_io import load_traces
+from backend.paths import REPO_ROOT, env_value, load_dotenv
+
+DEMO_TRACES_ENV = "PERSONA_AUDIT_HERMES_DEMO_TRACES"
+DEFAULT_DEMO_TRACES_PATH = REPO_ROOT / "data" / "hermes_demo" / "normalized_traces.json"
+DEMO_PROVIDER_ID = "hermes_demo"
 
 
+def demo_traces_path() -> Path | None:
+    load_dotenv()
+    configured = (env_value(DEMO_TRACES_ENV) or "").strip()
+    path = Path(configured).expanduser() if configured else DEFAULT_DEMO_TRACES_PATH
+    return path if path.exists() else None
+
+
+@data_cache(maxsize=2)
 def load_audit_traces_from_env() -> tuple[list[AuditTrace], str, str]:
     hermes_traces, source, provider_id = load_traces_from_env()
+    if provider_id != "hermes_smoke":
+        return [audit_trace_from_hermes(trace) for trace in hermes_traces], provider_id, source
+    demo_path = demo_traces_path()
+    if demo_path is not None:
+        source_label = f"Hermes demo ({demo_path}; hermes-agent trajectory sample)"
+        return load_traces(demo_path), DEMO_PROVIDER_ID, source_label
     return [audit_trace_from_hermes(trace) for trace in hermes_traces], provider_id, source
+
+
+def active_provider_id() -> str:
+    """The provider_id the current environment resolves to (cached)."""
+
+    return load_audit_traces_from_env()[1]
 
 
 def audit_trace_from_hermes(trace: HermesTrace) -> AuditTrace:

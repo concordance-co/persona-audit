@@ -88,6 +88,30 @@ function compactMetricNumber(value) {
   }).format(number)
 }
 
+// Segmented control where every mode stays visible: modes that don't apply
+// to the active dataset render disabled with a hint explaining why, so the
+// full view vocabulary is discoverable from any provider.
+// modes = [{ id, label, disabled, disabledHint }]
+function ModeSwitch({ modes, value, onChange }) {
+  return (
+    <div className="segmented-control">
+      {modes.map(mode => (
+        <button
+          key={mode.id}
+          type="button"
+          className={value === mode.id ? 'active' : ''}
+          disabled={Boolean(mode.disabled)}
+          aria-disabled={Boolean(mode.disabled)}
+          title={mode.disabled ? mode.disabledHint : undefined}
+          onClick={() => onChange(mode.id)}
+        >
+          {mode.label}
+        </button>
+      ))}
+    </div>
+  )
+}
+
 function InfoHint({ text }) {
   if (!text) return null
   return (
@@ -194,4 +218,4 @@ function rowsByGroupAndVector(rows = []) {
   return byGroup
 }
 
-export { EMOTION_CLUSTER_GROUP_BY_ID, InfoHint, MODULE_ORDER, RiskPill, actionLabel, clamp01, compactMetricNumber, compactNumber, deltaColor, deviationLabel, emotionClusterDetail, orderModules, rowsByGroupAndVector, scopeLabel, segmentLabel, sessionFocusLink, taskGroupLabel, topDeltasByGroup, topVectorsByDelta, uniqueTopVectors, vectorLabel, zColor, zValue }
+export { EMOTION_CLUSTER_GROUP_BY_ID, InfoHint, MODULE_ORDER, ModeSwitch, RiskPill, actionLabel, clamp01, compactMetricNumber, compactNumber, deltaColor, deviationLabel, emotionClusterDetail, orderModules, rowsByGroupAndVector, scopeLabel, segmentLabel, sessionFocusLink, taskGroupLabel, topDeltasByGroup, topVectorsByDelta, uniqueTopVectors, vectorLabel, zColor, zValue }

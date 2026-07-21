@@ -55,3 +55,38 @@ def test_histogram_counts_fixed_range_clamps_out_of_range() -> None:
     assert histogram_counts([1.0], lo=0.0, hi=1.0, n_bins=0) == []
     # degenerate range widens instead of dividing by zero
     assert sum(histogram_counts([1.0, 1.0], lo=1.0, hi=1.0, n_bins=4)) == 2
+
+
+def test_trace_scoring_records_skip_tool_call_only_assistant_turns() -> None:
+    from backend.api.models import AuditTrace, AuditTurn
+    from backend.api.scoring_spaces import trace_scoring_records
+
+    turns = (
+        AuditTurn(turn_id="t0", role="user", content="run the check", index=0),
+        # Tool-call-only assistant turn: no visible response to score, and a
+        # zero-length assistant_response span would abort the capture run.
+        AuditTurn(turn_id="t1", role="assistant", content="", index=1, tool_name="check", reasoning="call the tool"),
+        AuditTurn(turn_id="t2", role="tool", content="check: ok", index=2, tool_name="check"),
+        AuditTurn(turn_id="t3", role="assistant", content="All good.", index=3),
+    )
+    trace = AuditTrace(
+        trace_id="tr_1",
+        session_id="tr_1",
+        user_id="u",
+        domain="d",
+        task_id="t",
+        outcome="completed",
+        reward=None,
+        source_model="m",
+        user_model="um",
+        turns=turns,
+    )
+
+    records = trace_scoring_records([trace])
+    assert [record["turn_index"] for record in records] == [3]
+    record = records[0]
+    span = record["assistant_response"]
+    assert span["char_end"] > span["char_start"]
+    assert record["text"][span["char_start"] : span["char_end"]] == "All good."
+    # The skipped turn still appears in the rendered conversation context.
+    assert "Tool: check: ok" in record["text"]

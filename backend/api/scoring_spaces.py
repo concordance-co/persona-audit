@@ -266,6 +266,12 @@ def trace_scoring_records(traces: Sequence[AuditTrace]) -> list[dict[str, Any]]:
             prefix.append(turn)
             if turn.role != "assistant":
                 continue
+            # Tool-call-only assistant turns (real Hermes sessions and the
+            # bundled hermes demo both have them) have no visible response:
+            # their span would map to zero tokens and abort the capture run.
+            # They still appear in the rendered context of later turns.
+            if not turn.content.strip():
+                continue
             text, span, reasoning_span = _render_trace_with_span(prefix, target_turn=turn)
             metadata = {
                 "source_model": trace.source_model,

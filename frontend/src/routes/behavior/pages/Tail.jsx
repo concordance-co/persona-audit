@@ -163,7 +163,7 @@ function TailMapView({ modes }) {
   return (
     <div className="tail-map">
       <span className="tail-map-ylabel">more common ↑</span>
-      <ResponsiveContainer width="100%" height={400}>
+      <ResponsiveContainer width="100%" height={260}>
         <ScatterChart margin={{ top: 24, right: 40, bottom: 16, left: 16 }}>
           <XAxis type="number" dataKey="x" domain={xDomain} tick={false} tickLine={false} axisLine={{ stroke: 'rgba(8,8,8,0.18)' }} height={2} />
           <YAxis type="number" dataKey="y" domain={yDomain} scale="sqrt" tick={false} tickLine={false} axisLine={{ stroke: 'rgba(8,8,8,0.18)' }} width={2} />
@@ -328,9 +328,7 @@ function TailModeCard({ mode, rank, provider, trackOrder = [] }) {
       )}
 
       <div className="tail-mode-block">
-        <div className="report-label">What sets this pattern apart</div>
         <TailFingerprint signature={mode.signature} />
-        <p className="tail-mode-note">measured against the model’s other extreme moments</p>
       </div>
 
       <div className="tail-mode-stats">
@@ -348,7 +346,6 @@ function TailModeCard({ mode, rank, provider, trackOrder = [] }) {
       </div>
 
       <div className="tail-mode-block">
-        <div className="report-label">See it for yourself</div>
         <div className="tail-exemplars">
           {mode.exemplars_coincide
             ? <TailExemplar label="Representative — also the worst" exemplar={mode.representative} provider={provider} />
@@ -395,19 +392,10 @@ function Tail() {
     <div>
       <h1 className="page-title">Tail Risk</h1>
       <p className="muted-copy tail-intro">
-        Every moment where {(meta.tracks || []).length > 0
-          ? <>a persona track pushed past <strong>its own track&apos;s 90th-percentile</strong></>
-          : <>this model pushed past its <strong>own 90th-percentile</strong></>} on any persona trait is an
-        extreme moment. We grouped those moments by <strong>which traits fired together</strong> and found{' '}
-        <strong>{modes.length} recurring patterns</strong> across {meta.n_tail_traces} of {meta.total_traces} conversations.
-        Not every extreme is a problem — so each pattern is split into <strong>concerning</strong> (a concern trait runs hot:
-        sycophantic, manipulative, hostile, condescending) and <strong>benign extremes</strong> (distinctive, but on neutral
-        or desirable traits like calm, analytical, or conciliatory).
-      </p>
-      <p className="muted-copy tail-intro compact">
-        {(meta.tracks || []).length > 0
-          ? 'Intensity is in standard deviations (σ) past each track’s own baseline — extreme means extreme for that persona, never far from the pooled blend of personas. Clustering is shared, so a failure shape that more than one persona exhibits is one pattern.'
-          : 'Intensity is in standard deviations (σ) past the model’s own baseline — so this view stands on its own, independent of the tau2 reference used on the Character page.'}
+        Extreme moments — turns past the corpus&apos;s <strong>own 90th-percentile</strong> on any persona trait —
+        clustered by which traits fired together: <strong>{modes.length} recurring patterns</strong> across{' '}
+        {meta.n_tail_traces} of {meta.total_traces} conversations.{' '}
+        <InfoHint text={`Patterns split into concerning (a concern trait runs hot: sycophantic, manipulative, hostile, condescending) and benign extremes (distinctive, but on neutral or desirable traits). Intensity is in standard deviations (σ) past ${(meta.tracks || []).length > 0 ? 'each track’s own baseline, so extreme means extreme for that persona; clustering is shared across tracks' : 'the model’s own baseline, independent of the reference used on the Character page'}.`} />
       </p>
 
       {(meta.tail_composition || []).length > 0 && (
@@ -445,11 +433,13 @@ function Tail() {
           <div className="stat-value">{benign.length}</div>
           <div className="stat-label">extreme, but not on a concern trait</div>
         </div>
-        <div className="card">
-          <div className="card-title">Scattered tail</div>
-          <div className="stat-value">{scatter ? pct(scatter.size_share) : '—'}</div>
-          <div className="stat-label">one-off extremes, no repeated pattern</div>
-        </div>
+        {scatter && (
+          <div className="card">
+            <div className="card-title">Scattered tail</div>
+            <div className="stat-value">{pct(scatter.size_share)}</div>
+            <div className="stat-label">one-off extremes, no repeated pattern</div>
+          </div>
+        )}
       </div>
 
       {modes.length === 0 && (
@@ -461,9 +451,6 @@ function Tail() {
       {concerning.length > 0 && (
         <div className="tail-group">
           <h2 className="tail-group-title concern">Concerning patterns <span>· {concerning.length}</span></h2>
-          <p className="muted-copy compact tail-group-sub">
-            A concern trait runs meaningfully elevated in these — the parts of the tail worth attention.
-          </p>
           {concerning.map((mode, i) => (
             <TailModeCard key={mode.id} mode={mode} rank={i + 1} provider={provider} trackOrder={meta.tracks || []} />
           ))}
@@ -473,9 +460,6 @@ function Tail() {
       {benign.length > 0 && (
         <div className="tail-group">
           <h2 className="tail-group-title benign">Benign extremes <span>· {benign.length}</span></h2>
-          <p className="muted-copy compact tail-group-sub">
-            Statistically extreme moments on neutral or desirable traits. Shown for completeness — these are not failures.
-          </p>
           {benign.map((mode, i) => (
             <TailModeCard key={mode.id} mode={mode} rank={i + 1} provider={provider} trackOrder={meta.tracks || []} />
           ))}

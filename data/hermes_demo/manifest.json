@@ -1,0 +1,131 @@
+{
+  "dataset": "lambda/hermes-agent-reasoning-traces",
+  "config": "kimi",
+  "offset": 0,
+  "rows_scanned": 73,
+  "trace_count": 30,
+  "max_trace_chars": 60000,
+  "max_turns": 40,
+  "rows": [
+    {
+      "trace_id": "hermes_demo_709c756d67f6",
+      "hf_row_id": "0c699abf-bc77-454a-8197-d56a2294098a"
+    },
+    {
+      "trace_id": "hermes_demo_83d1f0394550",
+      "hf_row_id": "67584368-7a5c-4d7a-b682-40ee44ff8c61"
+    },
+    {
+      "trace_id": "hermes_demo_d0553c71065b",
+      "hf_row_id": "e0faf24b-e135-412f-b89d-c90b263e677b"
+    },
+    {
+      "trace_id": "hermes_demo_571de706c5f8",
+      "hf_row_id": "66890ddc-faa5-4ca2-9f80-f751e2f8eed3"
+    },
+    {
+      "trace_id": "hermes_demo_6dc48aea9743",
+      "hf_row_id": "1a2a12a6-0353-4326-9590-d8a5b5e56de5"
+    },
+    {
+      "trace_id": "hermes_demo_c32ee9902ec8",
+      "hf_row_id": "4143608f-6ca7-4f3b-af9c-63e2389306ae"
+    },
+    {
+      "trace_id": "hermes_demo_cc7e94ce0d1a",
+      "hf_row_id": "4d970add-e084-4d3d-ab6a-e2d17adf6293"
+    },
+    {
+      "trace_id": "hermes_demo_18f65f0750c8",
+      "hf_row_id": "d8afc89a-969c-4d4e-b19e-eaf9eaf81053"
+    },
+    {
+      "trace_id": "hermes_demo_54f7d1db5156",
+      "hf_row_id": "6b062f7e-1668-49e5-b364-8e4ac8c6d149"
+    },
+    {
+      "trace_id": "hermes_demo_c3baaef2da1a",
+      "hf_row_id": "4375060a-a136-4353-a0d2-d3c7e0d28952"
+    },
+    {
+      "trace_id": "hermes_demo_3e1e1e4c6455",
+      "hf_row_id": "1bab22d7-39f7-4f86-82ac-420db3a53d39"
+    },
+    {
+      "trace_id": "hermes_demo_573a48739b4c",
+      "hf_row_id": "89f00409-edc2-48ec-8774-6080cb79d28a"
+    },
+    {
+      "trace_id": "hermes_demo_bfca9f0ce79b",
+      "hf_row_id": "d092add3-22b7-481a-9dc0-3c454f3a6a2d"
+    },
+    {
+      "trace_id": "hermes_demo_5f5bfe4bc8f9",
+      "hf_row_id": "ba269179-b925-4e01-9b6c-5cb0128ef00b"
+    },
+    {
+      "trace_id": "hermes_demo_85a90cc284ff",
+      "hf_row_id": "91ac7a33-f316-4381-8b50-70b52e0c9ce3"
+    },
+    {
+      "trace_id": "hermes_demo_6e80b991ac61",
+      "hf_row_id": "95964889-66a6-484f-af09-ac91da7a2a00"
+    },
+    {
+      "trace_id": "hermes_demo_0bd0c96d92c0",
+      "hf_row_id": "9dc4d089-dafb-4423-a37f-c0b97b678c24"
+    },
+    {
+      "trace_id": "hermes_demo_374e57e4c57c",
+      "hf_row_id": "35bea426-1ba7-40d4-b82d-b9e61e73d42f"
+    },
+    {
+      "trace_id": "hermes_demo_7428139c5734",
+      "hf_row_id": "e6d0c851-dd71-41e2-8ac7-c3186eadf526"
+    },
+    {
+      "trace_id": "hermes_demo_d288e437f0f2",
+      "hf_row_id": "aaf70cd9-abc5-444f-91a0-d5a3f3b149c3"
+    },
+    {
+      "trace_id": "hermes_demo_c9f175896dc4",
+      "hf_row_id": "05ac4705-47e0-4c8a-a2d6-8a268ee5bbc7"
+    },
+    {
+      "trace_id": "hermes_demo_05025df103e9",
+      "hf_row_id": "060d3906-fb43-4b6a-9f84-a3103381e614"
+    },
+    {
+      "trace_id": "hermes_demo_08198ab44bfc",
+      "hf_row_id": "7f4a2663-f3c3-4f91-95ee-eb1b2297d4c3"
+    },
+    {
+      "trace_id": "hermes_demo_a9a0ce77f6f0",
+      "hf_row_id": "946e57e0-588a-4fea-8706-55d3494484a4"
+    },
+    {
+      "trace_id": "hermes_demo_b7f1f278f9a8",
+      "hf_row_id": "463f274d-2c91-4029-b696-572c3f41bf74"
+    },
+    {
+      "trace_id": "hermes_demo_70ab1741a876",
+      "hf_row_id": "4176c822-4861-4299-8d1f-00b6cf36a64e"
+    },
+    {
+      "trace_id": "hermes_demo_3d7038c75288",
+      "hf_row_id": "d9a346f1-6ac7-400d-80e1-c56f3d631468"
+    },
+    {
+      "trace_id": "hermes_demo_7469da678dc6",
+      "hf_row_id": "41533bec-e68f-4235-8e86-6da478ba0579"
+    },
+    {
+      "trace_id": "hermes_demo_b9386f3f9d77",
+      "hf_row_id": "2127e006-a978-4693-bfef-c58bdca3bc6e"
+    },
+    {
+      "trace_id": "hermes_demo_80d7b026626d",
+      "hf_row_id": "d6dee63d-1f03-4f77-9b1f-377259c99d66"
+    }
+  ]
+}

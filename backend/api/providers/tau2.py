@@ -112,6 +112,7 @@ SPEC = ProviderSpec(
             "show_high_stakes": True,
             "show_repeated_task_rewards": True,
             "show_product_storyboard": True,
+            "show_track_comparison": False,
         },
     },
 )

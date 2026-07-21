@@ -52,11 +52,13 @@ class ScoreConfig:
 
     ``default_run_id`` values are historical: they name real score runs whose
     outputs ship in ``data/`` or live in the maintainer database. Override per
-    deployment with ``run_id_env``.
+    deployment with ``run_id_env``. A callable default lets a provider pick
+    the run id from its active trace source (e.g. hermes: bundled demo vs a
+    real state.db).
     """
 
     run_id_env: str
-    default_run_id: str
+    default_run_id: str | Callable[[], str]
     table_env: str
     default_table: str
 
@@ -124,7 +126,11 @@ def provider_descriptor(provider: str | None = None) -> dict[str, Any]:
 
 def score_run_id(provider: str | None = None) -> str:
     config = get_provider(provider).score
-    return env_value(config.run_id_env) or config.default_run_id
+    override = env_value(config.run_id_env)
+    if override:
+        return override
+    default = config.default_run_id
+    return default() if callable(default) else default
 
 
 def score_table(provider: str | None = None) -> str:

@@ -33,7 +33,7 @@ from backend.api.catalog import (
 from backend.api.character import character_report, character_trait_detail
 from backend.api.db import configured_database_url
 from backend.api.hermes import hermes_overview
-from backend.api.registry import resolve_provider
+from backend.api.registry import provider_descriptor, resolve_provider
 from backend.api.scores import score_inventory
 from backend.api.scoring_spaces import scoring_readiness
 from backend.api.tail import tail_report
@@ -156,7 +156,9 @@ def audit_tail(provider: str | None = None) -> dict:
 @app.get("/api/audit/score-spaces")
 def audit_score_spaces(provider: str | None = None) -> dict:
     traces, provider_id, source = load_product_traces(provider)
-    return scoring_readiness(traces=traces, provider_id=provider_id, source=source)
+    payload = scoring_readiness(traces=traces, provider_id=provider_id, source=source)
+    payload["descriptor"] = provider_descriptor(resolve_provider(provider))
+    return payload
 
 
 @app.get("/api/hermes/overview")

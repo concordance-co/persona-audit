@@ -4,7 +4,7 @@ import { BaselineHeatmap, GlobalBaselineStrip, OutlierTraceChart, SystemStateCar
 import { EMOTION_VECTOR_KEYS, PERSONA_VECTOR_KEYS } from '../helpers'
 import { InvestigationQueue, TraitDetailChart } from '../panels.jsx'
 import { TrackComparisonSection } from '../tracks.jsx'
-import { compactMetricNumber, segmentLabel, vectorLabel } from '../shared.jsx'
+import { InfoHint, ModeSwitch, compactMetricNumber, segmentLabel, vectorLabel } from '../shared.jsx'
 import { getProductAnalytics } from '../../../api'
 import { useAsyncResource } from '../../../hooks/useAsyncResource'
 import { useProviderSelection } from '../layout'
@@ -12,11 +12,13 @@ import { useState } from 'react'
 
 function Overview() {
   const [provider] = useProviderSelection()
-  // Persona demo normally renders the track-comparison layout, which replaces
-  // the segment lenses entirely. If comparison data is missing it falls back
-  // to the Track lens (Sol/Marrow/control): decision-type segments are 3
-  // traces each and get dropped by the min-n gate on segment deltas.
+  // Persona demo defaults to the Track segment lens (Sol/Marrow/control):
+  // its decision-type segments are 3 traces each and get dropped by the
+  // min-n gate on segment deltas.
   const [segmentMode, setSegmentMode] = useState(provider === 'persona_demo' ? 'final_action' : 'workflow')
+  // Every dataset lands on the same view (Behavior Baselines); Persona
+  // Separation is an opt-in mode that only lights up for track corpora.
+  const [viewMode, setViewMode] = useState('baselines')
   const [selectedPersona, setSelectedPersona] = useState('sycophantic')
   const [selectedEmotion, setSelectedEmotion] = useState('fear_and_overwhelm')
   const [showAllEmotions, setShowAllEmotions] = useState(false)
@@ -53,12 +55,27 @@ function Overview() {
   const personaRows = segmentRows.filter(row => personaVectors.includes(row.vector))
   const emotionRows = segmentRows.filter(row => emotionVectors.includes(row.vector))
   const emotionBaselineVectors = emotionVectors.slice(0, 7)
-  const selectedPersonaVector = personaVectors.includes(selectedPersona) ? selectedPersona : personaVectors[0]
-  const selectedEmotionVector = emotionVectors.includes(selectedEmotion) ? selectedEmotion : emotionVectors[0]
+  // Offer only vectors that actually have segment rows; a dropdown of dead
+  // options in front of an empty chart is noise.
+  const personaDetailVectors = personaVectors.filter(vector => personaRows.some(row => row.vector === vector))
+  const emotionDetailVectors = emotionVectors.filter(vector => emotionRows.some(row => row.vector === vector))
+  const selectedPersonaVector = personaDetailVectors.includes(selectedPersona) ? selectedPersona : personaDetailVectors[0]
+  const selectedEmotionVector = emotionDetailVectors.includes(selectedEmotion) ? selectedEmotion : emotionDetailVectors[0]
   const simulatedSeries = persona.simulated_trace_series || {}
   const outlierSeries = persona.outlier_turn_series || []
   const trackComparison = persona.track_comparison || {}
-  const showTrackComparison = Boolean(trackComparison.available && (trackComparison.vectors || []).length)
+  const separationAvailable = providerFeatures.show_track_comparison !== false
+    && Boolean(trackComparison.available && (trackComparison.vectors || []).length)
+  const viewModes = [
+    {
+      id: 'separation',
+      label: 'Persona separation',
+      disabled: !separationAvailable,
+      disabledHint: 'Persona separation needs paired persona tracks answering the same seeds — the Persona demo lens ships Sol, Marrow, and control over 25 shared seeds.',
+    },
+    { id: 'baselines', label: 'Behavior baselines', disabled: false },
+  ]
+  const activeView = separationAvailable && viewMode === 'separation' ? 'separation' : 'baselines'
 
   return (
     <div>
@@ -67,25 +84,28 @@ function Overview() {
           <h1 className="page-title">Overview</h1>
           <p className="subtle-line">{providerCopy.overview_subtitle || 'Enterprise behavior analytics.'}</p>
         </div>
-        {!showTrackComparison && (
-          <div className="compact-toggle">
-            {[
-              ['workflow', segmentLabelText],
-              ['final_action', actionLabelText],
-            ].map(([id, label]) => (
-              <button key={id} type="button" className={segmentMode === id ? 'active' : ''} onClick={() => setSegmentMode(id)}>
-                {label}
-              </button>
-            ))}
-          </div>
-        )}
+        <div className="page-header-controls">
+          <ModeSwitch modes={viewModes} value={activeView} onChange={setViewMode} />
+          {activeView === 'baselines' && (
+            <div className="compact-toggle">
+              {[
+                ['workflow', segmentLabelText],
+                ['final_action', actionLabelText],
+              ].map(([id, label]) => (
+                <button key={id} type="button" className={segmentMode === id ? 'active' : ''} onClick={() => setSegmentMode(id)}>
+                  {label}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
       <div className="overview-hero enterprise-hero">
         <div>
-          <h2>{showTrackComparison ? 'Persona Separation' : 'Behavior Baselines'}</h2>
+          <h2>{activeView === 'separation' ? 'Persona Separation' : 'Behavior Baselines'}</h2>
           <p>
-            {showTrackComparison
+            {activeView === 'separation'
               ? (providerCopy.overview_hero || 'Compare the persona tracks directly against each other on the same seeds.')
               : 'Compare where segments differ from global persona and emotion baselines.'}
           </p>
@@ -106,42 +126,18 @@ function Overview() {
         </div>
       )}
 
-      {persona.available && showTrackComparison && (
+      {persona.available && activeView === 'separation' && (
         <>
           <div className="overview-note">
             {(trackComparison.notes || [])[0] || 'Tracks are compared directly against each other; nothing on this page is measured against the pooled all-track baseline.'}
           </div>
 
           <TrackComparisonSection comparison={trackComparison} providerInfo={providerInfo} />
-
-          <div className="chart-row">
-            <InvestigationQueue outliers={persona.outliers || []} family={queueFamily} onFamily={setQueueFamily} provider={provider} />
-          </div>
-
-          {outlierSeries.length > 0 && (
-            <div className="overview-section">
-              <div className="section-heading-row">
-                <div>
-                  <div className="card-title">Outlier Trace Previews</div>
-                  <p className="muted-copy compact">Compact turn-level preview only; session pages own full trace inspection.</p>
-                </div>
-              </div>
-              <div className="chart-row two-col">
-                {outlierSeries.slice(0, 3).map(trace => (
-                  <OutlierTraceChart key={trace.trace_id} trace={trace} provider={provider} />
-                ))}
-              </div>
-            </div>
-          )}
         </>
       )}
 
-      {persona.available && !showTrackComparison && (
+      {persona.available && activeView === 'baselines' && (
         <>
-          <div className="overview-note">
-            {persona.normalization_note || 'Cells compare each segment\'s raw trait score to the global baseline. The 0–1 normalized scale is display-only.'}
-          </div>
-
           <div className="chart-row baseline-overview-row">
             <GlobalBaselineStrip
               title="Persona Baselines"
@@ -158,18 +154,15 @@ function Overview() {
 
           <div className="overview-section">
             <div className="section-heading-row">
-              <div className="card-title">Segment Baselines</div>
-              <p className="muted-copy compact">Compare the same segments through two lenses: assistant persona traits and emotion clusters.</p>
+              <div className="card-title">
+                Segment Baselines{' '}
+                <InfoHint text={persona.normalization_note || 'Cells compare each segment\'s raw trait score to the global baseline; values are z vs global. The 0–1 normalized scale is display-only.'} />
+              </div>
             </div>
             <div className="chart-row segment-baseline-stack">
               <BaselineHeatmap
                 title={`${segmentMode === 'workflow' ? segmentLabelText : actionLabelText} by Persona`}
                 badge="Persona traits"
-                legend={[
-                  `Rows: ${(segmentMode === 'workflow' ? segmentLabelText : actionLabelText).toLowerCase()}`,
-                  'Columns: traits',
-                  'Cells: z vs global',
-                ]}
                 rows={personaRows}
                 vectors={personaVectors}
                 groupKey={groupKey}
@@ -180,12 +173,6 @@ function Overview() {
               <BaselineHeatmap
                 title={`${segmentMode === 'workflow' ? segmentLabelText : actionLabelText} by Emotion`}
                 badge="Emotion clusters"
-                description="Default view shows the five emotion clusters with the largest segment differences. Expand for all ten."
-                legend={[
-                  `Rows: ${(segmentMode === 'workflow' ? segmentLabelText : actionLabelText).toLowerCase()}`,
-                  'Columns: emotion clusters',
-                  'Cells: z vs global',
-                ]}
                 rows={emotionRows}
                 vectors={emotionVectors}
                 groupKey={groupKey}
@@ -198,70 +185,48 @@ function Overview() {
           </div>
 
           <div className="chart-row two-col">
-            <div className="card enterprise-panel trait-detail-panel">
-              <div className="card-heading-row">
-                <div>
+            {personaRows.length > 0 && (
+              <div className="card enterprise-panel trait-detail-panel">
+                <div className="card-heading-row">
                   <div className="card-title">Persona Trait Detail</div>
-                  <p className="muted-copy compact">Select a trait to see which segments move above or below its global baseline.</p>
+                  <label className="select-control-label">
+                    <span>Trait</span>
+                    <select value={selectedPersonaVector} onChange={event => setSelectedPersona(event.target.value)}>
+                      {personaDetailVectors.map(vector => <option key={vector} value={vector}>{vectorLabel(vector)}</option>)}
+                    </select>
+                  </label>
                 </div>
-                <label className="select-control-label">
-                  <span>Trait</span>
-                  <select value={selectedPersonaVector} onChange={event => setSelectedPersona(event.target.value)}>
-                    {personaVectors.map(vector => <option key={vector} value={vector}>{vectorLabel(vector)}</option>)}
-                  </select>
-                </label>
+                <TraitDetailChart
+                  title={`${vectorLabel(selectedPersonaVector)} Across ${segmentMode === 'workflow' ? segmentLabelText : actionLabelText}`}
+                  readGuide="Bars show z-score vs the global trait baseline. 0 is typical; positive is more of this trait; negative is less."
+                  rows={personaRows}
+                  vector={selectedPersonaVector}
+                  groupLabel={groupLabel}
+                />
               </div>
-              <TraitDetailChart
-                title={`${vectorLabel(selectedPersonaVector)} Across ${segmentMode === 'workflow' ? segmentLabelText : actionLabelText}`}
-                readGuide="Bars show z-score vs the global trait baseline. 0 is typical; positive is more of this trait; negative is less."
-                rows={personaRows}
-                vector={selectedPersonaVector}
-                groupLabel={groupLabel}
-              />
-            </div>
+            )}
 
-            <div className="card enterprise-panel trait-detail-panel">
-              <div className="card-heading-row">
-                <div>
+            {emotionRows.length > 0 && (
+              <div className="card enterprise-panel trait-detail-panel">
+                <div className="card-heading-row">
                   <div className="card-title">Emotion Cluster Detail</div>
-                  <p className="muted-copy compact">Select a cluster to see where related emotion signals rise or fall by segment.</p>
+                  <label className="select-control-label">
+                    <span>Emotion cluster</span>
+                    <select value={selectedEmotionVector} onChange={event => setSelectedEmotion(event.target.value)}>
+                      {emotionDetailVectors.map(vector => <option key={vector} value={vector}>{vectorLabel(vector)}</option>)}
+                    </select>
+                  </label>
                 </div>
-                <label className="select-control-label">
-                  <span>Emotion cluster</span>
-                  <select value={selectedEmotionVector} onChange={event => setSelectedEmotion(event.target.value)}>
-                    {emotionVectors.map(vector => <option key={vector} value={vector}>{vectorLabel(vector)}</option>)}
-                  </select>
-                </label>
+                <TraitDetailChart
+                  title={`${vectorLabel(selectedEmotionVector)} Across ${segmentMode === 'workflow' ? segmentLabelText : actionLabelText}`}
+                  readGuide="Bars show z-score vs the global emotion-cluster baseline. 0 is typical; positive is more of this emotion family; negative is less."
+                  rows={emotionRows}
+                  vector={selectedEmotionVector}
+                  groupLabel={groupLabel}
+                />
               </div>
-              <TraitDetailChart
-                title={`${vectorLabel(selectedEmotionVector)} Across ${segmentMode === 'workflow' ? segmentLabelText : actionLabelText}`}
-                readGuide="Bars show z-score vs the global emotion-cluster baseline. 0 is typical; positive is more of this emotion family; negative is less."
-                rows={emotionRows}
-                vector={selectedEmotionVector}
-                groupLabel={groupLabel}
-              />
-            </div>
+            )}
           </div>
-
-          <div className="chart-row">
-            <InvestigationQueue outliers={persona.outliers || []} family={queueFamily} onFamily={setQueueFamily} provider={provider} />
-          </div>
-
-          {outlierSeries.length > 0 && (
-            <div className="overview-section">
-              <div className="section-heading-row">
-                <div>
-                  <div className="card-title">Outlier Trace Previews</div>
-                  <p className="muted-copy compact">Compact turn-level preview only; session pages own full trace inspection.</p>
-                </div>
-              </div>
-              <div className="chart-row two-col">
-                {outlierSeries.slice(0, 3).map(trace => (
-                  <OutlierTraceChart key={trace.trace_id} trace={trace} provider={provider} />
-                ))}
-              </div>
-            </div>
-          )}
 
           {providerFeatures.show_product_storyboard !== false && simulatedSeries.available && (
             <div className="overview-section">
@@ -277,6 +242,32 @@ function Overview() {
             </div>
           )}
 
+        </>
+      )}
+
+      {persona.available && (
+        <>
+          <div className="chart-row">
+            <InvestigationQueue outliers={persona.outliers || []} family={queueFamily} onFamily={setQueueFamily} provider={provider} />
+          </div>
+
+          {outlierSeries.length > 0 && (
+            <div className="overview-section">
+              <div className="section-heading-row">
+                <div>
+                  <div className="card-title">
+                    Outlier Trace Previews{' '}
+                    <InfoHint text="Turn-level signed z for each trace's tracked signal; the dotted line is the comparable length/position baseline. Click a trace id for full inspection." />
+                  </div>
+                </div>
+              </div>
+              <div className="chart-row two-col">
+                {outlierSeries.slice(0, 3).map(trace => (
+                  <OutlierTraceChart key={trace.trace_id} trace={trace} provider={provider} />
+                ))}
+              </div>
+            </div>
+          )}
         </>
       )}
     </div>

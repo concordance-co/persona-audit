@@ -108,7 +108,6 @@ function Registry() {
               <tr><th>Sections</th><td>{(capturePlan.sections || []).join(', ')}</td></tr>
             </tbody>
           </table>
-          {capturePlan.note && <p className="muted-copy compact registry-note">{capturePlan.note}</p>}
         </div>
 
         <div className="card">
@@ -131,12 +130,14 @@ function Registry() {
         </div>
       </div>
 
-      <div className="card">
-        <div className="card-title">Emotion Concept Index</div>
+      <details className="card session-collapsible">
+        <summary>
+          <span className="card-title">Emotion Concept Index · {emotionConcepts.length} concepts</span>
+        </summary>
         <div className="concept-grid">
           {emotionConcepts.map(concept => <span key={concept}>{concept}</span>)}
         </div>
-      </div>
+      </details>
     </div>
   )
 }

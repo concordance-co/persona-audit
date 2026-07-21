@@ -7,9 +7,14 @@ from pathlib import Path
 
 import pytest
 
-from backend.adapters.hermes import state_db_loader
+from backend.adapters.hermes import adapter, state_db_loader
 from backend.adapters.hermes.adapter import load_audit_traces_from_env
 from backend.adapters.hermes.state_db import read_traces
+
+
+def _clear_caches() -> None:
+    state_db_loader.load_traces_from_env.cache_clear()
+    adapter.load_audit_traces_from_env.cache_clear()
 
 
 def _build_state_db(path: Path) -> None:
@@ -93,9 +98,9 @@ def state_db(tmp_path, monkeypatch) -> Path:
     monkeypatch.setenv("PERSONA_AUDIT_HERMES_STATE_DB", str(db_path))
     monkeypatch.delenv("HERMES_SIDECAR_STATE_DB", raising=False)
     monkeypatch.delenv("PERSONA_AUDIT_HERMES_INCLUDE_ARCHIVED", raising=False)
-    state_db_loader.load_traces_from_env.cache_clear()
+    _clear_caches()
     yield db_path
-    state_db_loader.load_traces_from_env.cache_clear()
+    _clear_caches()
 
 
 def test_read_traces_normalizes_roles_reasoning_and_activity(state_db) -> None:
@@ -125,14 +130,47 @@ def test_load_audit_traces_shapes_the_product_trace(state_db) -> None:
     assert trace.outcome == "completed"
 
 
-def test_missing_db_falls_back_to_smoke_fixture(monkeypatch, tmp_path) -> None:
+def test_missing_db_falls_back_to_bundled_demo(monkeypatch, tmp_path) -> None:
     monkeypatch.setenv("PERSONA_AUDIT_HERMES_STATE_DB", str(tmp_path / "nope.db"))
     monkeypatch.delenv("HERMES_SIDECAR_STATE_DB", raising=False)
-    state_db_loader.load_traces_from_env.cache_clear()
+    monkeypatch.delenv("PERSONA_AUDIT_HERMES_DEMO_TRACES", raising=False)
+    _clear_caches()
+    try:
+        traces, provider_id, source = load_audit_traces_from_env()
+        assert provider_id == "hermes_demo"
+        assert "Hermes demo" in source
+        assert traces
+        trace = traces[0]
+        assert trace.labels["provider"] == "hermes"
+        assert any(turn.role == "assistant" and turn.reasoning for t in traces for turn in t.turns)
+    finally:
+        _clear_caches()
+
+
+def test_missing_db_and_demo_fall_back_to_smoke_fixture(monkeypatch, tmp_path) -> None:
+    monkeypatch.setenv("PERSONA_AUDIT_HERMES_STATE_DB", str(tmp_path / "nope.db"))
+    monkeypatch.setenv("PERSONA_AUDIT_HERMES_DEMO_TRACES", str(tmp_path / "nope.json"))
+    monkeypatch.delenv("HERMES_SIDECAR_STATE_DB", raising=False)
+    _clear_caches()
     try:
         traces, provider_id, source = load_audit_traces_from_env()
         assert provider_id == "hermes_smoke"
         assert source == "Hermes demo fixture"
         assert traces
     finally:
-        state_db_loader.load_traces_from_env.cache_clear()
+        _clear_caches()
+
+
+def test_score_run_id_tracks_the_active_hermes_source(monkeypatch, tmp_path, state_db) -> None:
+    from backend.api.registry import score_run_id
+
+    monkeypatch.delenv("PERSONA_AUDIT_HERMES_SCORE_RUN_ID", raising=False)
+    assert score_run_id("hermes") == "behavior_audit_hermes_scoring_v1", "real state.db keeps the historical run id"
+
+    monkeypatch.setenv("PERSONA_AUDIT_HERMES_STATE_DB", str(tmp_path / "nope.db"))
+    monkeypatch.delenv("PERSONA_AUDIT_HERMES_DEMO_TRACES", raising=False)
+    _clear_caches()
+    assert score_run_id("hermes") == "persona_audit_hermes_demo_v1", "bundled demo switches to the demo run id"
+
+    monkeypatch.setenv("PERSONA_AUDIT_HERMES_SCORE_RUN_ID", "wr_custom")
+    assert score_run_id("hermes") == "wr_custom", "env override always wins"

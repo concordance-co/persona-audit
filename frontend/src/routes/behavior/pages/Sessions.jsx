@@ -1,17 +1,21 @@
 // Sessions list page.
-// Moved verbatim from BehaviorAuditRoutes.jsx (pure reorganization).
 import { Link } from 'react-router-dom'
 import { RiskPill } from '../shared.jsx'
 import { fmt } from '../helpers'
 import { getAuditSessions } from '../../../api'
-import { providerPath, providerShowsReward, useProviderSelection } from '../layout'
+import { providerPath, useProviderSelection } from '../layout'
 import { useAsyncResource } from '../../../hooks/useAsyncResource'
+import { useProviderDescriptor } from '../../../hooks/useProviderDescriptor'
 import { useState } from 'react'
 
 function Sessions() {
   const [provider] = useProviderSelection()
   const [filters, setFilters] = useState({ domain: '', risk: '' })
-  const isCorpusMode = !providerShowsReward(provider)
+  const { descriptor, features } = useProviderDescriptor(provider)
+  const showReward = features.show_reward === true
+  const cohortLabel = descriptor.cohort_label || 'User'
+  const domainLabel = descriptor.domain_label || 'Topic'
+  const taskLabel = descriptor.task_label || 'Session'
   const { data: sessionPayload, error } = useAsyncResource(
     () => getAuditSessions({
       domain: filters.domain || undefined,
@@ -29,16 +33,20 @@ function Sessions() {
   )
 
   const domains = [...new Set(sessions.map(session => session.domain))].sort()
+  // A single-value column (e.g. every tau2 row says "airline") is noise.
+  const showDomain = domains.length > 1 || Boolean(filters.domain)
 
   return (
     <div>
       <div className="page-header">
         <h1 className="page-title">Sessions</h1>
         <div className="toolbar">
-          <select value={filters.domain} onChange={event => setFilters({ ...filters, domain: event.target.value })}>
-            <option value="">{isCorpusMode ? 'All topics' : 'All domains'}</option>
-            {domains.map(domain => <option key={domain} value={domain}>{domain}</option>)}
-          </select>
+          {showDomain && (
+            <select value={filters.domain} onChange={event => setFilters({ ...filters, domain: event.target.value })}>
+              <option value="">All {domainLabel.toLowerCase()}s</option>
+              {domains.map(domain => <option key={domain} value={domain}>{domain}</option>)}
+            </select>
+          )}
           <select value={filters.risk} onChange={event => setFilters({ ...filters, risk: event.target.value })}>
             <option value="">All risk</option>
             <option value="high">High</option>
@@ -54,13 +62,13 @@ function Sessions() {
           <thead>
             <tr>
               <th>Session</th>
-              <th>{isCorpusMode ? 'User' : 'Cohort'}</th>
-              <th>{isCorpusMode ? 'Topic' : 'Domain'}</th>
+              <th>{cohortLabel}</th>
+              {showDomain && <th>{domainLabel}</th>}
               <th>Risk</th>
-              {!isCorpusMode && <th className="num">Reward</th>}
+              {showReward && <th className="num">{descriptor.reward_label || 'Reward'}</th>}
               <th className="num">Flags</th>
               <th className="num">Turns</th>
-              <th>{isCorpusMode ? 'Session' : 'Task'}</th>
+              <th>{taskLabel}</th>
             </tr>
           </thead>
           <tbody>
@@ -68,9 +76,9 @@ function Sessions() {
               <tr key={session.trace_id}>
                 <td><Link to={providerPath(`/sessions/${session.trace_id}`, provider)}>{session.trace_id}</Link></td>
                 <td>{session.user_id}</td>
-                <td>{session.domain}</td>
+                {showDomain && <td>{session.domain}</td>}
                 <td><RiskPill band={session.risk_band} /></td>
-                {!isCorpusMode && <td className="num">{fmt(session.reward)}</td>}
+                {showReward && <td className="num">{fmt(session.reward)}</td>}
                 <td className="num">{session.flag_count}</td>
                 <td className="num">{session.turn_count}</td>
                 <td><code>{session.task_id}</code></td>

@@ -1,6 +1,6 @@
 // Overview/system chart components (baselines, trace-order series, outliers).
 // Moved verbatim from BehaviorAuditRoutes.jsx (pure reorganization).
-import { CHART_GRID_COLOR, EMOTION_VECTOR_KEYS, PERSONA_VECTOR_KEYS, fmt } from './helpers'
+import { CHART_GRID_COLOR, fmt } from './helpers'
 import { CartesianGrid, Legend, Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { Fragment, useState } from 'react'
 import { InfoHint, actionLabel, compactMetricNumber, compactNumber, deltaColor, deviationLabel, emotionClusterDetail, rowsByGroupAndVector, sessionFocusLink, topVectorsByDelta, vectorLabel, zColor, zValue } from './shared.jsx'
@@ -38,8 +38,6 @@ function TraceOrderSeriesChart({ rows, vectors }) {
 
   return (
     <div className="card full-width-card">
-      <div className="card-title">Deployment Preview Storyboard</div>
-      <p className="muted-copy compact">Example only: traces grouped by Tau2 task label, to preview how production monitoring would look. The jumps between blocks come from the grouping, not from real drift.</p>
       <div className="vector-toggle-row">
         {availableVectors.map(vector => (
           <label key={vector} className="vector-toggle">
@@ -105,9 +103,6 @@ function OutlierTraceChart({ trace, provider }) {
         </div>
         <div className="outlier-score-pill">{fmt(trace.trace_outlier_score)}</div>
       </div>
-      <p className="muted-copy compact">
-        Turn-level signed z for the tracked signal. Dotted line is the comparable length/position baseline.
-      </p>
       <ResponsiveContainer width="100%" height={240}>
         <LineChart data={rows}>
           <CartesianGrid strokeDasharray="3 3" stroke={CHART_GRID_COLOR} />
@@ -132,23 +127,21 @@ function OutlierTraceChart({ trace, provider }) {
 function SystemStateCards({ data, reward, scoreRowCount, providerInfo = {} }) {
   const families = data.score_source?.families || []
   const familyCount = families.length
-  const persona = data.persona_overview || {}
   const cohortLabel = providerInfo.cohort_plural_label || 'cohorts'
-  const actionLabelText = providerInfo.action_label || 'Action'
   return (
     <div className="stats-grid enterprise-stats">
       <PersonaMetric label="Traces" value={compactMetricNumber(reward.trace_count || data.trace_count)} detail={`${compactNumber(data.user_count)} ${cohortLabel.toLowerCase()}`} />
-      <PersonaMetric label="Turns" value={compactMetricNumber(reward.assistant_turn_count || 1268)} detail="Assistant turns with turn-level scores." />
+      <PersonaMetric label="Turns" value={compactMetricNumber(reward.assistant_turn_count)} detail="Assistant turns with turn-level scores." />
       <PersonaMetric label="Score Rows" value={compactMetricNumber(scoreRowCount)} detail={`${familyCount} score families loaded.`} />
-      <PersonaMetric label="Traits" value={compactMetricNumber((persona.persona_vectors || PERSONA_VECTOR_KEYS).length)} detail="Persona posture traits, separate from emotion clusters." />
-      <PersonaMetric label="Emotions" value={compactMetricNumber((persona.emotion_cluster_vectors || EMOTION_VECTOR_KEYS).length)} detail="Emotion cluster vectors used for the default emotion layer." />
-      <PersonaMetric label={`Low-n ${actionLabelText}`} value={compactMetricNumber(persona.low_n_task_action_count || 0)} detail="Segment/action cells below n=10 stay drilldown-only." />
     </div>
   )
 }
 
-function BaselineHeatmap({ title, badge, description, legend = [], rows = [], vectors = [], groupKey = 'workflow', groupLabel = value => value, groupHeader = 'Segment', expanded = false, onExpanded }) {
-  const visibleVectors = expanded ? vectors : topVectorsByDelta(rows, vectors, 5)
+function BaselineHeatmap({ title, badge, description, rows = [], vectors = [], groupKey = 'workflow', groupLabel = value => value, groupHeader = 'Segment', expanded = false, onExpanded }) {
+  // Columns with no data anywhere are noise, not signal — skip them.
+  const scoredVectors = new Set(rows.map(row => row.vector))
+  const candidateVectors = vectors.filter(vector => scoredVectors.has(vector))
+  const visibleVectors = expanded ? candidateVectors : topVectorsByDelta(rows, candidateVectors, 5)
   const vectorSet = new Set(visibleVectors)
   const byGroup = rowsByGroupAndVector(rows.filter(row => vectorSet.has(row.vector)))
   const groups = [...byGroup.keys()].sort((a, b) => {
@@ -166,15 +159,10 @@ function BaselineHeatmap({ title, badge, description, legend = [], rows = [], ve
             {badge && <span className="surface-badge">{badge}</span>}
           </div>
           {description && <p className="muted-copy compact">{description}</p>}
-          {legend.length > 0 && (
-            <div className="heatmap-legend">
-              {legend.map(item => <span key={item}>{item}</span>)}
-            </div>
-          )}
         </div>
-        {onExpanded && vectors.length > visibleVectors.length && (
+        {onExpanded && candidateVectors.length > visibleVectors.length && (
           <button type="button" className="small-button" onClick={() => onExpanded(!expanded)}>
-            {expanded ? 'Top 5' : `Show all ${vectors.length}`}
+            {expanded ? 'Top 5' : `Show all ${candidateVectors.length}`}
           </button>
         )}
       </div>
@@ -220,7 +208,6 @@ function GlobalBaselineStrip({ title, description, rows = [], vectors = [] }) {
         <div className="card-title">{title}</div>
         <InfoHint text={description || 'Raw/oriented global means. Heatmap cells below are z-deltas from these baselines.'} />
       </div>
-      {description && <p className="muted-copy compact">{description}</p>}
       <div className="baseline-strip-grid">
         {visibleRows.map(row => {
           const clusterDetail = emotionClusterDetail(row)
@@ -234,7 +221,7 @@ function GlobalBaselineStrip({ title, description, rows = [], vectors = [] }) {
             >
               <span>{vectorLabel(row.vector)}</span>
               <strong>{fmt(row.basis_mean)}</strong>
-              <small>sd {fmt(row.basis_sd)} · n={compactNumber(row.n)}</small>
+              <small>{row.basis_sd != null ? `sd ${fmt(row.basis_sd)} · ` : ''}n={compactNumber(row.n)}</small>
               {clusterDetail && (
                 <div className="baseline-popover" role="tooltip">
                   <div className="baseline-popover-title">{clusterDetail.label}</div>

@@ -1,17 +1,25 @@
-"""Hermes provider: local agent sessions read from a Hermes state.db."""
+"""Hermes provider: local agent sessions from a state.db, or the bundled demo."""
 
 from __future__ import annotations
 
-from backend.adapters.hermes.adapter import load_audit_traces_from_env
+from backend.adapters.hermes.adapter import DEMO_PROVIDER_ID, active_provider_id, load_audit_traces_from_env
 from backend.api.registry import ProviderSpec, ScoreConfig, TraceLoadResult
 
 # Historical run id: names score rows uploaded before the persona_audit rename.
 DEFAULT_RUN_ID = "behavior_audit_hermes_scoring_v1"
+# The shipped score cache in data/supplemental_scores/ for the bundled demo.
+DEMO_RUN_ID = "persona_audit_hermes_demo_v1"
 
 
 def _load_traces() -> TraceLoadResult:
     traces, provider_id, source = load_audit_traces_from_env()
     return TraceLoadResult(traces=traces, provider_id=provider_id, source=source)
+
+
+def _default_run_id() -> str:
+    """Demo run id when the bundled demo is the active source, else historical."""
+
+    return DEMO_RUN_ID if active_provider_id() == DEMO_PROVIDER_ID else DEFAULT_RUN_ID
 
 
 SPEC = ProviderSpec(
@@ -21,7 +29,7 @@ SPEC = ProviderSpec(
     load_traces=_load_traces,
     score=ScoreConfig(
         run_id_env="PERSONA_AUDIT_HERMES_SCORE_RUN_ID",
-        default_run_id=DEFAULT_RUN_ID,
+        default_run_id=_default_run_id,
         table_env="PERSONA_AUDIT_HERMES_SCORE_TABLE",
         default_table="persona_audit_hermes_score_rows",
     ),
@@ -60,6 +68,7 @@ SPEC = ProviderSpec(
             "show_high_stakes": False,
             "show_repeated_task_rewards": False,
             "show_product_storyboard": False,
+            "show_track_comparison": False,
             "show_hermes_mode": True,
         },
     },

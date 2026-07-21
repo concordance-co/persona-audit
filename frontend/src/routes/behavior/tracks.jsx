@@ -231,9 +231,8 @@ function CharacterTrackHeatmap({ points, meta }) {
             <span className="surface-badge">Direct comparison</span>
           </div>
           <p className="muted-copy compact">
-            Mean raw trait score per track, in the same units for every cell. Green is a positive raw score
-            (more of the trait), red negative, depth relative to the strongest score in the row. Rows rank by
-            how far the tracks disagree. Hover for per-trace peaks.
+            Mean raw trait score per track, same units in every cell; rows rank by how far the tracks
+            disagree. Hover for per-trace peaks.
           </p>
         </div>
       </div>

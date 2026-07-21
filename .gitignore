@@ -19,6 +19,7 @@ artifacts/
 data/supplemental_scores/*_assistant_trait_scores.json
 !data/supplemental_scores/wr_667d470028fd_c294c37f_assistant_trait_scores.json
 !data/supplemental_scores/wr_c325b34b511a_a9ce320d_assistant_trait_scores.json
+!data/supplemental_scores/persona_audit_hermes_demo_v1_assistant_trait_scores.json
 
 # Demo hill-climb factory snapshots stay local; only the shipped dataset
 # (data/demo/normalized_traces.json) and its score cache are tracked.

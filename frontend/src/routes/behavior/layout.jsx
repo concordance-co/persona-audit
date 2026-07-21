@@ -1,20 +1,31 @@
 import { NavLink, useLocation, useNavigate } from 'react-router-dom'
 
+// Hermes Lab sits last: it is the one deliberately separate surface; the
+// pages above it are shared by every data source.
 const PRIMARY_NAV = [
   ['/', 'Overview', true],
-  ['/hermes', 'Hermes Lab'],
   ['/character', 'Character'],
   ['/tail', 'Tail'],
+  ['/sessions', 'Sessions'],
+  ['/hermes', 'Hermes Lab'],
 ]
 
 const SUPPORT_NAV = [
   ['/report', 'Report'],
-  ['/sessions', 'Sessions'],
   ['/registry', 'Registry'],
   ['/llms', 'LLMs'],
 ]
 
 const PROVIDERS = ['persona_demo', 'tau2', 'hermes']
+const DEFAULT_PROVIDER = 'persona_demo'
+
+// Each dataset is a lens on the same pages: what changes is the data and
+// which view modes light up, never which pages exist.
+const PROVIDER_LENSES = [
+  ['persona_demo', 'Persona demo', 'Contrastive personas in activation space'],
+  ['tau2', 'Tau2 demo', 'Product analytics over an agent benchmark'],
+  ['hermes', 'Hermes', 'Bring your own agent sessions'],
+]
 
 export function useProviderSelection() {
   const location = useLocation()
@@ -22,15 +33,13 @@ export function useProviderSelection() {
   const params = new URLSearchParams(location.search)
   const urlProvider = params.get('provider')
   const storedProvider = typeof window !== 'undefined' ? window.localStorage.getItem('behaviorAuditProvider') : ''
-  const provider = PROVIDERS.includes(urlProvider) ? urlProvider : (PROVIDERS.includes(storedProvider) ? storedProvider : 'tau2')
+  const provider = PROVIDERS.includes(urlProvider) ? urlProvider : (PROVIDERS.includes(storedProvider) ? storedProvider : DEFAULT_PROVIDER)
   const setProvider = nextProvider => {
-    const next = PROVIDERS.includes(nextProvider) ? nextProvider : 'tau2'
+    const next = PROVIDERS.includes(nextProvider) ? nextProvider : DEFAULT_PROVIDER
     if (typeof window !== 'undefined') window.localStorage.setItem('behaviorAuditProvider', next)
     const nextParams = new URLSearchParams(location.search)
-    if (next === 'tau2') nextParams.delete('provider')
-    else nextParams.set('provider', next)
-    const query = nextParams.toString()
-    navigate(`${location.pathname}${query ? `?${query}` : ''}`, { replace: false })
+    nextParams.set('provider', next)
+    navigate(`${location.pathname}?${nextParams.toString()}`, { replace: false })
   }
   return [provider, setProvider]
 }
@@ -38,12 +47,8 @@ export function useProviderSelection() {
 function ProviderSelector({ provider, onProvider }) {
   return (
     <div className="provider-selector" aria-label="Demo provider">
-      {[
-        ['persona_demo', 'Persona demo'],
-        ['tau2', 'Tau2 demo'],
-        ['hermes', 'Hermes'],
-      ].map(([id, label]) => (
-        <button key={id} type="button" className={provider === id ? 'active' : ''} onClick={() => onProvider(id)}>
+      {PROVIDER_LENSES.map(([id, label, lens]) => (
+        <button key={id} type="button" className={provider === id ? 'active' : ''} title={lens} onClick={() => onProvider(id)}>
           {label}
         </button>
       ))}
@@ -51,17 +56,9 @@ function ProviderSelector({ provider, onProvider }) {
   )
 }
 
-// Mirrors the backend descriptor's features.show_reward for pages whose
-// payloads are bare lists (no embedded provider block).
-const REWARD_PROVIDERS = new Set(['tau2'])
-
-export function providerShowsReward(provider) {
-  return REWARD_PROVIDERS.has(provider)
-}
-
 export function providerPath(path, provider) {
   if (path === '/hermes') return '/hermes?provider=hermes'
-  if (!provider || provider === 'tau2') return path
+  if (!provider) return path
   const separator = path.includes('?') ? '&' : '?'
   return `${path}${separator}provider=${provider}`
 }

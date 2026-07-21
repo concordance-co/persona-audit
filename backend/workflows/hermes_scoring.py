@@ -81,6 +81,26 @@ def build_dataset() -> Dataset:
     return Dataset.from_examples(examples, name=f"{WORKFLOW_NAME}_{provider_id}")
 
 
+def build_reasoning_dataset(dataset: Dataset) -> Dataset | None:
+    """The subset of examples that carry a reasoning section.
+
+    Reasoning is sporadic in real Hermes sessions (and the bundled demo):
+    a turn can be a visible response with no thinking block. The reasoning
+    capture site hard-fails on examples without its section, so it gets its
+    own capture step over only the examples that have one.
+    """
+
+    examples = [
+        example
+        for example in getattr(dataset, "examples", ())
+        if isinstance(example.metadata.get("token_sections"), Mapping)
+        and "assistant_reasoning" in example.metadata["token_sections"]
+    ]
+    if not examples:
+        return None
+    return Dataset.from_examples(examples, name=f"{dataset.name}_reasoning")
+
+
 def _example_from_record(
     record: Mapping[str, Any],
     *,
@@ -131,38 +151,41 @@ def _example_from_record(
 
 def build_workflow(dataset: Dataset | None = None) -> WorkflowSpec:
     dataset = dataset or build_dataset()
-    include_reasoning = _include_reasoning(dataset)
+    reasoning_dataset = build_reasoning_dataset(dataset) if _reasoning_enabled() else None
     coordinate_steps, coordinate_refs = assistant_axis_steps()
 
-    capture_sites = [
-        ResidualSite(
-            name=ASSISTANT_RESIDUAL_FEATURE,
+    def _capture_site(name: str, section: str) -> ResidualSite:
+        return ResidualSite(
+            name=name,
             site="resid_post",
             layers=(ASSISTANT_LAYER, EMOTION_LAYER),
-            tokens=TokenSelector.section("assistant_response"),
+            tokens=TokenSelector.section(section),
             pooling=TokenPooling.mean(),
             storage=TensorStorage(dtype="float16", format="safetensors"),
         )
-    ]
-    if include_reasoning:
-        capture_sites.append(
-            ResidualSite(
-                name=REASONING_RESIDUAL_FEATURE,
-                site="resid_post",
-                layers=(ASSISTANT_LAYER, EMOTION_LAYER),
-                tokens=TokenSelector.section("assistant_reasoning"),
-                pooling=TokenPooling.mean(),
-                storage=TensorStorage(dtype="float16", format="safetensors"),
-            )
-        )
 
+    # Two capture steps: the response capture covers every scored turn, the
+    # reasoning capture only the turns that have a thinking block (the section
+    # selector hard-fails on examples without it).
     reasoning_steps: list[WorkflowStep] = []
-    if include_reasoning:
+    if reasoning_dataset is not None:
         reasoning_steps = [
-            assistant_projection_step(
-                "score_reasoning_assistant_axis", "capture_hermes", REASONING_RESIDUAL_FEATURE, coordinate_refs
+            WorkflowStep(
+                name="capture_hermes_reasoning",
+                runner="capture_gpu",
+                spec=CaptureSpec(
+                    engine=scoring_engine("HERMES", default_max_model_len=40960),
+                    dataset=reasoning_dataset,
+                    sites=(_capture_site(REASONING_RESIDUAL_FEATURE, "assistant_reasoning"),),
+                ),
             ),
-            emotion_score_step("score_reasoning_emotions", "capture_hermes", REASONING_RESIDUAL_FEATURE),
+            assistant_projection_step(
+                "score_reasoning_assistant_axis",
+                "capture_hermes_reasoning",
+                REASONING_RESIDUAL_FEATURE,
+                coordinate_refs,
+            ),
+            emotion_score_step("score_reasoning_emotions", "capture_hermes_reasoning", REASONING_RESIDUAL_FEATURE),
         ]
 
     return WorkflowSpec(
@@ -174,7 +197,7 @@ def build_workflow(dataset: Dataset | None = None) -> WorkflowSpec:
                 spec=CaptureSpec(
                     engine=scoring_engine("HERMES", default_max_model_len=40960),
                     dataset=dataset,
-                    sites=tuple(capture_sites),
+                    sites=(_capture_site(ASSISTANT_RESIDUAL_FEATURE, "assistant_response"),),
                 ),
             ),
             *coordinate_steps,
@@ -192,12 +215,5 @@ def build_runner_specs() -> dict[str, object]:
     return scoring_runner_specs("HERMES", WORKFLOW_NAME)
 
 
-def _include_reasoning(dataset: Dataset) -> bool:
-    if env_value("PERSONA_AUDIT_HERMES_INCLUDE_REASONING", "1").strip().lower() in {"0", "false", "no"}:
-        return False
-    examples = getattr(dataset, "examples", ())
-    return any(
-        isinstance(example.metadata.get("token_sections"), Mapping)
-        and "assistant_reasoning" in example.metadata["token_sections"]
-        for example in examples
-    )
+def _reasoning_enabled() -> bool:
+    return env_value("PERSONA_AUDIT_HERMES_INCLUDE_REASONING", "1").strip().lower() not in {"0", "false", "no"}
