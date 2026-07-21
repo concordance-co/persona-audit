@@ -12,20 +12,8 @@ function withProvider(path, provider) {
   return `${path}${separator}provider=${encodeURIComponent(provider)}`
 }
 
-export function getOverview() {
-  return fetchJSON('/api/overview')
-}
-
-export function getAssets() {
-  return fetchJSON('/api/assets')
-}
-
 export function getEmotions() {
   return fetchJSON('/api/emotions')
-}
-
-export function getHighStakesReports() {
-  return fetchJSON('/api/high-stakes/reports')
 }
 
 export function getAuditReport(provider) {
@@ -47,14 +35,6 @@ export function getAuditSessions(params = {}, provider) {
 
 export function getAuditSession(traceId, provider) {
   return fetchJSON(withProvider(`/api/audit/sessions/${encodeURIComponent(traceId)}`, provider))
-}
-
-export function getAuditUsers(provider) {
-  return fetchJSON(withProvider('/api/audit/users', provider))
-}
-
-export function getAuditUser(userId, provider) {
-  return fetchJSON(withProvider(`/api/audit/users/${encodeURIComponent(userId)}`, provider))
 }
 
 export function getScoreSpaces(provider) {
