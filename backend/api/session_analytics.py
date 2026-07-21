@@ -28,6 +28,7 @@ from backend.api.persona_analytics import (
     _round_or_none,
     _top_z_items,
     _turn_baseline_key,
+    _workflow_outliers,
     compute_basis,
     group_summary,
 )
@@ -56,12 +57,43 @@ def audit_sessions(
 ) -> list[dict[str, Any]]:
     report = _audit_report(provider)
     flags = report["flagged_moments"]
-    rows = [session_summary(trace, flags) for trace in report["traces"]]
+    signals = _session_signals(resolve_provider(provider))
+    rows = [
+        {**session_summary(trace, flags), "signal": signals.get(str(trace["trace_id"]))} for trace in report["traces"]
+    ]
     if domain:
         rows = [row for row in rows if row["domain"] == domain]
     if risk:
         rows = [row for row in rows if row["risk_band"] == risk]
+    rows.sort(key=lambda row: float((row["signal"] or {}).get("outlier_score") or 0.0), reverse=True)
     return rows
+
+
+@data_cache(maxsize=4)
+def _session_signals(provider: str) -> dict[str, dict[str, Any]]:
+    """Strongest activation signal per trace, for ranking the sessions list.
+
+    Reuses the workflow-outlier ranking (RMS z per family within the trace's
+    workflow); each trace keeps its higher-scoring family row.
+    """
+
+    best: dict[str, dict[str, Any]] = {}
+    for row in _workflow_outliers(_persona_records_for_product(provider)):
+        trace_id = str(row["trace_id"])
+        current = best.get(trace_id)
+        if current is not None and float(current["outlier_score"]) >= float(row["outlier_score"]):
+            continue
+        top = (row.get("top_z") or [{}])[0]
+        best[trace_id] = {
+            "outlier_score": row["outlier_score"],
+            "family": row["family"],
+            "vector": top.get("vector"),
+            "coordinate": top.get("coordinate"),
+            "z": top.get("z"),
+            "polarity": top.get("polarity"),
+            "baseline_scope": row["baseline_scope"],
+        }
+    return best
 
 
 def audit_session(trace_id: str, provider: str | None = None) -> dict[str, Any] | None:
