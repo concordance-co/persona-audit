@@ -840,6 +840,67 @@ a:hover {
   }
 }
 
+.tail-lead {
+  margin-bottom: var(--space-md);
+  cursor: default;
+}
+
+.tail-lead.is-concern {
+  border-left-color: var(--brand-red);
+}
+
+.tail-lead .finding-text {
+  margin: 2px 0 var(--space-xs);
+}
+
+.tail-lead .finding-cta {
+  text-decoration: none;
+}
+
+.toolbar input[type="search"] {
+  width: 170px;
+  min-height: 34px;
+  padding: 6px 10px;
+  border: 1px solid var(--surface-input-border);
+  border-radius: var(--radius-sm);
+  background: var(--surface-input-bg);
+  color: var(--audit-text);
+  font: inherit;
+  font-size: var(--font-size-sm);
+}
+
+.session-queue {
+  overflow-x: auto;
+}
+
+.session-queue table {
+  min-width: 980px;
+}
+
+.session-result-count {
+  color: var(--audit-text-muted);
+  font-family: var(--font-mono);
+  font-size: var(--font-size-xs);
+  white-space: nowrap;
+}
+
+.review-reason {
+  color: var(--audit-text-muted);
+  font-size: var(--font-size-xs);
+  white-space: nowrap;
+}
+
+.review-reason.flagged {
+  color: var(--audit-text-secondary);
+  font-weight: 700;
+}
+
+.empty-table {
+  padding: var(--space-xl);
+  color: var(--audit-text-muted);
+  text-align: center;
+}
+
 .overview-hero {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;

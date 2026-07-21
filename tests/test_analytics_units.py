@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from backend.api.persona_analytics import _eta_squared, group_summary
+from backend.api.session_analytics import _session_sort_key
 from backend.api.stats import histogram, histogram_counts
 
 
@@ -39,6 +40,24 @@ def test_eta_squared_separates_groups() -> None:
     assert _eta_squared(identical) in (0.0, None)
 
     assert _eta_squared({"a": [1.0]}) is None or isinstance(_eta_squared({"a": [1.0]}), float)
+
+
+def test_session_sort_key_uses_risk_and_flags_only_as_signal_tiebreakers() -> None:
+    rows = [
+        {"signal": {"outlier_score": 3.0}, "risk_band": "low", "flag_count": 0},
+        {"signal": {"outlier_score": 2.0}, "risk_band": "high", "flag_count": 9},
+        {"signal": {"outlier_score": 3.0}, "risk_band": "high", "flag_count": 1},
+        {"signal": {"outlier_score": 3.0}, "risk_band": "high", "flag_count": 4},
+    ]
+
+    ranked = sorted(rows, key=_session_sort_key, reverse=True)
+
+    assert [row["signal"]["outlier_score"] for row in ranked] == [3.0, 3.0, 3.0, 2.0]
+    assert [(row["risk_band"], row["flag_count"]) for row in ranked[:3]] == [
+        ("high", 4),
+        ("high", 1),
+        ("low", 0),
+    ]
 
 
 def test_histogram_edge_cases() -> None:

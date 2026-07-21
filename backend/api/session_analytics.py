@@ -65,8 +65,19 @@ def audit_sessions(
         rows = [row for row in rows if row["domain"] == domain]
     if risk:
         rows = [row for row in rows if row["risk_band"] == risk]
-    rows.sort(key=lambda row: float((row["signal"] or {}).get("outlier_score") or 0.0), reverse=True)
+    rows.sort(key=_session_sort_key, reverse=True)
     return rows
+
+
+def _session_sort_key(row: Mapping[str, Any]) -> tuple[float, int, int]:
+    """Rank by activation evidence, then lexical risk and flag count."""
+
+    risk_order = {"high": 2, "mid": 1, "low": 0}
+    return (
+        float((row.get("signal") or {}).get("outlier_score") or 0.0),
+        risk_order.get(str(row.get("risk_band") or "low"), 0),
+        int(row.get("flag_count") or 0),
+    )
 
 
 @data_cache(maxsize=4)

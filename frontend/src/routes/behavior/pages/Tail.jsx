@@ -281,18 +281,21 @@ function TailModeBadge({ mode }) {
   return <span className="tail-badge benign" title="An extreme on neutral or desirable traits — distinctive, but not a concern trait.">Benign extreme</span>
 }
 
+function tailExemplarPath(exemplar, provider, source = 'tail') {
+  return providerPath(sessionFocusLink(exemplar.trace_id, {
+    coordinate: `assistant_axis_trait__${exemplar.peak_trait}`,
+    vector: exemplar.peak_trait,
+    family: 'persona',
+    turn: exemplar.turn_index,
+    source,
+  }), provider)
+}
+
 function TailExemplar({ label, exemplar, provider }) {
-  const coordinate = `assistant_axis_trait__${exemplar.peak_trait}`
   return (
     <div className="tail-exemplar">
       <div className="tail-exemplar-label">{label}</div>
-      <Link className="tail-exemplar-link" to={providerPath(sessionFocusLink(exemplar.trace_id, {
-        coordinate,
-        vector: exemplar.peak_trait,
-        family: 'persona',
-        turn: exemplar.turn_index,
-        source: 'tail',
-      }), provider)}>{exemplar.trace_id} · turn {exemplar.turn_index} →</Link>
+      <Link className="tail-exemplar-link" to={tailExemplarPath(exemplar, provider)}>{exemplar.trace_id} · turn {exemplar.turn_index} →</Link>
       <div className="muted-copy compact">spiked on <strong>{exemplar.peak_label}</strong> · {exemplar.max_z}σ past baseline</div>
     </div>
   )
@@ -387,16 +390,34 @@ function Tail() {
   const meta = payload.meta || {}
   const concerning = modes.filter(m => m.concerning)
   const benign = modes.filter(m => !m.concerning)
+  const leadMode = concerning[0] || modes[0]
+  const tailTraceShare = meta.total_traces ? Number(meta.n_tail_traces || 0) / Number(meta.total_traces) : 0
 
   return (
     <div>
       <h1 className="page-title">Tail Risk</h1>
       <p className="muted-copy tail-intro">
         Extreme moments — turns past the corpus&apos;s <strong>own 90th-percentile</strong> on any persona trait —
-        clustered by which traits fired together: <strong>{modes.length} recurring patterns</strong> across{' '}
-        {meta.n_tail_traces} of {meta.total_traces} conversations.{' '}
+        clustered by which traits fired together.{' '}
         <InfoHint text={`Patterns split into concerning (a concern trait runs hot: sycophantic, manipulative, hostile, condescending) and benign extremes (distinctive, but on neutral or desirable traits). Intensity is in standard deviations (σ) past ${(meta.tracks || []).length > 0 ? 'each track’s own baseline, so extreme means extreme for that persona; clustering is shared across tracks' : 'the model’s own baseline, independent of the reference used on the Character page'}.`} />
       </p>
+
+      <section className={`card finding-card lead tail-lead${concerning.length ? ' is-concern' : ''}`}>
+        <div>
+          <div className="finding-kicker">What needs attention</div>
+          <h2 className="finding-text">{leadMode ? tailModeHeadline(leadMode) : 'No repeated extreme pattern'}</h2>
+          <div className="finding-metric">
+            {modes.length
+              ? `${modes.length} recurring pattern${modes.length === 1 ? '' : 's'} across ${meta.n_tail_traces} of ${meta.total_traces} conversations (${pct(tailTraceShare)}); ${concerning.length} ${concerning.length === 1 ? 'warrants' : 'warrant'} closer review.`
+              : 'The scored extremes do not repeat often enough to form a stable pattern.'}
+          </div>
+        </div>
+        {leadMode?.representative?.trace_id && (
+          <Link className="finding-cta" to={tailExemplarPath(leadMode.representative, provider, 'tail_lead')}>
+            Review exemplar <span aria-hidden="true">→</span>
+          </Link>
+        )}
+      </section>
 
       {(meta.tail_composition || []).length > 0 && (
         <div className="card tail-composition">
@@ -421,26 +442,6 @@ function Tail() {
           </div>
         </div>
       )}
-
-      <div className="stats-grid">
-        <div className="card tail-stat-concern">
-          <div className="card-title">Concerning patterns</div>
-          <div className="stat-value">{concerning.length}</div>
-          <div className="stat-label">a concern trait runs elevated</div>
-        </div>
-        <div className="card">
-          <div className="card-title">Benign extremes</div>
-          <div className="stat-value">{benign.length}</div>
-          <div className="stat-label">extreme, but not on a concern trait</div>
-        </div>
-        {scatter && (
-          <div className="card">
-            <div className="card-title">Scattered tail</div>
-            <div className="stat-value">{pct(scatter.size_share)}</div>
-            <div className="stat-label">one-off extremes, no repeated pattern</div>
-          </div>
-        )}
-      </div>
 
       {modes.length === 0 && (
         <div className="card"><p className="muted-copy">Not enough tail turns to form modes in this corpus.</p></div>
