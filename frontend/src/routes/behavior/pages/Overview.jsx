@@ -1,14 +1,173 @@
-// Overview page.
-// Moved verbatim from BehaviorAuditRoutes.jsx (pure reorganization).
-import { BaselineHeatmap, GlobalBaselineStrip, OutlierTraceChart, SystemStateCards, TraceOrderSeriesChart } from '../charts.jsx'
-import { EMOTION_VECTOR_KEYS, PERSONA_VECTOR_KEYS } from '../helpers'
+// Overview page: findings first, instruments second.
+// Opens with a strip of plain-language findings composed from the same
+// cached payloads the deep-dive pages read (character signature, tail
+// clusters, outlier queue, dataset exemplar), then the baseline heatmaps
+// and triage queue. See docs/internal/focus-group.md for the rationale.
+import { BaselineHeatmap, OutlierTraceChart } from '../charts.jsx'
+import { EMOTION_VECTOR_KEYS, PERSONA_VECTOR_KEYS, fmt, pct } from '../helpers'
 import { InvestigationQueue, TraitDetailChart } from '../panels.jsx'
-import { TrackComparisonSection } from '../tracks.jsx'
-import { InfoHint, ModeSwitch, compactMetricNumber, segmentLabel, vectorLabel } from '../shared.jsx'
-import { getProductAnalytics } from '../../../api'
+import { Link } from 'react-router-dom'
+import { TrackComparisonSection, trackTitle } from '../tracks.jsx'
+import { InfoHint, ModeSwitch, compactMetricNumber, deviationLabel, segmentLabel, sessionFocusLink, vectorLabel } from '../shared.jsx'
+import { joinTraits, signatureSummary, trackSignatureSummary } from './Character.jsx'
+import { tailModeHeadline } from './Tail.jsx'
+import { getCharacter, getProductAnalytics, getTail } from '../../../api'
+import { providerPath, useProviderSelection } from '../layout'
 import { useAsyncResource } from '../../../hooks/useAsyncResource'
-import { useProviderSelection } from '../layout'
 import { useState } from 'react'
+
+function FindingCard({ kicker, metric, to, onClick, children }) {
+  const body = (
+    <>
+      <div className="finding-kicker">{kicker}</div>
+      <p className="finding-text">{children}</p>
+      {metric && <div className="finding-metric">{metric}</div>}
+    </>
+  )
+  if (to) return <Link className="card finding-card" to={to}>{body}</Link>
+  return <button type="button" className="card finding-card" onClick={onClick}>{body}</button>
+}
+
+// One sentence per deep-dive page, each composed with the same helpers those
+// pages use, so the strip and the destination always agree.
+function characterFinding(char, provider) {
+  if (!char) return null
+  const meta = char.meta || {}
+  const trackReports = char.track_reports || []
+  if ((meta.tracks || []).length && trackReports.length) {
+    const parts = trackReports
+      .map(report => ({ track: trackTitle(report.track), higher: trackSignatureSummary(report).higher.slice(0, 2) }))
+      .filter(part => part.higher.length)
+    if (!parts.length) return null
+    return (
+      <FindingCard key="character" kicker="Character" metric="vs control on the same seeds" to={providerPath('/character', provider)}>
+        {parts.map((part, index) => (
+          <span key={part.track}>
+            {index > 0 && ' '}
+            <strong>{part.track}</strong> adds {joinTraits(part.higher.map(p => p.label))}.
+          </span>
+        ))}
+      </FindingCard>
+    )
+  }
+  if (meta.self_reference) return null
+  const { distinctive, suppressed } = signatureSummary(char.points || [])
+  if (!distinctive.length) return null
+  return (
+    <FindingCard key="character" kicker="Character" metric={`vs ${meta.reference_provider} reference`} to={providerPath('/character', provider)}>
+      Markedly more <strong>{joinTraits(distinctive.map(p => p.label))}</strong>
+      {suppressed.length > 0 && <> — and less {joinTraits(suppressed.map(p => p.label))}</>}.
+    </FindingCard>
+  )
+}
+
+function tailFinding(tail, provider) {
+  const modes = tail?.modes || []
+  if (!modes.length) return null
+  const concerning = modes.filter(mode => mode.concerning)
+  const lead = concerning[0] || modes[0]
+  return (
+    <FindingCard
+      key="tail"
+      kicker="Tail risk"
+      metric={`${modes.length} extreme patterns · ${concerning.length} concerning`}
+      to={providerPath('/tail', provider)}
+    >
+      {concerning.length ? 'Worst recurring pattern: ' : 'Most common extreme: '}
+      <strong>{tailModeHeadline(lead)}</strong>.
+    </FindingCard>
+  )
+}
+
+function triageFinding(outliers, provider) {
+  const row = (outliers || [])[0]
+  const top = row?.top_z?.[0]
+  if (!row || !top) return null
+  const link = providerPath(sessionFocusLink(row.trace_id, {
+    coordinate: top.coordinate,
+    vector: top.vector,
+    family: row.family,
+    polarity: top.polarity,
+    baseline_scope: row.baseline_scope || 'workflow',
+    source: 'overview_findings',
+  }), provider)
+  return (
+    <FindingCard key="triage" kicker="Start reading" metric={`aggregate score ${fmt(row.outlier_score)}`} to={link}>
+      <strong>{row.trace_id}</strong> is the strongest outlier: {deviationLabel(top)}, {fmt(top.z)}σ from its segment baseline.
+    </FindingCard>
+  )
+}
+
+function separationFinding(comparison, onShowSeparation) {
+  const lead = (comparison?.vectors || [])[0]
+  const eta = Number(lead?.eta_squared)
+  if (!lead || !Number.isFinite(eta)) return null
+  return (
+    <FindingCard key="separation" kicker="Persona separation" metric={`η² ${fmt(eta)}`} onClick={onShowSeparation}>
+      Which persona is speaking explains <strong>{pct(eta)}</strong> of the spread in {vectorLabel(lead.vector)}.
+    </FindingCard>
+  )
+}
+
+function outcomeFinding(rows) {
+  const lead = (rows || [])[0]
+  if (!lead) return null
+  const more = Number(lead.delta_fail_minus_pass) > 0
+  return (
+    <FindingCard
+      key="outcome"
+      kicker="Outcome link"
+      metric={`Cohen's d ${fmt(Math.abs(Number(lead.cohen_d_fail_vs_pass)))}`}
+      onClick={() => document.getElementById('outcome-behavior')?.scrollIntoView({ behavior: 'smooth' })}
+    >
+      Failed <strong>{segmentLabel(lead.workflow, 'workflow')}</strong> sessions read {more ? 'more' : 'less'}{' '}
+      <strong>{vectorLabel(lead.vector)}</strong> than passing ones.
+    </FindingCard>
+  )
+}
+
+// The tau2 exemplar: the computed-but-previously-hidden coupling between
+// behavior and task outcome. Only renders when a corpus carries rewards.
+function OutcomeBehaviorCard({ rows, segmentLabelText }) {
+  if (!rows?.length) return null
+  return (
+    <div className="card enterprise-panel" id="outcome-behavior">
+      <div className="card-heading-row">
+        <div>
+          <div className="card-title">
+            Outcome ↔ Behavior{' '}
+            <InfoHint text="Cohen's d of each trait's raw score, failed sessions minus passing ones, within a segment (segments need at least 4 of each). Positive means the trait reads stronger when the task fails. A coupling worth investigating, not a causal claim." />
+          </div>
+          <p className="muted-copy compact">
+            Where behavior separates failing sessions from passing ones, per {segmentLabelText.toLowerCase()}.
+          </p>
+        </div>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>{segmentLabelText}</th>
+            <th>Trait</th>
+            <th>Read</th>
+            <th className="num">d (fail − pass)</th>
+            <th className="num">n fail / pass</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.slice(0, 6).map(row => (
+            <tr key={`${row.workflow}-${row.vector}`}>
+              <td>{segmentLabel(row.workflow, 'workflow')}</td>
+              <td>{vectorLabel(row.vector)}</td>
+              <td>{Number(row.delta_fail_minus_pass) > 0 ? 'stronger in failures' : 'weaker in failures'}</td>
+              <td className="num">{fmt(row.cohen_d_fail_vs_pass)}</td>
+              <td className="num">{row.n_fail} / {row.n_pass}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  )
+}
 
 function Overview() {
   const [provider] = useProviderSelection()
@@ -19,11 +178,14 @@ function Overview() {
   // Every dataset lands on the same view (Behavior Baselines); Persona
   // Separation is an opt-in mode that only lights up for track corpora.
   const [viewMode, setViewMode] = useState('baselines')
-  const [selectedPersona, setSelectedPersona] = useState('sycophantic')
-  const [selectedEmotion, setSelectedEmotion] = useState('fear_and_overwhelm')
+  const [selectedTrait, setSelectedTrait] = useState('sycophantic')
   const [showAllEmotions, setShowAllEmotions] = useState(false)
   const [queueFamily, setQueueFamily] = useState('persona')
   const { data, error } = useAsyncResource(() => getProductAnalytics(provider), [provider])
+  // Character and Tail are cached server-side; their headlines feed the
+  // findings strip. A failure here only hides the strip's card.
+  const { data: characterData } = useAsyncResource(() => getCharacter(provider), [provider])
+  const { data: tailData } = useAsyncResource(() => getTail(provider), [provider])
 
   if (error) return (
     <div>
@@ -39,12 +201,8 @@ function Overview() {
   const providerFeatures = providerInfo.features || {}
   const persona = data.persona_overview || {}
   const reward = persona.reward_math || {}
-  const scoreRowCount = data.score_source?.available
-    ? (data.score_source.families || []).reduce((sum, row) => sum + Number(row.row_count || 0), 0)
-    : null
   const personaVectors = (persona.persona_vectors || PERSONA_VECTOR_KEYS).filter(vector => PERSONA_VECTOR_KEYS.includes(vector))
   const emotionVectors = (persona.emotion_cluster_vectors || EMOTION_VECTOR_KEYS).filter(vector => EMOTION_VECTOR_KEYS.includes(vector))
-  const baselineInventory = persona.vector_inventory || []
   const segmentRows = segmentMode === 'final_action'
     ? (persona.action_vector_deltas || [])
     : (persona.workflow_vector_deltas || [])
@@ -54,18 +212,18 @@ function Overview() {
   const actionLabelText = providerInfo.action_label || 'Final Action'
   const personaRows = segmentRows.filter(row => personaVectors.includes(row.vector))
   const emotionRows = segmentRows.filter(row => emotionVectors.includes(row.vector))
-  const emotionBaselineVectors = emotionVectors.slice(0, 7)
   // Offer only vectors that actually have segment rows; a dropdown of dead
   // options in front of an empty chart is noise.
   const personaDetailVectors = personaVectors.filter(vector => personaRows.some(row => row.vector === vector))
   const emotionDetailVectors = emotionVectors.filter(vector => emotionRows.some(row => row.vector === vector))
-  const selectedPersonaVector = personaDetailVectors.includes(selectedPersona) ? selectedPersona : personaDetailVectors[0]
-  const selectedEmotionVector = emotionDetailVectors.includes(selectedEmotion) ? selectedEmotion : emotionDetailVectors[0]
-  const simulatedSeries = persona.simulated_trace_series || {}
+  const detailVectors = [...personaDetailVectors, ...emotionDetailVectors]
+  const activeTrait = detailVectors.includes(selectedTrait) ? selectedTrait : detailVectors[0]
+  const activeTraitRows = personaDetailVectors.includes(activeTrait) ? personaRows : emotionRows
   const outlierSeries = persona.outlier_turn_series || []
   const trackComparison = persona.track_comparison || {}
   const separationAvailable = providerFeatures.show_track_comparison !== false
     && Boolean(trackComparison.available && (trackComparison.vectors || []).length)
+  const outcomeRows = providerFeatures.show_pass_rate === false ? [] : (persona.workflow_outcome_deltas || [])
   const viewModes = [
     {
       id: 'separation',
@@ -76,6 +234,14 @@ function Overview() {
     { id: 'baselines', label: 'Behavior baselines', disabled: false },
   ]
   const activeView = separationAvailable && viewMode === 'separation' ? 'separation' : 'baselines'
+
+  const findings = [
+    characterFinding(characterData, provider),
+    tailFinding(tailData, provider),
+    separationAvailable ? separationFinding(trackComparison, () => setViewMode('separation')) : null,
+    outcomeFinding(outcomeRows),
+    triageFinding(persona.outliers, provider),
+  ].filter(Boolean)
 
   return (
     <div>
@@ -101,6 +267,12 @@ function Overview() {
         </div>
       </div>
 
+      {findings.length > 0 && (
+        <div className="findings-grid" aria-label="What stands out">
+          {findings}
+        </div>
+      )}
+
       <div className="overview-hero enterprise-hero">
         <div>
           <h2>{activeView === 'separation' ? 'Persona Separation' : 'Behavior Baselines'}</h2>
@@ -112,12 +284,11 @@ function Overview() {
         </div>
         <div className="overview-chip-row" aria-label="Dataset scope">
           <span>{compactMetricNumber(reward.trace_count || data.trace_count)} traces</span>
+          {reward.assistant_turn_count != null && <span>{compactMetricNumber(reward.assistant_turn_count)} turns</span>}
           {providerInfo.dataset_label && <span>{providerInfo.dataset_label}</span>}
           <span>{data.score_source?.available ? 'Scores loaded' : 'Cached data'}</span>
         </div>
       </div>
-
-      <SystemStateCards data={data} reward={reward} scoreRowCount={scoreRowCount} providerInfo={providerInfo} />
 
       {!persona.available && (
         <div className="card">
@@ -138,20 +309,6 @@ function Overview() {
 
       {persona.available && activeView === 'baselines' && (
         <>
-          <div className="chart-row baseline-overview-row">
-            <GlobalBaselineStrip
-              title="Persona Baselines"
-              rows={baselineInventory}
-              vectors={personaVectors}
-            />
-            <GlobalBaselineStrip
-              title="Emotion Baselines"
-              description="Emotion clusters group related scored emotion concepts into readable families, such as joy, contentment, gratitude, suspicion, anger, fear, and shame."
-              rows={baselineInventory}
-              vectors={emotionBaselineVectors}
-            />
-          </div>
-
           <div className="overview-section">
             <div className="section-heading-row">
               <div className="card-title">
@@ -173,6 +330,7 @@ function Overview() {
               <BaselineHeatmap
                 title={`${segmentMode === 'workflow' ? segmentLabelText : actionLabelText} by Emotion`}
                 badge="Emotion clusters"
+                description="Emotion clusters group related scored emotion concepts into readable families, such as joy, contentment, gratitude, suspicion, anger, fear, and shame."
                 rows={emotionRows}
                 vectors={emotionVectors}
                 groupKey={groupKey}
@@ -184,64 +342,44 @@ function Overview() {
             </div>
           </div>
 
-          <div className="chart-row two-col">
-            {personaRows.length > 0 && (
+          <div className="chart-row">
+            {activeTraitRows.length > 0 && (
               <div className="card enterprise-panel trait-detail-panel">
                 <div className="card-heading-row">
-                  <div className="card-title">Persona Trait Detail</div>
+                  <div className="card-title">Trait Detail</div>
                   <label className="select-control-label">
                     <span>Trait</span>
-                    <select value={selectedPersonaVector} onChange={event => setSelectedPersona(event.target.value)}>
-                      {personaDetailVectors.map(vector => <option key={vector} value={vector}>{vectorLabel(vector)}</option>)}
+                    <select value={activeTrait} onChange={event => setSelectedTrait(event.target.value)}>
+                      {personaDetailVectors.length > 0 && (
+                        <optgroup label="Persona traits">
+                          {personaDetailVectors.map(vector => <option key={vector} value={vector}>{vectorLabel(vector)}</option>)}
+                        </optgroup>
+                      )}
+                      {emotionDetailVectors.length > 0 && (
+                        <optgroup label="Emotion clusters">
+                          {emotionDetailVectors.map(vector => <option key={vector} value={vector}>{vectorLabel(vector)}</option>)}
+                        </optgroup>
+                      )}
                     </select>
                   </label>
                 </div>
                 <TraitDetailChart
-                  title={`${vectorLabel(selectedPersonaVector)} Across ${segmentMode === 'workflow' ? segmentLabelText : actionLabelText}`}
-                  readGuide="Bars show z-score vs the global trait baseline. 0 is typical; positive is more of this trait; negative is less."
-                  rows={personaRows}
-                  vector={selectedPersonaVector}
+                  title={`${vectorLabel(activeTrait)} Across ${segmentMode === 'workflow' ? segmentLabelText : actionLabelText}`}
+                  readGuide="Bars show z-score vs the global baseline for this trait or emotion family. 0 is typical; positive is more; negative is less."
+                  rows={activeTraitRows}
+                  vector={activeTrait}
                   groupLabel={groupLabel}
                 />
               </div>
             )}
 
-            {emotionRows.length > 0 && (
-              <div className="card enterprise-panel trait-detail-panel">
-                <div className="card-heading-row">
-                  <div className="card-title">Emotion Cluster Detail</div>
-                  <label className="select-control-label">
-                    <span>Emotion cluster</span>
-                    <select value={selectedEmotionVector} onChange={event => setSelectedEmotion(event.target.value)}>
-                      {emotionDetailVectors.map(vector => <option key={vector} value={vector}>{vectorLabel(vector)}</option>)}
-                    </select>
-                  </label>
-                </div>
-                <TraitDetailChart
-                  title={`${vectorLabel(selectedEmotionVector)} Across ${segmentMode === 'workflow' ? segmentLabelText : actionLabelText}`}
-                  readGuide="Bars show z-score vs the global emotion-cluster baseline. 0 is typical; positive is more of this emotion family; negative is less."
-                  rows={emotionRows}
-                  vector={selectedEmotionVector}
-                  groupLabel={groupLabel}
-                />
-              </div>
-            )}
           </div>
 
-          {providerFeatures.show_product_storyboard !== false && simulatedSeries.available && (
-            <div className="overview-section">
-              <div className="section-heading-row">
-                <div>
-                  <div className="card-title">Deployment Preview Storyboard</div>
-                  <p className="muted-copy compact">
-                    {providerCopy.storyboard_note || `Example-only: each ${simulatedSeries.window_size}-trace block is sorted by segment labels.`}
-                  </p>
-                </div>
-              </div>
-              <TraceOrderSeriesChart rows={simulatedSeries.rows || []} vectors={simulatedSeries.vectors || []} />
+          {outcomeRows.length > 0 && (
+            <div className="chart-row">
+              <OutcomeBehaviorCard rows={outcomeRows} segmentLabelText={segmentLabelText} />
             </div>
           )}
-
         </>
       )}
 

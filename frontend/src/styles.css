@@ -742,6 +742,53 @@ a:hover {
   color: var(--audit-text-secondary);
 }
 
+.findings-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: var(--space-md);
+  margin-bottom: var(--space-md);
+}
+
+.finding-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-xs);
+  text-align: left;
+  text-decoration: none;
+  color: var(--audit-text);
+  font: inherit;
+  cursor: pointer;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.finding-card:hover {
+  border-color: var(--surface-border-strong);
+  box-shadow: 0 2px 8px rgba(8, 8, 8, 0.12);
+}
+
+.finding-kicker {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--brand-red);
+}
+
+.finding-text {
+  font-size: var(--font-size-sm);
+  line-height: 1.45;
+  color: var(--audit-text);
+}
+
+.finding-metric {
+  margin-top: auto;
+  font-family: var(--font-mono);
+  font-size: var(--font-size-xs);
+  color: var(--audit-text-secondary);
+}
+
 .overview-hero {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;

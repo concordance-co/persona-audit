@@ -480,42 +480,6 @@ function TrackCharacterSpectrum({ reports, selected, onSelect }) {
 }
 
 
-function TrackCharacterLevels({ reports, selected, onSelect }) {
-  const data = mergeTrackPoints(reports)
-    .map(row => ({
-      ...row,
-      control: row.control_mean_score ?? null,
-      ...Object.fromEntries(reports.map(report => [report.track, row[report.track]?.mean_score ?? null])),
-    }))
-    .sort((a, b) => Math.max(...reports.map(r => Math.abs(b[r.track] ?? 0))) - Math.max(...reports.map(r => Math.abs(a[r.track] ?? 0))))
-  const height = Math.max(360, data.length * 52 + 48)
-  return (
-    <ResponsiveContainer width="100%" height={height}>
-      <BarChart layout="vertical" data={data} margin={{ top: 8, right: 24, left: 8, bottom: 8 }} barGap={2}>
-        <CartesianGrid strokeDasharray="3 3" stroke={CHART_GRID_COLOR} horizontal={false} />
-        <XAxis type="number" domain={['auto', 'auto']} tickFormatter={value => Number(value).toFixed(1)} tick={{ fontSize: 11 }} />
-        <YAxis type="category" dataKey="label" width={96} interval={0} tick={{ fontSize: 11 }} />
-        <ReferenceLine x={0} stroke={CHART_ZERO_COLOR} />
-        <Tooltip cursor={{ fill: 'rgba(8,8,8,0.04)' }} content={<TrackCharacterTooltip />} />
-        <Legend wrapperStyle={{ fontSize: 11 }} />
-        {reports.map((report, index) => (
-          <Bar
-            key={report.track}
-            dataKey={report.track}
-            name={trackTitle(report.track)}
-            fill={trackColor(report.track, index)}
-            radius={[0, 3, 3, 0]}
-            isAnimationActive={false}
-            cursor="pointer"
-            onClick={entry => onSelect(characterCoord(entry))}
-          />
-        ))}
-        <Bar dataKey="control" name="Control" fill={trackColor('control')} radius={[0, 3, 3, 0]} isAnimationActive={false} />
-      </BarChart>
-    </ResponsiveContainer>
-  )
-}
-
 function CharacterBarTooltip({ active, payload, mode }) {
   if (!active || !payload || !payload.length) return null
   const point = payload[0]?.payload
@@ -555,33 +519,6 @@ function CharacterSpectrum({ points, selected, onSelect }) {
               key={point.coordinate}
               fill={point.distinctiveness >= 0 ? POSITIVE_COLOR : HIGHLIGHT_COLOR}
               fillOpacity={point.coordinate === selected ? 1 : 0.78}
-              stroke={point.coordinate === selected ? '#080808' : 'none'}
-              strokeWidth={point.coordinate === selected ? 1.5 : 0}
-            />
-          ))}
-        </Bar>
-      </BarChart>
-    </ResponsiveContainer>
-  )
-}
-
-function CharacterFrequency({ points, selected, onSelect }) {
-  const data = [...points].sort((a, b) => b.frequency - a.frequency)
-  const height = Math.max(360, data.length * 34 + 48)
-  return (
-    <ResponsiveContainer width="100%" height={height}>
-      <BarChart layout="vertical" data={data} margin={{ top: 8, right: 24, left: 8, bottom: 8 }} barGap={2}>
-        <CartesianGrid strokeDasharray="3 3" stroke={CHART_GRID_COLOR} horizontal={false} />
-        <XAxis type="number" domain={[0, 1]} tickFormatter={pct} tick={{ fontSize: 11 }} />
-        <YAxis type="category" dataKey="label" width={96} interval={0} tick={{ fontSize: 11 }} />
-        <Tooltip cursor={{ fill: 'rgba(8,8,8,0.04)' }} content={<CharacterBarTooltip mode="frequency" />} />
-        <Legend wrapperStyle={{ fontSize: 11 }} />
-        <Bar dataKey="reference_rate" name="Reference" fill={CHARACTER_REFERENCE_COLOR} radius={[0, 3, 3, 0]} isAnimationActive={false} />
-        <Bar dataKey="frequency" name="This model" fill={CHARACTER_AUDITED_COLOR} radius={[0, 3, 3, 0]} isAnimationActive={false} cursor="pointer" onClick={entry => onSelect(characterCoord(entry))}>
-          {data.map(point => (
-            <Cell
-              key={point.coordinate}
-              fillOpacity={point.coordinate === selected ? 1 : 0.85}
               stroke={point.coordinate === selected ? '#080808' : 'none'}
               strokeWidth={point.coordinate === selected ? 1.5 : 0}
             />
@@ -645,21 +582,22 @@ function CharacterPortrait({ points, selected, onSelect }) {
   )
 }
 
-// Every dataset sees the same six modes; availability, not the component
-// tree, changes with the data. The classic trio reads the pooled points
-// (frequency x distinctiveness vs the reference corpus); the track trio
+// Every dataset sees the same four modes; availability, not the component
+// tree, changes with the data. The classic pair reads the pooled points
+// (frequency x distinctiveness vs the reference corpus); the track pair
 // overlays per-track raw scores against control and only lights up when
-// the corpus ships paired persona tracks.
+// the corpus ships paired persona tracks. (A separate frequency chart and
+// a track-levels chart were folded in: Portrait carries frequency on its
+// x-axis and tooltips, and the track heatmap below shows raw levels with
+// control alongside.)
 const CHARACTER_MODES = [
-  ['portrait', 'Portrait', 'Two measurements of one space: frequency on x, signed distinctiveness on y. Above the line is distinctive, below is suppressed. Click a trait to drill in.'],
+  ['portrait', 'Portrait', 'Two measurements of one space: frequency on x, signed distinctiveness on y. Above the line is distinctive, below is suppressed. Hover for exact rates vs the reference; click a trait to drill in.'],
   ['signature', 'Signature', 'Traits ranked by signed lift over the reference — the model’s characteristic signature at a glance. Click a bar to drill in.'],
-  ['frequency', 'Frequency', 'How often each trait is present in this model vs the reference. Frequency keeps distinctiveness honest. Click a bar to drill in.'],
   ['track_portrait', 'Track portrait', 'Two raw measurements of one space: how strongly the trait reads (x, mean raw score) and how far that sits from control (y, Δ raw score). The zero line is control. Click a trait to drill in.'],
   ['track_deltas', 'Track deltas', 'Traits ranked by raw-score delta vs control — each persona’s signature in score units. Click a bar to drill in.'],
-  ['track_levels', 'Track levels', 'Mean raw score per trait for each persona, with control alongside in the same units. Click a bar to drill in.'],
 ]
 
-const TRACK_MODE_IDS = new Set(['track_portrait', 'track_deltas', 'track_levels'])
+const TRACK_MODE_IDS = new Set(['track_portrait', 'track_deltas'])
 
 function characterModeStates({ hasTracks }) {
   return CHARACTER_MODES.map(([id, label, caption]) => {
@@ -774,13 +712,9 @@ function Character() {
             ? <TrackCharacterPortrait reports={trackReports} selected={selected} onSelect={setSelected} />
             : activeMode === 'track_deltas'
               ? <TrackCharacterSpectrum reports={trackReports} selected={selected} onSelect={setSelected} />
-              : activeMode === 'track_levels'
-                ? <TrackCharacterLevels reports={trackReports} selected={selected} onSelect={setSelected} />
-                : activeMode === 'portrait'
-                  ? <CharacterPortrait points={points} selected={selected} onSelect={setSelected} />
-                  : activeMode === 'signature'
-                    ? <CharacterSpectrum points={points} selected={selected} onSelect={setSelected} />
-                    : <CharacterFrequency points={points} selected={selected} onSelect={setSelected} />}
+              : activeMode === 'portrait'
+                ? <CharacterPortrait points={points} selected={selected} onSelect={setSelected} />
+                : <CharacterSpectrum points={points} selected={selected} onSelect={setSelected} />}
       </div>
 
       {hasTracks && <CharacterTrackHeatmap points={points} meta={meta} />}
@@ -805,4 +739,4 @@ function Character() {
   )
 }
 
-export { CHARACTER_MODES, CHARACTER_AUDITED_COLOR, CHARACTER_REFERENCE_COLOR, Character, CharacterBarTooltip, CharacterDistribution, CharacterDistributionTooltip, CharacterDrift, CharacterDrilldown, CharacterFrequency, CharacterPortrait, CharacterScatterTooltip, CharacterSignature, CharacterSpectrum, CharacterTraitLabel, TrackCharacterLevels, TrackCharacterPortrait, TrackCharacterSignature, TrackCharacterSpectrum, TrackCharacterTooltip, TrackPortraitTooltip, characterCoord, joinTraits, mergeTrackPoints, rawScore, signatureSummary, trackSignatureSummary }
+export { CHARACTER_MODES, CHARACTER_AUDITED_COLOR, CHARACTER_REFERENCE_COLOR, Character, CharacterBarTooltip, CharacterDistribution, CharacterDistributionTooltip, CharacterDrift, CharacterDrilldown, CharacterPortrait, CharacterScatterTooltip, CharacterSignature, CharacterSpectrum, CharacterTraitLabel, TrackCharacterPortrait, TrackCharacterSignature, TrackCharacterSpectrum, TrackCharacterTooltip, TrackPortraitTooltip, characterCoord, joinTraits, mergeTrackPoints, rawScore, signatureSummary, trackSignatureSummary }

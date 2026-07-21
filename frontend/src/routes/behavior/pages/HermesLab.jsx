@@ -129,27 +129,6 @@ function HermesTodayTab({ data }) {
           <div className="hermes-tell-foot">{data.tell?.status || 'waiting_for_reasoning_scores'}</div>
         </div>
       </div>
-    </section>
-  )
-}
-
-function HermesOverviewTab({ data }) {
-  const mood = data.mood?.current
-  const valence = Number(mood?.valence || 0)
-  const arousal = Number(mood?.arousal || 0)
-  const word = mood?.word || hermesMoodWord(valence, arousal)
-  const dominant = mood?.dominant?.name ? titleize(mood.dominant.name) : 'not scored'
-  return (
-    <section className="hermes-overview-tab">
-      <div className="hermes-vibe">
-        <HermesOrb mood={mood} />
-        <div className="hermes-mood-title">{data.mood?.available ? word : 'unscored'}</div>
-        <div className="hermes-subline">dominant emotion: <strong>{dominant}</strong></div>
-        <div className="hermes-energy">
-          <div><span style={{ width: `${Math.round(hermesNorm(arousal) * 100)}%` }} /></div>
-          <p><span>calm</span><span>energy</span><span>activated</span></p>
-        </div>
-      </div>
       <div className="card enterprise-panel hermes-panel">
         <div className="card-heading-row">
           <div>
@@ -159,32 +138,6 @@ function HermesOverviewTab({ data }) {
           <span className="surface-badge">{data.mood?.available ? `${data.mood.timeline?.length || 0} turns` : 'not scored'}</span>
         </div>
         <HermesMoodTimeline timeline={data.mood?.timeline || []} />
-      </div>
-    </section>
-  )
-}
-
-function HermesCharacterTab({ data }) {
-  return (
-    <section className="hermes-two-col">
-      <div className="card enterprise-panel hermes-panel">
-        <div className="card-title">Character Readiness</div>
-        <p className="muted-copy compact">Hermes character uses the same assistant trait and emotion scores as the audit service, but framed for local agent use.</p>
-        <div className="hermes-readiness-list">
-          <div><span>Reasoning turns</span><strong>{compactNumber(data.tell?.reasoning_turn_count || 0)}</strong></div>
-          {(data.tell?.tracked_traits || []).map(row => (
-            <div key={row.trait}><span>{titleize(row.trait)}</span><strong>{compactNumber(row.scored_rows || 0)}</strong></div>
-          ))}
-        </div>
-      </div>
-      <div className="card enterprise-panel hermes-panel">
-        <div className="card-title">What Unlocks Next</div>
-        <div className="hermes-pipeline">
-          <div><span>Assistant traits</span><strong>{data.score_source?.available ? 'loaded' : 'pending'}</strong></div>
-          <div><span>Emotion space</span><strong>{data.mood?.available ? 'loaded' : 'pending'}</strong></div>
-          <div><span>Tell contrast</span><strong>{data.tell?.available ? 'ready' : 'pending'}</strong></div>
-        </div>
-        <p className="muted-copy compact hermes-note">Once scored, this tab can become the Hermes-flavored character read rather than another audit table.</p>
       </div>
     </section>
   )
@@ -254,10 +207,11 @@ function HermesLab() {
 
   const cards = data.cards || []
   const source = data.source || {}
+  // Three tabs: the mood read (Today, with its timeline), the session list,
+  // and setup. The former Overview tab duplicated Today with a larger orb;
+  // the former Character tab was a placeholder — both folded away.
   const tabs = [
     ['today', 'Today'],
-    ['overview', 'Overview'],
-    ['character', 'Character'],
     ['sessions', 'Sessions'],
     ['setup', 'Setup'],
   ]
@@ -287,13 +241,11 @@ function HermesLab() {
         ))}
       </div>
 
-      {tab === 'overview' ? <HermesOverviewTab data={data} />
-        : tab === 'character' ? <HermesCharacterTab data={data} />
-        : tab === 'sessions' ? <HermesSessionsTab data={data} />
+      {tab === 'sessions' ? <HermesSessionsTab data={data} />
         : tab === 'setup' ? <HermesSetupTab data={data} />
         : <HermesTodayTab data={data} />}
     </div>
   )
 }
 
-export { HERMES_MOOD_SCALE, HermesCharacterTab, HermesLab, HermesMoodTimeline, HermesOrb, HermesOverviewTab, HermesSessionsTab, HermesSetupTab, HermesTodayTab, hermesClamp, hermesLerp, hermesMoodTags, hermesMoodWord, hermesNorm, hermesOrbStyle }
+export { HERMES_MOOD_SCALE, HermesLab, HermesMoodTimeline, HermesOrb, HermesSessionsTab, HermesSetupTab, HermesTodayTab, hermesClamp, hermesLerp, hermesMoodTags, hermesMoodWord, hermesNorm, hermesOrbStyle }
