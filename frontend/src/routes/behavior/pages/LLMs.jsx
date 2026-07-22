@@ -53,18 +53,6 @@ Please check the backend API response first, then the React view. The main front
 
 If the page has no live data, check whether .env exists and whether BEHAVIOR_AUDIT_DATABASE_URL or BEHAVIOR_AUDIT_TRACE_SOURCE=local is configured. If data loads but a chart is confusing, inspect the exact API fields used by the chart before changing labels or layout.`,
   },
-  {
-    title: 'Use Hermes Data',
-    body: `I want to use local Hermes agent sessions in Persona Audit.
-
-Hermes mode reads a local SQLite state database and maps sessions into the standard AuditTrace shape. Set BEHAVIOR_AUDIT_PROVIDER=hermes or use ?provider=hermes in the dashboard. By default the adapter looks for ~/.hermes/state.db; override it with BEHAVIOR_AUDIT_HERMES_STATE_DB.
-
-Useful checks:
-- BEHAVIOR_AUDIT_TRACE_SOURCE=local uv run python -c "from backend.api.hermes import hermes_overview; print(hermes_overview()['inventory'])"
-- BEHAVIOR_AUDIT_TRACE_SOURCE=local uv run python -m pipelines_v2.cli workflow plan --file backend/workflows/hermes_scoring.py
-
-Treat Hermes scores as proxy audit-model activations, not the agent's literal internals. Reasoning-based Tell views require captured reasoning spans and a Hermes scoring run.`,
-  },
 ]
 
 function CopySnippetButton({ text }) {

@@ -61,10 +61,6 @@ export function getScoreSpaces(provider) {
   return fetchJSON(withProvider('/api/audit/score-spaces', provider))
 }
 
-export function getHermesOverview() {
-  return fetchJSON('/api/hermes/overview')
-}
-
 export function getCharacter(provider) {
   return fetchJSON(withProvider('/api/audit/character', provider))
 }
