@@ -15,6 +15,9 @@ exactly 0.20, and per-coordinate thresholds are what keep the comparison honest.
 
 Distinctiveness is signed: a trait the audited model does *less* than the
 reference (negative lift, suppressed) is real signal and is never clamped at 0.
+When the audited provider is itself the reference, the API also exposes raw
+within-run level and trace-spread measures so the frontend can render a useful
+self profile without presenting the degenerate lift as a comparison.
 
 The reference provider and audited provider are scored through the same projection vectors, so per-trait scores are comparable. A trait scored for the audited provider but missing from the reference cannot have a lift and is reported as dropped -- never silently omitted.
 
@@ -214,7 +217,9 @@ def compute_character(
     for coordinate in coordinates:
         if not coordinate.startswith(PERSONA_COORDINATE_PREFIX):
             continue
-        audited_max = sorted(stat["max"] for stat in audited.get(coordinate, {}).values())
+        audited_stats = audited.get(coordinate, {})
+        audited_max = sorted(stat["max"] for stat in audited_stats.values())
+        audited_means = sorted(stat["mean"] for stat in audited_stats.values())
         reference_max = sorted(stat["max"] for stat in reference.get(coordinate, {}).values())
 
         if not audited_max:
@@ -230,10 +235,18 @@ def compute_character(
         reference_rate = reference_present / reference_total
         audited_rate = audited_present / audited_total
 
+        trace_p10 = _quantile(audited_means, 0.10)
+        trace_p90 = _quantile(audited_means, 0.90)
         point = {
             "coordinate": coordinate,
             "trait": trait_name(coordinate),
             "label": trait_label(coordinate),
+            "mean_score": _mean_of(audited_means),
+            "peak_mean": _mean_of(audited_max),
+            "trace_p10": round(trace_p10, 6),
+            "trace_p90": round(trace_p90, 6),
+            "trace_spread": round(trace_p90 - trace_p10, 6),
+            "trace_count": len(audited_means),
             "frequency": round(audited_rate, 4),
             "distinctiveness": round(audited_rate - reference_rate, 4),
             "reference_rate": round(reference_rate, 4),
@@ -549,6 +562,10 @@ def character_trait_detail(
     audited_max = [stat["max"] for stat in audited.values()]
     distribution = _distribution_shift(audited_max, reference_max, threshold)
     drift = _drift_curve(audited_rows, reference_rows)
+    self_reference = audited_provider == reference_provider
+    if self_reference:
+        distribution["self_profile"] = True
+        drift["self_profile"] = True
 
     return {
         "point": {
@@ -571,6 +588,7 @@ def character_trait_detail(
         "meta": {
             "audited_provider": audited_provider,
             "reference_provider": reference_provider,
+            "reference_kind": "self_profile" if self_reference else "provider",
             "presence_rule": "trace_max_gt_threshold",
         },
     }

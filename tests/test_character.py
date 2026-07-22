@@ -47,3 +47,27 @@ def test_character_endpoint_matches_direct_call() -> None:
     payload = client.get("/api/audit/character", params={"provider": "persona_demo"}).json()
     assert payload["points"]
     assert payload["meta"]["score_family"]
+
+
+def test_tau2_character_exposes_within_run_profile() -> None:
+    report = character_report(provider="tau2")
+    assert report["meta"]["self_reference"] is True
+    assert report["points"]
+
+    for point in report["points"]:
+        assert {
+            "mean_score",
+            "peak_mean",
+            "trace_p10",
+            "trace_p90",
+            "trace_spread",
+            "trace_count",
+        }.issubset(point)
+        assert point["trace_p90"] >= point["trace_p10"]
+        assert point["trace_spread"] >= 0
+
+    detail = character_trait_detail(report["points"][0]["coordinate"], provider="tau2")
+    assert detail is not None
+    assert detail["meta"]["reference_kind"] == "self_profile"
+    assert detail["distribution"]["self_profile"] is True
+    assert detail["drift"]["self_profile"] is True

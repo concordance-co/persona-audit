@@ -2,7 +2,6 @@ import { NavLink, useLocation, useNavigate } from 'react-router-dom'
 
 const PRIMARY_NAV = [
   ['/', 'Overview', true],
-  ['/hermes', 'Hermes Lab'],
   ['/character', 'Character'],
   ['/tail', 'Tail'],
 ]
@@ -14,7 +13,7 @@ const SUPPORT_NAV = [
   ['/llms', 'LLMs'],
 ]
 
-const PROVIDERS = ['persona_demo', 'tau2', 'hermes']
+const PROVIDERS = ['persona_demo', 'tau2']
 
 export function useProviderSelection() {
   const location = useLocation()
@@ -41,7 +40,6 @@ function ProviderSelector({ provider, onProvider }) {
       {[
         ['persona_demo', 'Persona demo'],
         ['tau2', 'Tau2 demo'],
-        ['hermes', 'Hermes'],
       ].map(([id, label]) => (
         <button key={id} type="button" className={provider === id ? 'active' : ''} onClick={() => onProvider(id)}>
           {label}
@@ -60,7 +58,6 @@ export function providerShowsReward(provider) {
 }
 
 export function providerPath(path, provider) {
-  if (path === '/hermes') return '/hermes?provider=hermes'
   if (!provider || provider === 'tau2') return path
   const separator = path.includes('?') ? '&' : '?'
   return `${path}${separator}provider=${provider}`

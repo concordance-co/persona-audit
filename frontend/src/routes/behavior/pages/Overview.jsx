@@ -10,6 +10,35 @@ import { useAsyncResource } from '../../../hooks/useAsyncResource'
 import { useProviderSelection } from '../layout'
 import { useState } from 'react'
 
+function OverviewReadingGuide({ showTrackComparison }) {
+  const items = showTrackComparison
+    ? [
+        ['Reference', 'Each persona track is compared with the control on the same seed conversations.'],
+        ['Direction', 'A positive delta means more of a trait than control; a negative delta means less. Scores are signals, not probabilities.'],
+        ['Evidence', 'Look for repeated separation first, then open an outlier session to inspect the conversation behind it.'],
+      ]
+    : [
+        ['Reference', 'Each segment is compared with the audited run\'s global persona and emotion baselines.'],
+        ['Direction', 'Zero is typical. Positive z-scores mean more of a signal than baseline; negative scores mean less.'],
+        ['Evidence', 'Large deviations are investigation leads, not verdicts. Read the associated session before drawing a conclusion.'],
+      ]
+
+  return (
+    <section className="overview-reading-guide" aria-labelledby="overview-reading-guide-title">
+      <div className="overview-reading-guide-heading">
+        <span>Read this first</span>
+        <h2 id="overview-reading-guide-title">How to read this overview</h2>
+      </div>
+      {items.map(([label, body]) => (
+        <div className="overview-reading-guide-item" key={label}>
+          <span>{label}</span>
+          <p>{body}</p>
+        </div>
+      ))}
+    </section>
+  )
+}
+
 function Overview() {
   const [provider] = useProviderSelection()
   // Persona demo normally renders the track-comparison layout, which replaces
@@ -96,6 +125,8 @@ function Overview() {
           <span>{data.score_source?.available ? 'Scores loaded' : 'Cached data'}</span>
         </div>
       </div>
+
+      <OverviewReadingGuide showTrackComparison={showTrackComparison} />
 
       <SystemStateCards data={data} reward={reward} scoreRowCount={scoreRowCount} providerInfo={providerInfo} />
 
