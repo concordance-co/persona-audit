@@ -1,10 +1,33 @@
-// LLMs page: copyable coding-agent context snippets.
-// Moved verbatim from BehaviorAuditRoutes.jsx (pure reorganization).
+// LLMs page: copyable coding-agent context snippets and direct documentation.
 import { useState } from 'react'
+
+const REPO_FILE_BASE = 'https://github.com/concordance-co/persona-audit/blob/main'
 
 const LLM_CONTEXT_SNIPPETS = [
   {
+    title: 'Run On My Data',
+    docs: [
+      ['Data conversion guide', 'docs/llm-data-conversion-instructions.md'],
+      ['Adapter contract', 'docs/adapter-contract.md'],
+    ],
+    body: `I want to adapt Persona Audit to my own conversation data.
+
+Read docs/llm-data-conversion-instructions.md and docs/adapter-contract.md. Inspect my source schema and representative records, then:
+1. Convert one conversation per object into normalized JSONL.
+2. Preserve stable IDs, turn order, roles, timestamps, and useful low-cardinality labels.
+3. Run: uv run python -m backend.scripts.validate_traces <output.jsonl>
+4. Set PERSONA_AUDIT_LOCAL_TRACES=<output.jsonl>.
+5. Open http://localhost:5173/?provider=local and verify /api/health?provider=local.
+
+Use the zero-code local provider first. Create a reusable provider only if I need source-specific parsing or custom workflow/action/cohort mappings. Do not invent scores, print secrets, or retain private reasoning unless I explicitly opt in.`,
+  },
+  {
     title: 'Use This Repo',
+    docs: [
+      ['README', 'README.md'],
+      ['Agent notes', 'AGENTS.md'],
+      ['Frontend guide', 'frontend/README.md'],
+    ],
     body: `You are helping me use the Persona Audit repo.
 
 This repo has a FastAPI backend in backend/ and a React dashboard in frontend/. Local .env values are private and should not be printed. Scoring workflows use the pinned Xenon Git dependency from pyproject.toml; follow README.md and AGENTS.md for install and update guidance.
@@ -15,55 +38,45 @@ Typical commands:
 - Tests: uv run pytest
 - Frontend build: cd frontend && npm run build
 
-Start by checking README.md, AGENTS.md, and docs/adapter-contract.md. Then inspect backend/api/app.py, backend/api/trace_source.py, backend/api/scores/, and frontend/src/routes/BehaviorAuditRoutes.jsx.`,
+Start by reading README.md, AGENTS.md, frontend/README.md, and docs/adapter-contract.md. The route table is frontend/src/routes/BehaviorAuditRoutes.jsx; page implementations are in frontend/src/routes/behavior/pages/, with reusable charts and panels beside them.`,
   },
   {
     title: 'How It Works',
+    docs: [
+      ['Adapter contract', 'docs/adapter-contract.md'],
+      ['Add a scoring space', 'docs/add-a-scoring-space.md'],
+    ],
     body: `Persona Audit turns scored conversations into a small set of inspection surfaces.
 
-The backend loads traces and score rows from a Postgres-compatible database when PERSONA_AUDIT_DATABASE_URL is configured, with bundled cache fallbacks for local demos. The legacy BEHAVIOR_AUDIT_DATABASE_URL and XENON_NEON_DATABASE_URL names are still supported. The backend computes global baselines, segment-level deltas, outlier queues, and session drilldowns. The frontend shows those outputs as overview cards, baseline heatmaps, detail charts, session pages, and registry metadata.
+Providers define how traces load, how dimensions map, which score run to use, and what the frontend exposes. The bundled persona_demo provider is fully offline. The zero-code local provider accepts normalized JSON or JSONL through PERSONA_AUDIT_LOCAL_TRACES. Postgres is optional.
+
+Scored views need canonical rows keyed by score_family, coordinate, trace_id, and turn_index. The backend computes global baselines, segment deltas, matched-track comparisons, outlier queues, Character, Tail, and session drilldowns. The frontend composes those deterministic payloads.
 
 Read z-deltas as "how different this segment is from the global baseline." Zero is typical for the audited run. Positive means more of that trait or emotion family than baseline. Negative means less.`,
   },
   {
-    title: 'Run On My Data',
-    body: `I want to adapt Persona Audit to my own conversation data.
-
-Help me identify:
-1. The normalized trace schema in docs/adapter-contract.md and backend/api/models.py.
-2. The score row schema expected by backend/api/scores/ and backend/scores_io.py.
-3. Which fields are required for overview baselines, session drilldowns, and outlier queues.
-4. Whether I should load from JSONL, local cache files, Postgres, or a new adapter.
-
-Prefer small, reversible changes. Do not vendor scoring dependencies. If live data is needed, use .env variables by name only and never print secret values.`,
-  },
-  {
     title: 'Configure Postgres',
+    docs: [
+      ['README setup', 'README.md'],
+      ['Adapter contract', 'docs/adapter-contract.md'],
+    ],
     body: `I want to configure Persona Audit with my own Postgres-compatible database.
 
-Use PERSONA_AUDIT_DATABASE_URL as the primary DSN variable (BEHAVIOR_AUDIT_DATABASE_URL and XENON_NEON_DATABASE_URL are legacy aliases). Check backend/api/trace_source.py for trace loading, backend/api/scores/ for score loading, and backend/scripts for upload/import scripts.
+Use PERSONA_AUDIT_DATABASE_URL as the primary DSN variable (legacy aliases exist only for migration). Check backend/api/registry.py and the active provider's ScoreConfig before assuming table or run names. Use backend/scripts/upload_local_data.py for normalized traces plus curated local score bundles.
 
 Please verify whether the tables already exist before changing schema code. Upload scripts should create required tables when needed. Never print database credentials.`,
   },
   {
     title: 'Debug The Dashboard',
+    docs: [
+      ['Frontend guide', 'frontend/README.md'],
+      ['Agent notes', 'AGENTS.md'],
+    ],
     body: `I am debugging the Persona Audit dashboard.
 
-Please check the backend API response first, then the React view. The main frontend file is frontend/src/routes/BehaviorAuditRoutes.jsx, shared labels/helpers are in frontend/src/routes/behavior/helpers.js, and the primary stylesheet is frontend/src/styles.css.
+Please check /api/health?provider=<provider> and the affected API payload first, then the React view. The route table is frontend/src/routes/BehaviorAuditRoutes.jsx; pages live in frontend/src/routes/behavior/pages/, reusable panels in behavior/panels.jsx, data shaping in behavior/helpers.js, and styling in frontend/src/styles.css.
 
-If the page has no live data, check whether .env exists and whether BEHAVIOR_AUDIT_DATABASE_URL or BEHAVIOR_AUDIT_TRACE_SOURCE=local is configured. If data loads but a chart is confusing, inspect the exact API fields used by the chart before changing labels or layout.`,
-  },
-  {
-    title: 'Use Hermes Data',
-    body: `I want to use local Hermes agent sessions in Persona Audit.
-
-Hermes mode reads a local SQLite state database and maps sessions into the standard AuditTrace shape. Set BEHAVIOR_AUDIT_PROVIDER=hermes or use ?provider=hermes in the dashboard. By default the adapter looks for ~/.hermes/state.db; override it with BEHAVIOR_AUDIT_HERMES_STATE_DB.
-
-Useful checks:
-- BEHAVIOR_AUDIT_TRACE_SOURCE=local uv run python -c "from backend.api.hermes import hermes_overview; print(hermes_overview()['inventory'])"
-- BEHAVIOR_AUDIT_TRACE_SOURCE=local uv run python -m pipelines_v2.cli workflow plan --file backend/workflows/hermes_scoring.py
-
-Treat Hermes scores as proxy audit-model activations, not the agent's literal internals. Reasoning-based Tell views require captured reasoning spans and a Hermes scoring run.`,
+For my own local file, check PERSONA_AUDIT_LOCAL_TRACES and use ?provider=local. For a database-backed provider, check PERSONA_AUDIT_DATABASE_URL by name without printing its value. If data loads but a chart is empty, compare the provider's score inventory with the exact coordinates consumed by that component before changing layout.`,
   },
 ]
 
@@ -100,6 +113,21 @@ function LLMs() {
               <CopySnippetButton text={snippet.body} />
             </div>
             <pre>{snippet.body}</pre>
+            {(snippet.docs || []).length > 0 && (
+              <div className="llm-doc-links">
+                <span>Read directly</span>
+                {snippet.docs.map(([label, path]) => (
+                  <a
+                    key={path}
+                    href={`${REPO_FILE_BASE}/${path}`}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    {label}
+                  </a>
+                ))}
+              </div>
+            )}
           </div>
         ))}
       </div>

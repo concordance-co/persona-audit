@@ -33,6 +33,7 @@ The workflows:
 | `factory/workflows/demo_scoring.py` | Product scoring surfaces over normalized demo traces | `capture_gpu` |
 | `backend/workflows/tau2_scoring.py` | Tau2 trace scoring (capture + projections + emotions + probes) | `capture_gpu` |
 | `backend/workflows/hermes_scoring.py` | Hermes trace scoring (capture + projections + emotions) | `capture_gpu` |
+| `backend/workflows/local_scoring.py` | Zero-code local-provider scoring over normalized JSON/JSONL | `capture_gpu` |
 
 Shared Modal config (model volume, caches, secrets, env parsing) lives in
 `backend/workflows/common.py`; compose it rather than repeating runner
@@ -152,6 +153,34 @@ configured Modal data volume; the driver pulls them via `ModalVolumeStore` into
    `backend/scripts/upload_tau2_scores.py` /
    `upload_hermes_scores.py`, which read `result.json` from the
    configured data volume and write the `persona_audit_*_score_*` tables.
+
+`local_scoring.py` uses the same assistant/emotion pipeline over
+`PERSONA_AUDIT_LOCAL_TRACES`. Plan it before spending:
+
+```bash
+backend/scripts/run_xenon_workflow.sh plan --file backend/workflows/local_scoring.py
+backend/scripts/run_xenon_workflow.sh run --file backend/workflows/local_scoring.py --logging INFO
+```
+
+Upload its artifact ids through the generic arguments on the historically
+named Tau2 uploader:
+
+```bash
+uv run python -m backend.scripts.upload_tau2_scores \
+  --provider local \
+  --workflow-name persona_audit_local_scoring_v1 \
+  --artifact-root /data/artifacts/persona_audit_local_scoring_v1 \
+  --run-id <wr_...> \
+  --capture-artifact-id <capture_...> \
+  --projection-artifact-id <projection_...> \
+  --emotion-artifact-id <emotion_score_...> \
+  --no-high-stakes
+```
+
+Set `PERSONA_AUDIT_LOCAL_SCORE_RUN_ID` to the uploaded run id, then clear the
+API cache. Comparative Character references remain the provider owner's
+responsibility; set `PERSONA_AUDIT_LOCAL_CHARACTER_REFERENCE` only when the
+chosen provider is a valid comparison corpus.
 
 For the demo dataset, `factory/workflows/demo_scoring.py` reuses the Tau2
 workflow's exact steps and surfaces over the normalized demo traces

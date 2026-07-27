@@ -20,6 +20,20 @@ rg -n "\.env|XENON_NEON_DATABASE_URL|yora|ap-[A-Za-z0-9]{20,}" \
   README.md AGENTS.md docs backend factory frontend/src tests .env.example pyproject.toml
 ```
 
+History and ref gate:
+
+```bash
+gitleaks git . --log-opts="--all"
+git branch -r
+git for-each-ref --format='%(refname)'
+```
+
+- Review every remote branch before changing repository visibility.
+- Do not use `git push --all`; local archive branches may intentionally retain
+  removed development artifacts.
+- Review author/committer email metadata with
+  `git log --all --format='%an <%ae>' | sort -u`.
+
 ## Setup
 
 - `README.md` works from a fresh clone (see Verification below).
@@ -51,7 +65,7 @@ renders with zero configuration.
 
 ## Public Demo Data
 
-- Default no-env demo loads without private data.
+- Default no-env provider is `persona_demo` and loads without private data.
 - Demo data is small and inspectable and uses the same adapter path users
   will use.
 - Dashboard pages render useful content without requiring a database.

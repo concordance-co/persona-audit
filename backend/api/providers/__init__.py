@@ -7,7 +7,7 @@ tuple below. ``backend.api.registry`` documents the spec fields;
 
 from __future__ import annotations
 
-from backend.api.providers import hermes, persona_demo, tau2
+from backend.api.providers import hermes, local, persona_demo, tau2
 from backend.api.registry import ProviderSpec
 
-REGISTRY: dict[str, ProviderSpec] = {spec.key: spec for spec in (tau2.SPEC, hermes.SPEC, persona_demo.SPEC)}
+REGISTRY: dict[str, ProviderSpec] = {spec.key: spec for spec in (persona_demo.SPEC, local.SPEC, tau2.SPEC, hermes.SPEC)}

@@ -1,5 +1,4 @@
 // Registry (scoring spaces) page.
-// Moved verbatim from BehaviorAuditRoutes.jsx (pure reorganization).
 import { compactNumber, vectorLabel } from '../shared.jsx'
 import { familyTitle } from '../helpers'
 import { getEmotions, getScoreSpaces } from '../../../api'
@@ -71,7 +70,7 @@ function Registry() {
       <div className="page-header">
         <div>
           <h1 className="page-title">Registry</h1>
-          <p className="subtle-line">Scoring spaces, vector assets, model captures, and audit-ready probes.</p>
+          <p className="subtle-line">What this dataset can measure and the model captures required to score it.</p>
         </div>
       </div>
 
@@ -84,10 +83,10 @@ function Registry() {
         <div className="card">
           <div className="card-title">Coordinates</div>
           <div className="stat-value">{compactNumber(coordinateCount)}</div>
-          <div className="stat-label">vectors, traits, concepts, and probes</div>
+          <div className="stat-label">traits and emotion concepts</div>
         </div>
         <div className="card">
-          <div className="card-title">Input Rows</div>
+          <div className="card-title">Scored Turns</div>
           <div className="stat-value">{compactNumber(providerInfo.assistant_turn_record_count)}</div>
           <div className="stat-label">{compactNumber(providerInfo.trace_count)} sessions in active provider</div>
         </div>
@@ -131,12 +130,15 @@ function Registry() {
         </div>
       </div>
 
-      <div className="card">
-        <div className="card-title">Emotion Concept Index</div>
+      <details className="card registry-concept-details">
+        <summary>
+          <span className="card-title">Emotion Concept Index</span>
+          <span className="stat-label">{compactNumber(emotionConcepts.length)} scored concepts · expand full index</span>
+        </summary>
         <div className="concept-grid">
           {emotionConcepts.map(concept => <span key={concept}>{concept}</span>)}
         </div>
-      </div>
+      </details>
     </div>
   )
 }

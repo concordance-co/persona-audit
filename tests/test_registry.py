@@ -9,7 +9,11 @@ from backend.api.registry import (
     ProviderSpec,
     ScoreConfig,
     TraceLoadResult,
+    UnknownProviderError,
+    character_reference_provider,
+    dimension_value,
     get_provider,
+    provider_catalog,
     provider_descriptor,
     resolve_provider,
     score_run_id,
@@ -34,11 +38,11 @@ REQUIRED_DESCRIPTOR_KEYS = {
 }
 
 
-def test_registry_contains_the_three_shipped_providers() -> None:
-    assert set(REGISTRY) == {"tau2", "hermes", "persona_demo"}
+def test_registry_contains_shipped_and_zero_code_providers() -> None:
+    assert set(REGISTRY) == {"tau2", "hermes", "persona_demo", "local"}
 
 
-@pytest.mark.parametrize("key", ["tau2", "hermes", "persona_demo"])
+@pytest.mark.parametrize("key", ["tau2", "hermes", "persona_demo", "local"])
 def test_descriptors_carry_every_key_the_frontend_reads(key: str) -> None:
     descriptor = provider_descriptor(key)
     missing = REQUIRED_DESCRIPTOR_KEYS - set(descriptor)
@@ -49,7 +53,7 @@ def test_descriptors_carry_every_key_the_frontend_reads(key: str) -> None:
 @pytest.mark.parametrize(
     ("name", "expected"),
     [
-        (None, "tau2"),
+        (None, "persona_demo"),
         ("tau2", "tau2"),
         ("tau2_public_airline", "tau2"),
         ("tau2_smoke", "tau2"),
@@ -61,13 +65,18 @@ def test_descriptors_carry_every_key_the_frontend_reads(key: str) -> None:
         ("persona_audit_demo", "persona_demo"),
         ("demo", "persona_demo"),
         ("personas", "persona_demo"),
-        ("something_unknown", "tau2"),
+        ("local", "local"),
     ],
 )
 def test_resolve_provider_normalizes_aliases_and_data_provider_ids(name, expected, monkeypatch) -> None:
     monkeypatch.delenv("PERSONA_AUDIT_PROVIDER", raising=False)
     monkeypatch.delenv("PERSONA_AUDIT_DEFAULT_PROVIDER", raising=False)
     assert resolve_provider(name) == expected
+
+
+def test_unknown_explicit_provider_fails_loudly() -> None:
+    with pytest.raises(UnknownProviderError, match="unknown provider"):
+        resolve_provider("something_unknown")
 
 
 def test_resolve_provider_reads_env_when_unset(monkeypatch) -> None:
@@ -125,3 +134,23 @@ def test_a_new_provider_needs_one_module_and_one_registry_entry(monkeypatch) -> 
     assert score_table("toy") == "persona_audit_toy_score_rows"
     traces, provider_id, source = toy.load_traces()
     assert (traces, provider_id, source) == ([], "toy_local", "toy fixture")
+
+
+def test_provider_catalog_marks_default_and_exposes_configuration(monkeypatch) -> None:
+    monkeypatch.delenv("PERSONA_AUDIT_PROVIDER", raising=False)
+    monkeypatch.delenv("PERSONA_AUDIT_DEFAULT_PROVIDER", raising=False)
+    rows = provider_catalog()
+    assert {row["key"] for row in rows} == set(REGISTRY)
+    assert [row["key"] for row in rows if row["is_default"]] == ["persona_demo"]
+    local = next(row for row in rows if row["key"] == "local")
+    hermes = next(row for row in rows if row["key"] == "hermes")
+    assert local["dimensions"]["workflow"] == "domain"
+    assert local["character_reference_provider"] == "self"
+    assert hermes["features"]["show_in_provider_selector"] is False
+
+
+def test_provider_dimensions_and_character_reference_are_configurable() -> None:
+    trace = REGISTRY["persona_demo"].load_traces().traces[0]
+    assert dimension_value(trace, "labels.track") in {"sol", "marrow", "control"}
+    assert character_reference_provider("hermes") == "tau2"
+    assert character_reference_provider("local") == "local"

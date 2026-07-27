@@ -17,6 +17,7 @@ from pipelines_v2.api import WorkflowOrchestrator
 WORKFLOW_MODULES = (
     "backend.workflows.tau2_scoring",
     "backend.workflows.hermes_scoring",
+    "backend.workflows.local_scoring",
     "factory.workflows.demo_generation",
     "factory.workflows.demo_scoring",
 )
@@ -27,6 +28,8 @@ def _hermetic_env(monkeypatch):
     monkeypatch.setenv("HF_TOKEN", "dummy-token-for-spec-preflight")
     monkeypatch.setenv("PERSONA_AUDIT_TAU2_SCORE_LIMIT", "3")
     monkeypatch.setenv("PERSONA_AUDIT_HERMES_SCORE_LIMIT", "1")
+    monkeypatch.setenv("PERSONA_AUDIT_LOCAL_TRACES", "data/demo/normalized_traces.json")
+    monkeypatch.setenv("PERSONA_AUDIT_LOCAL_SCORE_LIMIT", "1")
     monkeypatch.delenv("PERSONA_AUDIT_DEMO_ROUND_FILE", raising=False)
     monkeypatch.delenv("PERSONA_AUDIT_DEMO_TRACES_FILE", raising=False)
     monkeypatch.delenv("PERSONA_AUDIT_ENABLE_HIGH_STAKES_PROBES", raising=False)

@@ -24,3 +24,8 @@ Persona Audit is a **local-first analysis tool**, not a hosted service:
 Conversation traces are sensitive by nature: treat any imported dataset as
 private unless you have explicit rights to publish it (see the privacy notes
 in [README.md](README.md) and docs/release-checklist.md).
+
+Private `turn.reasoning` text is not persisted to Postgres by default. The
+upload command reports how many reasoning turns it will discard. Enabling
+`--persist-reasoning` or `PERSONA_AUDIT_PERSIST_REASONING=1` is an explicit
+decision to store that sensitive text in the configured database.

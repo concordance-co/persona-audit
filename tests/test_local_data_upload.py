@@ -34,6 +34,27 @@ def test_trace_table_rows_normalize_traces_and_turns() -> None:
     assert {"provider_id", "trace_id", "turn_id", "turn_index", "role", "content", "tool_name"}.issubset(turn_rows[0])
 
 
+def test_trace_table_rows_make_reasoning_persistence_explicit() -> None:
+    traces = smoke_traces()[:1]
+    turn = traces[0].turns[0]
+    object.__setattr__(turn, "reasoning", "private chain of thought")
+    object.__setattr__(turn, "timestamp", "2026-07-24T12:00:00Z")
+
+    _, default_rows = trace_table_rows(traces, provider_id="test", source="fixture")
+    assert default_rows[0]["reasoning"] is None
+    assert default_rows[0]["timestamp"] == "2026-07-24T12:00:00Z"
+    assert default_rows[0]["_reasoning_discarded"] is True
+
+    _, opted_in_rows = trace_table_rows(
+        traces,
+        provider_id="test",
+        source="fixture",
+        persist_reasoning=True,
+    )
+    assert opted_in_rows[0]["reasoning"] == "private chain of thought"
+    assert opted_in_rows[0]["_reasoning_discarded"] is False
+
+
 def test_local_behavior_audit_payloads_are_loadable() -> None:
     supplemental = load_supplemental_score_payloads()
     summaries = load_score_summary_payloads()
@@ -45,3 +66,6 @@ def test_local_behavior_audit_payloads_are_loadable() -> None:
         supplemental[0]["rows"][0]
     )
     assert {"run_id", "score_inventory", "score_surface", "module_scores"}.issubset(summaries[0])
+    demo = next(payload for payload in supplemental if payload["run_id"] == "wr_c325b34b511a_a9ce320d")
+    assert demo["score_family_counts"]["emotion"] == 51300
+    assert len({row["coordinate"] for row in demo["rows"] if row["score_family"] == "emotion"}) == 171

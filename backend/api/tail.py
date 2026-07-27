@@ -322,17 +322,37 @@ def compute_tail(
     if noise_mask.any():
         noise_indices = np.where(noise_mask)[0]
         noise_traces = {keys[i][0] for i in noise_indices}
+        noise_peak_traits = Counter(names[int(peak_idx[i])] for i in noise_indices)
+        peak_traits = [
+            {
+                "trait": trait,
+                "label": trait_label(f"{PERSONA_COORDINATE_PREFIX}{trait}"),
+                "turns": count,
+                "share": round(count / len(noise_indices), 4),
+            }
+            for trait, count in sorted(noise_peak_traits.items(), key=lambda item: (-item[1], item[0]))
+        ][:5]
+        exemplar_indices = sorted(
+            (int(i) for i in noise_indices),
+            key=lambda i: (-float(max_z[i]), keys[i][0], keys[i][1]),
+        )[:5]
         scatter = {
+            "detail_version": 1,
+            "entry_quantile": TAIL_ENTRY_QUANTILE,
             "size_turns": int(noise_mask.sum()),
             "size_share": round(float(noise_mask.sum()) / n_tail, 4),
             "trace_count": len(noise_traces),
             "trace_share": round(len(noise_traces) / total_traces, 4),
             "central_severity": round(float(np.median(max_z[noise_mask])), 3),
+            "reach": round(float(np.percentile(max_z[noise_mask], TAIL_REACH_PERCENTILE)), 3),
+            "maximum_severity": round(float(np.max(max_z[noise_mask])), 3),
             "tracks": (
                 _group_shares([keys[i][0] for i in noise_indices], trace_groups, group_order or ())
                 if trace_groups
                 else []
             ),
+            "peak_traits": peak_traits,
+            "exemplars": [_exemplar(keys, max_z, peak_idx, names, i) for i in exemplar_indices],
         }
 
     return {"modes": modes, "scatter": scatter, "meta": meta}

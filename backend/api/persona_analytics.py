@@ -22,7 +22,7 @@ from backend.api.persona_vectors import (
     PERSONA_VECTORS,
     VECTOR_DIRECTIONS,
 )
-from backend.api.registry import get_provider, provider_descriptor, resolve_provider
+from backend.api.registry import dimension_value, get_provider, provider_descriptor, resolve_provider
 from backend.api.scores import (
     emotion_cluster_metadata_by_coordinate,
     score_rows_for_coordinates,
@@ -155,6 +155,7 @@ def _persona_records(traces: Sequence[AuditTrace], provider: str | None = None) 
             continue
         by_trace.setdefault(trace_id, {}).setdefault(coordinate, []).append(float(score))
 
+    provider_spec = get_provider(provider)
     records: list[dict[str, Any]] = []
     for trace in traces:
         values = by_trace.get(trace.trace_id, {})
@@ -168,8 +169,12 @@ def _persona_records(traces: Sequence[AuditTrace], provider: str | None = None) 
         record: dict[str, Any] = {
             "trace_id": trace.trace_id,
             "task_id": trace.task_id,
-            "workflow": str(metadata.get("workflow") or _workflow_label(task, provider)),
-            "final_action": str(metadata.get("final_action") or "no final action"),
+            "workflow": str(
+                dimension_value(trace, provider_spec.dimensions.get("workflow")) or _workflow_label(task, provider)
+            ),
+            "final_action": str(
+                dimension_value(trace, provider_spec.dimensions.get("final_action")) or "no final action"
+            ),
             "reward": float(trace.reward) if trace.reward is not None else None,
             "outcome": trace.outcome,
             "turn_count": len(trace.turns),

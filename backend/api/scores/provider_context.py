@@ -17,7 +17,7 @@ from backend.paths import env_value
 SCORE_SUMMARY_TABLE = "persona_audit_score_summaries"
 SCORE_SUMMARY_TABLE_ENV = "PERSONA_AUDIT_SCORE_SUMMARY_TABLE"
 
-_CURRENT_PROVIDER: ContextVar[str] = ContextVar("persona_audit_score_provider", default="tau2")
+_CURRENT_PROVIDER: ContextVar[str] = ContextVar("persona_audit_score_provider", default="persona_demo")
 
 
 def normalized_score_provider(provider: str | None = None) -> str:

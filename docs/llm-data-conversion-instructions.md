@@ -47,17 +47,31 @@ Convert the provided conversation data into Persona Audit's normalized trace sha
 
 Choose one path:
 
-1. Source-specific adapter
+1. Normalized local file (preferred first run)
+   - Write either a JSON array or JSONL file.
+   - Run `uv run python -m backend.scripts.validate_traces <path>`.
+   - Set `PERSONA_AUDIT_LOCAL_TRACES=<path>`.
+   - Optionally set `PERSONA_AUDIT_LOCAL_PROVIDER_ID` and `PERSONA_AUDIT_LOCAL_LABEL`.
+   - Open `http://localhost:5173/?provider=local`.
+
+2. Source-specific adapter
    - Add loader code under `backend/adapters/<source>/`.
    - Return `list[AuditTrace]`, `provider_id`, and `source` text.
    - Register the provider in `backend/api/providers/` (one module with a SPEC + one registry entry; see docs/adapter-contract.md). Nothing else in the serving layer needs editing.
+   - Configure `ProviderSpec.dimensions` for the dataset's segment/action/cohort fields.
+   - Configure `character_reference_provider` only when a scientifically valid comparison corpus exists; otherwise Character uses a self profile.
    - Add focused loader/provider tests.
 
-2. Postgres-compatible tables
+3. Postgres-compatible tables
    - Convert source records into rows compatible with `persona_audit_traces` and `persona_audit_turns`.
    - Use `PERSONA_AUDIT_DATABASE_URL` for the database DSN.
    - Keep `provider_id` stable and unique for the dataset.
    - Verify `/api/audit/report?provider=<provider>` before changing frontend code.
+
+Private `turn.reasoning` text is discarded during Postgres upload by default.
+Retain it only with `--persist-reasoning` or
+`PERSONA_AUDIT_PERSIST_REASONING=1`; the upload summary warns and counts
+discarded reasoning turns.
 
 ## Required Response From The Coding Agent
 

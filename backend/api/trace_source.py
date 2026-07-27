@@ -94,6 +94,8 @@ def traces_from_neon_rows(
                 content=str(turn.get("content") or ""),
                 index=int(turn.get("turn_index") if turn.get("turn_index") is not None else index),
                 tool_name=turn.get("tool_name"),
+                reasoning=turn.get("reasoning"),
+                timestamp=turn.get("timestamp"),
             )
             for index, turn in enumerate(sorted(turns_by_trace.get(trace_id, []), key=_turn_sort_key))
         )
@@ -162,14 +164,7 @@ def _load_neon_product_traces(spec: ProviderSpec) -> TraceLoadResult | None:
                 for row in conn.execute(
                     sql.SQL(
                         """
-                        SELECT
-                            provider_id,
-                            trace_id,
-                            turn_id,
-                            turn_index,
-                            role,
-                            content,
-                            tool_name
+                        SELECT *
                         FROM {turn_table}
                         WHERE provider_id = %s
                         ORDER BY trace_id, turn_index
@@ -199,6 +194,8 @@ def _provider_id_filter(spec: ProviderSpec) -> sql.Composable:
 
     if spec.db_provider_id_prefix:
         return sql.SQL("provider_id LIKE {}").format(sql.Literal(spec.db_provider_id_prefix + "%"))
+    if spec.preferred_db_provider_id:
+        return sql.SQL("provider_id = {}").format(sql.Literal(spec.preferred_db_provider_id()))
     other_prefixes = [
         other.db_provider_id_prefix
         for other in REGISTRY.values()

@@ -66,17 +66,17 @@ final shipped dataset is curated into `data/` by hand once frozen.
 ## One Iteration
 
 ```bash
-uv run python -m backend.scripts.demo_hillclimb run-iteration --stage 1
+uv run python -m factory.scripts.demo_hillclimb run-iteration --stage 1
 ```
 
 which is equivalent to:
 
 ```bash
-uv run python -m backend.scripts.demo_hillclimb generate --stage 1   # N Modal generation rounds
-uv run python -m backend.scripts.demo_hillclimb qa                   # transcript guardrails (local)
-uv run python -m backend.scripts.demo_hillclimb normalize            # -> normalized_traces.json (local)
-uv run python -m backend.scripts.demo_hillclimb score                # Modal capture + scoring
-uv run python -m backend.scripts.demo_hillclimb evaluate             # separation report + gates + state
+uv run python -m factory.scripts.demo_hillclimb generate --stage 1   # N Modal generation rounds
+uv run python -m factory.scripts.demo_hillclimb qa                   # transcript guardrails (local)
+uv run python -m factory.scripts.demo_hillclimb normalize            # -> normalized_traces.json (local)
+uv run python -m factory.scripts.demo_hillclimb score                # Modal capture + scoring
+uv run python -m factory.scripts.demo_hillclimb evaluate             # separation report + gates + state
 ```
 
 Generation is turn-by-turn (turn t+1 conditions on each track's own turn t),

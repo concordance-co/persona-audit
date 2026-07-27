@@ -80,6 +80,7 @@ SPEC = ProviderSpec(
     ),
     preferred_db_provider_id=configured_provider_id,
     workflow_from_task=workflow_from_task,
+    character_reference_provider="tau2",
     descriptor={
         "id": "tau2",
         "label": "Tau2 demo",

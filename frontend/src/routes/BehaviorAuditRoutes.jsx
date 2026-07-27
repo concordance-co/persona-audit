@@ -3,7 +3,6 @@
 // 4,900-line monolith; it was split verbatim (pure reorganization).
 import { BrowserRouter as Router, Navigate, Route, Routes } from 'react-router-dom'
 import { Character } from './behavior/pages/Character.jsx'
-import { HermesLab } from './behavior/pages/HermesLab.jsx'
 import { LLMs } from './behavior/pages/LLMs.jsx'
 import { Overview } from './behavior/pages/Overview.jsx'
 import { Registry } from './behavior/pages/Registry.jsx'
@@ -38,7 +37,7 @@ export default function App() {
           <Route path="/emotions" element={<ProviderRedirect to="/registry" />} />
           <Route path="/registry" element={<Registry />} />
           <Route path="/llms" element={<LLMs />} />
-          <Route path="/hermes" element={<HermesLab />} />
+          <Route path="/hermes" element={<Navigate to="/" replace />} />
         </Routes>
       </Shell>
     </Router>

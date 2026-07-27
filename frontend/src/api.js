@@ -1,7 +1,7 @@
 const API_BASE = import.meta.env.VITE_API_URL || ''
 
-async function fetchJSON(path) {
-  const res = await fetch(`${API_BASE}${path}`)
+async function fetchJSON(path, options = {}) {
+  const res = await fetch(`${API_BASE}${path}`, options)
   if (!res.ok) throw new Error(`${res.status} ${res.statusText}`)
   return res.json()
 }
@@ -10,6 +10,10 @@ function withProvider(path, provider) {
   if (!provider) return path
   const separator = path.includes('?') ? '&' : '?'
   return `${path}${separator}provider=${encodeURIComponent(provider)}`
+}
+
+export function getProviders() {
+  return fetchJSON('/api/providers')
 }
 
 export function getOverview() {
@@ -61,10 +65,6 @@ export function getScoreSpaces(provider) {
   return fetchJSON(withProvider('/api/audit/score-spaces', provider))
 }
 
-export function getHermesOverview() {
-  return fetchJSON('/api/hermes/overview')
-}
-
 export function getCharacter(provider) {
   return fetchJSON(withProvider('/api/audit/character', provider))
 }
@@ -74,5 +74,5 @@ export function getCharacterTrait(coordinate, provider) {
 }
 
 export function getTail(provider) {
-  return fetchJSON(withProvider('/api/audit/tail', provider))
+  return fetchJSON(withProvider('/api/audit/tail', provider), { cache: 'no-store' })
 }

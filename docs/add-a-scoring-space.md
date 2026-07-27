@@ -65,8 +65,9 @@ Copy the emotion pattern — it is four small pieces, all in
 If you computed scores with your own tooling, you can skip Modal entirely and
 bring rows directly. Two equivalent sinks:
 
-- **Local supplemental JSON** (what the bundled demo uses): write
-  `data/supplemental_scores/<run_id>_assistant_trait_scores.json` with
+- **Local supplemental JSON**: write
+  `data/supplemental_scores/<run_id>_assistant_trait_scores.json` (or the
+  gzip-compressed `.json.gz` equivalent used by the bundled demo) with
   `{"kind": "persona_audit_supplemental_score_rows", "version": 1,
   "run_id": "<run_id>", "rows": [...]}` where each row follows the
   `SCORE_COLUMNS` shape (`run_id`, `score_family`, `coordinate`, `trace_id`,

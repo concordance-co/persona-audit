@@ -27,7 +27,10 @@ src/styles.css                   all styling (plain CSS, class-per-component)
 1. A page component calls `useAsyncResource(() => getX(params, provider), [deps])`
    with `getX` from `src/api.js`; every endpoint accepts `?provider=`.
 2. The active provider comes from `useProviderSelection()` (`behavior/layout.jsx`):
-   URL `?provider=` first, then localStorage, defaulting to `tau2`.
+   URL `?provider=` first, then localStorage, then the backend default. The
+   selector is populated by `/api/providers`; providers can opt out of the
+   public selector with `features.show_in_provider_selector: false` while
+   keeping their backend integration intact.
 3. **Payloads drive the UI.** Report-shaped payloads embed a `provider` block —
    the backend descriptor (`backend/api/providers/<key>.py`) whose `copy` and
    `features` keys control page text and which panels render. Prefer adding a
@@ -46,6 +49,9 @@ src/styles.css                   all styling (plain CSS, class-per-component)
 - **New scoring space:** the backend side is `docs/add-a-scoring-space.md`;
   rows for a new `score_family` already flow through the generic score
   payloads — a dedicated view is just a new component over them.
+
+See `docs/remix-a-view.md` for complete recipes and the payload fields each
+primary page consumes.
 
 Charts are [recharts](https://recharts.org/); follow the existing chart
 components in `charts.jsx` / `tracks.jsx` for conventions (colors, tooltips,

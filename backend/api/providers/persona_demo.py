@@ -73,6 +73,11 @@ SPEC = ProviderSpec(
     alias_prefixes=("persona",),
     load_traces=_load_traces,
     local_only=True,
+    dimensions={
+        "workflow": "metadata.workflow",
+        "final_action": "metadata.final_action",
+        "cohort": "labels.track",
+    },
     score=ScoreConfig(
         run_id_env="PERSONA_AUDIT_DEMO_SCORE_RUN_ID",
         default_run_id=DEFAULT_RUN_ID,
@@ -109,7 +114,7 @@ SPEC = ProviderSpec(
             "show_reward": False,
             "show_pass_rate": False,
             "show_tau2_eval": False,
-            "show_high_stakes": True,
+            "show_high_stakes": False,
             "show_repeated_task_rewards": False,
             "show_product_storyboard": False,
             "show_track_comparison": True,
