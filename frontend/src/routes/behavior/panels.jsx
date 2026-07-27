@@ -1,7 +1,7 @@
 // Analytics + session drilldown panels (investigation queue, session cards).
 // Moved verbatim from BehaviorAuditRoutes.jsx (pure reorganization).
 import { Bar, BarChart, CartesianGrid, Cell, Legend, Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
-import { CHART_GRID_COLOR, CHART_ZERO_COLOR, EMOTION_CLUSTER_BY_CONCEPT, EMOTION_SPECTRUM_X_AXIS_STEP, HIGHLIGHT_COLOR, NEGATIVE_COLOR, POSITIVE_COLOR, average, axisIdForCoordinate, buildCoordinateTrajectoryRows, buildEmotionSpectrumData, buildSessionProjectionDistributions, coordinateTitle, defaultTrajectoryCoordinates, emotionConceptKey, evalLabelTitle, familyTitle, fmt, groupByValue, pct, pct1, smoothLinePath, trajectoryCoordinateOptions } from './helpers'
+import { CHART_GRID_COLOR, CHART_ZERO_COLOR, EMOTION_CLUSTER_BY_CONCEPT, EMOTION_SPECTRUM_X_AXIS_STEP, HIGHLIGHT_COLOR, NEGATIVE_COLOR, POSITIVE_COLOR, VECTOR_COLORS, average, axisIdForCoordinate, buildCoordinateTrajectoryRows, buildEmotionSpectrumData, buildSessionProjectionDistributions, coordinateTitle, defaultTrajectoryCoordinates, emotionConceptKey, evalLabelTitle, familyTitle, fmt, groupByValue, pct, pct1, smoothLinePath, trajectoryCoordinateOptions } from './helpers'
 import { Link } from 'react-router-dom'
 import { PersonaMetric } from './charts.jsx'
 import { actionLabel, clamp01, compactNumber, deviationLabel, scopeLabel, sessionFocusLink, taskGroupLabel, vectorLabel, zValue } from './shared.jsx'
@@ -475,34 +475,44 @@ function ProductContextPanel({ trace }) {
   )
 }
 
-function SelectedSignalTimeline({ selected, turnRows = [] }) {
-  if (!selected || !turnRows.length) return null
+function SelectedSignalTimeline({ selectedSignals = [], turnRows = [] }) {
+  if (!selectedSignals.length || !turnRows.length) return null
   const chartRows = turnRows
-    .map(row => ({
-      ...row,
-      signal: row.signal || row.vectors?.[selected.vector],
-    }))
-    .filter(row => row.signal?.z != null)
     .sort((a, b) => Number(a.turn_index) - Number(b.turn_index))
     .map(row => ({
       turn: row.turn_index,
-      z: Number(row.signal.z),
-      value: row.signal.value,
-      baseline: 0,
+      ...Object.fromEntries(selectedSignals.map(selected => [
+        selected.vector,
+        row.vectors?.[selected.vector]?.z == null ? null : Number(row.vectors[selected.vector].z),
+      ])),
     }))
+    .filter(row => selectedSignals.some(selected => row[selected.vector] != null))
   if (!chartRows.length) return null
   return (
     <div className="card">
-      <div className="card-title">Selected Signal Timeline</div>
-      <p className="muted-copy compact">How far {vectorLabel(selected.vector)} sits from baseline at each turn. Zero is the baseline for turns at a similar length and position.</p>
+      <div className="card-title">Selected Signal Trajectories</div>
+      <p className="muted-copy compact">Turn-by-turn z-scores for the selected signals. Zero is typical among turns from conversations of similar length and at a similar relative position.</p>
       <ResponsiveContainer width="100%" height={300}>
         <LineChart data={chartRows}>
           <CartesianGrid strokeDasharray="3 3" stroke={CHART_GRID_COLOR} />
           <XAxis dataKey="turn" tick={{ fontSize: 11 }} />
           <YAxis tick={{ fontSize: 11 }} />
-          <Tooltip formatter={(value, name) => [fmt(value), name === 'z' ? 'turn-position z' : name]} labelFormatter={label => `Turn ${label}`} />
+          <Tooltip formatter={(value, name) => [fmt(value), vectorLabel(name)]} labelFormatter={label => `Turn ${label}`} />
+          <Legend wrapperStyle={{ fontSize: 11 }} />
           <ReferenceLine y={0} stroke="#080808" strokeDasharray="4 4" />
-          <Line type="monotone" dataKey="z" name={deviationLabel({ vector: selected.vector, z: selected.z })} stroke="#B9513A" strokeWidth={2} dot={{ r: 3 }} isAnimationActive={false} />
+          {selectedSignals.map((selected, index) => (
+            <Line
+              key={selected.vector}
+              type="monotone"
+              dataKey={selected.vector}
+              name={selected.vector}
+              stroke={VECTOR_COLORS[selected.vector] || [HIGHLIGHT_COLOR, '#080808', '#4A6FE0', '#2E8C43'][index % 4]}
+              strokeWidth={2}
+              dot={{ r: 3 }}
+              connectNulls
+              isAnimationActive={false}
+            />
+          ))}
         </LineChart>
       </ResponsiveContainer>
     </div>

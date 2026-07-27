@@ -10,6 +10,7 @@ This covers the local product data that is useful to query directly:
 from __future__ import annotations
 
 import argparse
+import gzip
 import json
 import sys
 from collections.abc import Mapping, Sequence
@@ -188,8 +189,14 @@ def trace_table_rows(
 
 def load_supplemental_score_payloads(root: Path = SUPPLEMENTAL_SCORE_DIR) -> list[dict[str, Any]]:
     payloads: list[dict[str, Any]] = []
-    for path in sorted(root.glob("*.json")):
-        payload = json.loads(path.read_text(encoding="utf-8"))
+    paths = sorted(root.glob("*.json")) + sorted(root.glob("*.json.gz"))
+    for path in paths:
+        raw = (
+            gzip.decompress(path.read_bytes()).decode("utf-8")
+            if path.suffix == ".gz"
+            else path.read_text(encoding="utf-8")
+        )
+        payload = json.loads(raw)
         rows = payload.get("rows")
         if not isinstance(rows, list):
             continue

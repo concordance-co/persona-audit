@@ -60,6 +60,7 @@ SPEC = ProviderSpec(
             "repeated_task_note": "Sessions with similar local topic labels.",
         },
         "features": {
+            "show_in_provider_selector": False,
             "show_reward": False,
             "show_pass_rate": False,
             "show_tau2_eval": False,

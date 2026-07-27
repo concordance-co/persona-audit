@@ -1,6 +1,6 @@
 // Track-comparison components (Sol/Marrow/control colors, heatmaps, panels).
 // Moved verbatim from BehaviorAuditRoutes.jsx (pure reorganization).
-import { Fragment } from 'react'
+import { Fragment, useState } from 'react'
 import { clamp01, compactNumber, vectorLabel, zColor } from './shared.jsx'
 import { fmt, pct, titleize } from './helpers'
 
@@ -15,9 +15,20 @@ function trackTitle(value) {
   return titleize(value)
 }
 
+function ScoreFamilySelect({ families, value, onChange }) {
+  if (families.length < 2) return null
+  return (
+    <label className="select-control-label compact-family-select">
+      <span>Score family</span>
+      <select value={value} onChange={event => onChange(event.target.value)}>
+        {families.map(([family, label]) => <option key={family} value={family}>{label}</option>)}
+      </select>
+    </label>
+  )
+}
+
 function TrackIntervalRow({ row, trackOrder, withLabels = false }) {
   const byTrack = new Map((row.tracks || []).map(item => [item.track, item]))
-  const eta = Number(row.eta_squared)
   const marks = trackOrder
     .map((track, index) => {
       const item = byTrack.get(track)
@@ -34,9 +45,6 @@ function TrackIntervalRow({ row, trackOrder, withLabels = false }) {
     <div className={`track-interval-row${withLabels ? ' with-labels' : ''}`}>
       <div className="track-interval-label">
         <span>{vectorLabel(row.vector)}</span>
-        <small title="How much of this trait's spread is explained by which track a trace is in (η², 0–1).">
-          {Number.isFinite(eta) ? eta.toFixed(2) : '-'}
-        </small>
       </div>
       <div className="track-interval-axis">
         <span
@@ -73,30 +81,34 @@ function TrackIntervalRow({ row, trackOrder, withLabels = false }) {
   )
 }
 
-function TrackSeparationPanel({ comparison }) {
+function TrackSeparationPanel({ comparison, familyControl }) {
   const trackRows = comparison.tracks || []
   const trackOrder = trackRows.map(row => row.track)
   const vectors = comparison.vectors || []
+  const isEmotion = vectors[0]?.family === 'emotion_cluster'
   if (!vectors.length || !trackOrder.length) return null
   return (
     <div className="card enterprise-panel">
       <div className="card-heading-row">
         <div>
           <div className="card-title-row">
-            <div className="card-title">Trait Intensity by Track</div>
+            <div className="card-title">Signal Intensity by Track</div>
             <span className="surface-badge">Direct comparison</span>
           </div>
           <p className="muted-copy compact">
-            Per-track trait means on a shared 0-1 intensity scale (0 is the lowest-scoring trace in the dataset, 1 the highest); the gray span connects the three tracks. Rows rank by the value after each trait: the share of trait variance explained by track. Hover a dot for the exact mean, ±2 SE, and n.
+            Each dot is one track's mean for the named {isEmotion ? 'emotion signal' : 'persona trait'}, normalized across this dataset so 0 is the lowest observed trace and 1 is the highest. The gray span shows the distance between tracks; wider spans mean clearer separation. Rows are ordered by how much track membership explains the signal's variation. Hover a dot for the mean, uncertainty, and sample size.
           </p>
         </div>
-        <div className="track-legend" aria-label="Track legend">
-          {trackRows.map((row, index) => (
-            <span key={row.track} className="track-legend-item">
-              <span className="track-legend-dot" style={{ background: trackColor(row.track, index) }} />
-              {trackTitle(row.track)} · n={row.n}
-            </span>
-          ))}
+        <div className="track-card-controls">
+          <ScoreFamilySelect {...familyControl} />
+          <div className="track-legend" aria-label="Track legend">
+            {trackRows.map((row, index) => (
+              <span key={row.track} className="track-legend-item">
+                <span className="track-legend-dot" style={{ background: trackColor(row.track, index) }} />
+                {trackTitle(row.track)} · n={row.n}
+              </span>
+            ))}
+          </div>
         </div>
       </div>
       <div className="track-interval-plot">
@@ -122,9 +134,11 @@ function TrackSeparationPanel({ comparison }) {
   )
 }
 
-function TrackScoreHeatmap({ comparison, taskLabel = 'seed' }) {
+function TrackScoreHeatmap({ comparison, taskLabel = 'seed', familyControl }) {
   const vectors = comparison.vectors || []
   const trackRows = comparison.tracks || []
+  const isEmotion = vectors[0]?.family === 'emotion_cluster'
+  const signalName = isEmotion ? 'emotion signal' : 'persona trait'
   if (!vectors.length || !trackRows.length) return null
   const taskLabelText = taskLabel.toLowerCase()
   return (
@@ -132,24 +146,26 @@ function TrackScoreHeatmap({ comparison, taskLabel = 'seed' }) {
       <div className="card-heading-row">
         <div>
           <div className="card-title-row">
-            <div className="card-title">Trait Scores by Track</div>
+            <div className="card-title">Segment Baselines</div>
             <span className="surface-badge">{compactNumber(comparison.paired_task_count)} paired {taskLabelText}s</span>
           </div>
           <p className="muted-copy compact">
-            Average trait score for each track, over the same {taskLabelText}s. Green is more of the trait, red is less; the deepest color marks the strongest score in each row. One trait per row.
+            Average {signalName} score for each track, over the same {taskLabelText}s. Green is more of the signal, red is less; color depth is relative to the strongest score in each row.
           </p>
           <div className="heatmap-legend">
-            <span>green = more of the trait</span>
+            <span>rows = {isEmotion ? 'emotion signals' : 'persona traits'}</span>
+            <span>green = more of the signal</span>
             <span>red = less</span>
             <span>value = raw score mean</span>
           </div>
         </div>
+        <ScoreFamilySelect {...familyControl} />
       </div>
       <div
         className="track-contrast-grid"
         style={{ gridTemplateColumns: `minmax(160px, 1.1fr) repeat(${trackRows.length}, minmax(110px, 1fr))` }}
       >
-        <div className="track-contrast-head track-contrast-trait">Trait</div>
+        <div className="track-contrast-head track-contrast-trait">{isEmotion ? 'Emotion' : 'Persona trait'}</div>
         {trackRows.map((track, index) => (
           <div key={track.track} className="track-contrast-head">
             <span className="track-legend-dot" style={{ background: trackColor(track.track, index) }} />
@@ -291,14 +307,36 @@ function CharacterTrackHeatmap({ points, meta }) {
 }
 
 function TrackComparisonSection({ comparison, providerInfo = {} }) {
+  const [signalFamily, setSignalFamily] = useState('persona')
   if (!comparison?.available) return null
+  const allVectors = comparison.vectors || []
+  const availableFamilies = [
+    ['persona', 'Persona'],
+    ['emotion_cluster', 'Emotion'],
+  ].filter(([family]) => allVectors.some(row => row.family === family))
+  const selectedFamily = availableFamilies.some(([family]) => family === signalFamily)
+    ? signalFamily
+    : availableFamilies[0]?.[0]
+  const familyComparison = {
+    ...comparison,
+    vectors: allVectors.filter(row => row.family === selectedFamily),
+  }
+  const familyControl = {
+    families: availableFamilies,
+    value: selectedFamily,
+    onChange: setSignalFamily,
+  }
   return (
     <div className="overview-section">
       <div className="chart-row">
-        <TrackSeparationPanel comparison={comparison} />
+        <TrackSeparationPanel comparison={familyComparison} familyControl={familyControl} />
       </div>
       <div className="chart-row">
-        <TrackScoreHeatmap comparison={comparison} taskLabel={providerInfo.task_label || 'seed'} />
+        <TrackScoreHeatmap
+          comparison={familyComparison}
+          taskLabel={providerInfo.task_label || 'seed'}
+          familyControl={familyControl}
+        />
       </div>
     </div>
   )

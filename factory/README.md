@@ -51,7 +51,7 @@ uv run python -m factory.scripts.demo_hillclimb run-iteration
 ## Regenerating the shipped score cache
 
 `factory/scripts/build_demo_score_cache.py` rebuilds
-`data/supplemental_scores/<run_id>_assistant_trait_scores.json` from the
+`data/supplemental_scores/<run_id>_assistant_trait_scores.json.gz` from the
 scoring artifacts cached under `artifacts/demo_hillclimb/modal_cache/`. That
 cache directory is gitignored: a fresh clone cannot rebuild the shipped file
 without re-running `factory/workflows/demo_scoring.py` on Modal first (the

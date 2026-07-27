@@ -143,8 +143,10 @@ def test_provider_catalog_marks_default_and_exposes_configuration(monkeypatch) -
     assert {row["key"] for row in rows} == set(REGISTRY)
     assert [row["key"] for row in rows if row["is_default"]] == ["persona_demo"]
     local = next(row for row in rows if row["key"] == "local")
+    hermes = next(row for row in rows if row["key"] == "hermes")
     assert local["dimensions"]["workflow"] == "domain"
     assert local["character_reference_provider"] == "self"
+    assert hermes["features"]["show_in_provider_selector"] is False
 
 
 def test_provider_dimensions_and_character_reference_are_configurable() -> None:

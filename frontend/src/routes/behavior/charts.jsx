@@ -148,7 +148,8 @@ function SystemStateCards({ data, reward, scoreRowCount, providerInfo = {} }) {
 }
 
 function BaselineHeatmap({ title, badge, description, legend = [], rows = [], vectors = [], groupKey = 'workflow', groupLabel = value => value, groupHeader = 'Segment', expanded = false, onExpanded }) {
-  const visibleVectors = expanded ? vectors : topVectorsByDelta(rows, vectors, 5)
+  const populatedVectors = vectors.filter(vector => rows.some(row => row.vector === vector))
+  const visibleVectors = expanded ? populatedVectors : topVectorsByDelta(rows, populatedVectors, 5)
   const vectorSet = new Set(visibleVectors)
   const byGroup = rowsByGroupAndVector(rows.filter(row => vectorSet.has(row.vector)))
   const groups = [...byGroup.keys()].sort((a, b) => {
@@ -172,9 +173,9 @@ function BaselineHeatmap({ title, badge, description, legend = [], rows = [], ve
             </div>
           )}
         </div>
-        {onExpanded && vectors.length > visibleVectors.length && (
+        {onExpanded && populatedVectors.length > visibleVectors.length && (
           <button type="button" className="small-button" onClick={() => onExpanded(!expanded)}>
-            {expanded ? 'Top 5' : `Show all ${vectors.length}`}
+            {expanded ? 'Top 5' : `Show all ${populatedVectors.length}`}
           </button>
         )}
       </div>

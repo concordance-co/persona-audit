@@ -48,6 +48,7 @@ function Overview() {
   const [segmentMode, setSegmentMode] = useState(provider === 'persona_demo' ? 'final_action' : 'workflow')
   const [selectedPersona, setSelectedPersona] = useState('sycophantic')
   const [selectedEmotion, setSelectedEmotion] = useState('fear_and_overwhelm')
+  const [segmentSignalFamily, setSegmentSignalFamily] = useState('persona')
   const [showAllEmotions, setShowAllEmotions] = useState(false)
   const [queueFamily, setQueueFamily] = useState('persona')
   const { data, error } = useAsyncResource(() => getProductAnalytics(provider), [provider])
@@ -81,9 +82,23 @@ function Overview() {
   const actionLabelText = providerInfo.action_label || 'Final Action'
   const personaRows = segmentRows.filter(row => personaVectors.includes(row.vector))
   const emotionRows = segmentRows.filter(row => emotionVectors.includes(row.vector))
-  const emotionBaselineVectors = emotionVectors.slice(0, 7)
-  const selectedPersonaVector = personaVectors.includes(selectedPersona) ? selectedPersona : personaVectors[0]
-  const selectedEmotionVector = emotionVectors.includes(selectedEmotion) ? selectedEmotion : emotionVectors[0]
+  const availableSegmentFamilies = [
+    ['persona', 'Persona', personaRows],
+    ['emotion_cluster', 'Emotion', emotionRows],
+  ].filter(([, , rows]) => rows.length)
+  const selectedSegmentFamily = availableSegmentFamilies.some(([family]) => family === segmentSignalFamily)
+    ? segmentSignalFamily
+    : availableSegmentFamilies[0]?.[0] || 'persona'
+  const segmentFamilyIsEmotion = selectedSegmentFamily === 'emotion_cluster'
+  const segmentFamilyRows = segmentFamilyIsEmotion ? emotionRows : personaRows
+  const segmentFamilyVectors = segmentFamilyIsEmotion ? emotionVectors : personaVectors
+  const personaDetailVectors = personaVectors.filter(vector => personaRows.some(row => row.vector === vector))
+  const emotionDetailVectors = emotionVectors.filter(vector => emotionRows.some(row => row.vector === vector))
+  const emotionBaselineVectors = emotionVectors
+    .filter(vector => baselineInventory.some(row => row.vector === vector))
+    .slice(0, 7)
+  const selectedPersonaVector = personaDetailVectors.includes(selectedPersona) ? selectedPersona : personaDetailVectors[0]
+  const selectedEmotionVector = emotionDetailVectors.includes(selectedEmotion) ? selectedEmotion : emotionDetailVectors[0]
   const simulatedSeries = persona.simulated_trace_series || {}
   const outlierSeries = persona.outlier_turn_series || []
   const trackComparison = persona.track_comparison || {}
@@ -181,7 +196,9 @@ function Overview() {
             />
             <GlobalBaselineStrip
               title="Emotion Baselines"
-              description="Emotion clusters group related scored emotion concepts into readable families, such as joy, contentment, gratitude, suspicion, anger, fear, and shame."
+              description={emotionRows.length
+                ? 'Emotion clusters group related scored emotion concepts into readable families, such as joy, contentment, gratitude, suspicion, anger, fear, and shame.'
+                : 'Global emotion summaries are available, but this provider does not include the trace-level emotion rows needed for segment comparisons.'}
               rows={baselineInventory}
               vectors={emotionBaselineVectors}
             />
@@ -189,46 +206,48 @@ function Overview() {
 
           <div className="overview-section">
             <div className="section-heading-row">
-              <div className="card-title">Segment Baselines</div>
-              <p className="muted-copy compact">Compare the same segments through two lenses: assistant persona traits and emotion clusters.</p>
+              <div>
+                <div className="card-title">Segment Baselines</div>
+                <p className="muted-copy compact">Switch score families without changing the segment comparison or its global reference.</p>
+              </div>
+              {availableSegmentFamilies.length > 1 && <label className="select-control-label compact-family-select">
+                <span>Score family</span>
+                <select value={selectedSegmentFamily} onChange={event => setSegmentSignalFamily(event.target.value)}>
+                  {availableSegmentFamilies.map(([family, label]) => (
+                    <option key={family} value={family}>{label}</option>
+                  ))}
+                </select>
+              </label>}
             </div>
-            <div className="chart-row segment-baseline-stack">
+            <div className="chart-row">
               <BaselineHeatmap
-                title={`${segmentMode === 'workflow' ? segmentLabelText : actionLabelText} by Persona`}
-                badge="Persona traits"
+                title={`${segmentMode === 'workflow' ? segmentLabelText : actionLabelText} by ${segmentFamilyIsEmotion ? 'Emotion' : 'Persona'}`}
+                badge={segmentFamilyIsEmotion ? 'Emotion scores' : 'Persona traits'}
+                description={segmentFamilyIsEmotion ? 'Default view shows the five emotion scores with the largest segment differences. Expand to inspect the full available set.' : undefined}
                 legend={[
                   `Rows: ${(segmentMode === 'workflow' ? segmentLabelText : actionLabelText).toLowerCase()}`,
-                  'Columns: traits',
+                  `Columns: ${segmentFamilyIsEmotion ? 'emotion scores' : 'persona traits'}`,
                   'Cells: z vs global',
                 ]}
-                rows={personaRows}
-                vectors={personaVectors}
+                rows={segmentFamilyRows}
+                vectors={segmentFamilyVectors}
                 groupKey={groupKey}
                 groupLabel={groupLabel}
                 groupHeader={segmentMode === 'workflow' ? segmentLabelText : actionLabelText}
-                expanded
-              />
-              <BaselineHeatmap
-                title={`${segmentMode === 'workflow' ? segmentLabelText : actionLabelText} by Emotion`}
-                badge="Emotion clusters"
-                description="Default view shows the five emotion clusters with the largest segment differences. Expand for all ten."
-                legend={[
-                  `Rows: ${(segmentMode === 'workflow' ? segmentLabelText : actionLabelText).toLowerCase()}`,
-                  'Columns: emotion clusters',
-                  'Cells: z vs global',
-                ]}
-                rows={emotionRows}
-                vectors={emotionVectors}
-                groupKey={groupKey}
-                groupLabel={groupLabel}
-                groupHeader={segmentMode === 'workflow' ? segmentLabelText : actionLabelText}
-                expanded={showAllEmotions}
-                onExpanded={setShowAllEmotions}
+                expanded={!segmentFamilyIsEmotion || showAllEmotions}
+                onExpanded={segmentFamilyIsEmotion ? setShowAllEmotions : undefined}
               />
             </div>
+            {!segmentFamilyRows.length && (
+              <div className="card">
+                <div className="card-title">No populated segment baselines</div>
+                <p className="muted-copy compact">This grouping has no populated {segmentFamilyIsEmotion ? 'emotion' : 'persona'} rows that meet the minimum sample-size threshold. Choose another grouping or add more traces per segment.</p>
+              </div>
+            )}
           </div>
 
-          <div className="chart-row two-col">
+          {(personaDetailVectors.length > 0 || emotionDetailVectors.length > 0) && <div className="chart-row two-col">
+            {personaDetailVectors.length > 0 && (
             <div className="card enterprise-panel trait-detail-panel">
               <div className="card-heading-row">
                 <div>
@@ -238,7 +257,7 @@ function Overview() {
                 <label className="select-control-label">
                   <span>Trait</span>
                   <select value={selectedPersonaVector} onChange={event => setSelectedPersona(event.target.value)}>
-                    {personaVectors.map(vector => <option key={vector} value={vector}>{vectorLabel(vector)}</option>)}
+                    {personaDetailVectors.map(vector => <option key={vector} value={vector}>{vectorLabel(vector)}</option>)}
                   </select>
                 </label>
               </div>
@@ -250,7 +269,9 @@ function Overview() {
                 groupLabel={groupLabel}
               />
             </div>
+            )}
 
+            {emotionDetailVectors.length > 0 && (
             <div className="card enterprise-panel trait-detail-panel">
               <div className="card-heading-row">
                 <div>
@@ -260,7 +281,7 @@ function Overview() {
                 <label className="select-control-label">
                   <span>Emotion cluster</span>
                   <select value={selectedEmotionVector} onChange={event => setSelectedEmotion(event.target.value)}>
-                    {emotionVectors.map(vector => <option key={vector} value={vector}>{vectorLabel(vector)}</option>)}
+                    {emotionDetailVectors.map(vector => <option key={vector} value={vector}>{vectorLabel(vector)}</option>)}
                   </select>
                 </label>
               </div>
@@ -272,7 +293,8 @@ function Overview() {
                 groupLabel={groupLabel}
               />
             </div>
-          </div>
+            )}
+          </div>}
 
           <div className="chart-row">
             <InvestigationQueue outliers={persona.outliers || []} family={queueFamily} onFamily={setQueueFamily} provider={provider} />

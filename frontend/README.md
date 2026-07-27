@@ -28,7 +28,9 @@ src/styles.css                   all styling (plain CSS, class-per-component)
    with `getX` from `src/api.js`; every endpoint accepts `?provider=`.
 2. The active provider comes from `useProviderSelection()` (`behavior/layout.jsx`):
    URL `?provider=` first, then localStorage, then the backend default. The
-   selector is populated by `/api/providers`; it has no provider allowlist.
+   selector is populated by `/api/providers`; providers can opt out of the
+   public selector with `features.show_in_provider_selector: false` while
+   keeping their backend integration intact.
 3. **Payloads drive the UI.** Report-shaped payloads embed a `provider` block —
    the backend descriptor (`backend/api/providers/<key>.py`) whose `copy` and
    `features` keys control page text and which panels render. Prefer adding a

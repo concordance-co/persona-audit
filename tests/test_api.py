@@ -196,3 +196,10 @@ def test_behavior_audit_score_spaces_expose_real_provider_and_precomputed_assets
     for artifact in spaces["high_stakes_probe"]["artifacts"]:
         assert not internal_fields & set(artifact), artifact
     assert "PersistedProbeInferenceSpec" in spaces["high_stakes_probe"]["pipeline_specs"]
+
+
+def test_persona_demo_registry_hides_unselected_high_stakes_space() -> None:
+    response = client.get("/api/audit/score-spaces?provider=persona_demo")
+    assert response.status_code == 200
+    families = {space["family"] for space in response.json()["spaces"]}
+    assert families == {"assistant_axis", "emotion_vectors"}

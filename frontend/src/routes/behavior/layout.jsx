@@ -63,12 +63,15 @@ export function Shell({ children }) {
   const navigate = useNavigate()
   const { data: providers } = useAsyncResource(getProviders, [])
   const availableProviders = providers || []
+  const visibleProviders = availableProviders.filter(
+    item => item.features?.show_in_provider_selector !== false,
+  )
   const params = new URLSearchParams(location.search)
   const urlProvider = params.get('provider')
   const storedProvider = typeof window !== 'undefined' ? window.localStorage.getItem('behaviorAuditProvider') : ''
-  const defaultProvider = availableProviders.find(item => item.is_default)?.key || 'persona_demo'
-  const storedIsKnown = !availableProviders.length || availableProviders.some(item => item.key === storedProvider)
-  const provider = urlProvider || (storedIsKnown ? storedProvider : '') || defaultProvider
+  const defaultProvider = visibleProviders.find(item => item.is_default)?.key || visibleProviders[0]?.key || 'persona_demo'
+  const isVisible = key => !visibleProviders.length || visibleProviders.some(item => item.key === key)
+  const provider = (isVisible(urlProvider) ? urlProvider : '') || (isVisible(storedProvider) ? storedProvider : '') || defaultProvider
   const descriptor = availableProviders.find(item => item.key === provider) || null
   const setProvider = nextProvider => {
     if (typeof window !== 'undefined') window.localStorage.setItem('behaviorAuditProvider', nextProvider)
@@ -84,7 +87,7 @@ export function Shell({ children }) {
             <div className="brand-mark" />
             <span>Persona Audit</span>
           </div>
-          <ProviderSelector provider={provider} providers={availableProviders} onProvider={setProvider} />
+          <ProviderSelector provider={provider} providers={visibleProviders} onProvider={setProvider} />
           <div className="nav-links">
             <div className="nav-group nav-group-primary" aria-label="Behavior audit">
               {PRIMARY_NAV.map(([path, label, end]) => (

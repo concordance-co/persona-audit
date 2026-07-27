@@ -8,6 +8,7 @@ from backend.api.stats.
 
 from __future__ import annotations
 
+import gzip
 import json
 from collections.abc import Mapping, Sequence
 from typing import Any
@@ -35,10 +36,15 @@ def _stats_pearson_unrounded(xs, ys):
 @data_cache(maxsize=4)
 def _supplemental_score_rows(run_id: str) -> tuple[dict[str, Any], ...]:
     path = SUPPLEMENTAL_SCORE_DIR / f"{run_id}_assistant_trait_scores.json"
-    if not path.exists():
+    gzip_path = path.with_suffix(".json.gz")
+    if path.exists():
+        raw = path.read_text(encoding="utf-8")
+    elif gzip_path.exists():
+        raw = gzip.decompress(gzip_path.read_bytes()).decode("utf-8")
+    else:
         return ()
     try:
-        payload = json.loads(path.read_text(encoding="utf-8"))
+        payload = json.loads(raw)
     except json.JSONDecodeError:
         return ()
     if str(payload.get("run_id") or "") != run_id:

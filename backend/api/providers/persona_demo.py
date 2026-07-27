@@ -114,7 +114,7 @@ SPEC = ProviderSpec(
             "show_reward": False,
             "show_pass_rate": False,
             "show_tau2_eval": False,
-            "show_high_stakes": True,
+            "show_high_stakes": False,
             "show_repeated_task_rewards": False,
             "show_product_storyboard": False,
             "show_track_comparison": True,

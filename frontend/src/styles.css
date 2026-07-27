@@ -597,6 +597,7 @@ body::after {
 
 .session-evidence-card {
   height: 100%;
+  min-width: 0;
 }
 
 .evidence-metric-grid {
@@ -604,6 +605,29 @@ body::after {
   grid-template-columns: repeat(auto-fit, minmax(132px, 1fr));
   gap: var(--space-sm);
   margin-top: var(--space-md);
+}
+
+.signal-comparison-card {
+  margin-bottom: var(--space-xl);
+}
+
+.axis-chip:disabled {
+  cursor: default;
+  opacity: 1;
+}
+
+.comparison-dot-high {
+  background: var(--brand-green);
+}
+
+.comparison-dot-low {
+  background: var(--brand-red);
+}
+
+.turn-score-strip .score-chip {
+  max-width: 100%;
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 
 .selected-row {
@@ -911,6 +935,7 @@ a:hover {
 }
 
 .persona-metric {
+  min-width: 0;
   min-height: 86px;
   padding: var(--space-md);
   border: 1px solid var(--surface-border);
@@ -944,7 +969,7 @@ a:hover {
   line-height: 1.1;
   color: var(--audit-text);
   font-variant-numeric: tabular-nums;
-  white-space: nowrap;
+  overflow-wrap: anywhere;
 }
 
 .persona-metric-value.compact-value {
@@ -1072,6 +1097,25 @@ a:hover {
   font-weight: 900;
   text-transform: uppercase;
   letter-spacing: 0.05em;
+}
+
+.compact-family-select {
+  display: inline-grid;
+  width: max-content;
+  max-width: 100%;
+  flex: none;
+}
+
+.compact-family-select select {
+  width: auto;
+  min-width: 112px;
+}
+
+.track-card-controls {
+  display: grid;
+  justify-items: end;
+  gap: var(--space-sm);
+  flex: none;
 }
 
 .vector-score-card,

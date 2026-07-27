@@ -101,6 +101,11 @@ behavior, register a provider module under `backend/api/providers/` exposing a
 `persona_demo` provider is the smallest worked example. Registered providers
 are discovered dynamically by the dashboard.
 
+The Hermes loader and scoring workflow remain available as an optional
+integration, but Hermes is intentionally hidden from the public provider
+selector. Set `features.show_in_provider_selector` to `true` in
+`backend/api/providers/hermes.py` when developing that integration.
+
 The fastest route is to hand the whole job to a coding agent. Paste this:
 
 ```text

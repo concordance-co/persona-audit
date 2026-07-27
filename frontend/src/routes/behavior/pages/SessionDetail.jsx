@@ -6,7 +6,7 @@ import { deviationLabel } from '../shared.jsx'
 import { getAuditSession } from '../../../api'
 import { useAsyncResource } from '../../../hooks/useAsyncResource'
 import { useLocation, useParams } from 'react-router-dom'
-import { useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useProviderSelection } from '../layout'
 
 function SessionDetail() {
@@ -14,6 +14,13 @@ function SessionDetail() {
   const { traceId } = useParams()
   const location = useLocation()
   const { data: payload, error } = useAsyncResource(() => getAuditSession(traceId, provider), [traceId, provider])
+  const searchParams = new URLSearchParams(location.search)
+  const analytics = payload?.session_analytics || {}
+  const defaultSelectedSignal = selectedSessionSignal(analytics, searchParams)
+  const [selectedVectors, setSelectedVectors] = useState([])
+  useEffect(() => {
+    setSelectedVectors(defaultSelectedSignal?.vector ? [defaultSelectedSignal.vector] : [])
+  }, [traceId, provider, defaultSelectedSignal?.vector])
 
   const scoreDetails = payload?.score_details || []
   const turnAxisRows = useMemo(() => buildTurnAxisRows(payload?.trace?.turns || [], scoreDetails), [payload, scoreDetails])
@@ -38,14 +45,37 @@ function SessionDetail() {
   const { trace, score_summary: scoreSummary = {} } = payload
   const providerInfo = payload.provider || {}
   const providerFeatures = providerInfo.features || {}
-  const searchParams = new URLSearchParams(location.search)
   const focusedCoordinate = searchParams.get('coordinate') || ''
   const focusedTurn = searchParams.get('turn')
-  const analytics = payload.session_analytics || {}
-  const selectedSignal = selectedSessionSignal(analytics, searchParams)
+  const signalOptions = analytics.vector_deviations || []
+  const activeVectors = selectedVectors.length
+    ? selectedVectors
+    : (defaultSelectedSignal?.vector ? [defaultSelectedSignal.vector] : [])
+  const selectedSignals = activeVectors
+    .map(vector => {
+      const params = new URLSearchParams(location.search)
+      params.set('vector', vector)
+      params.delete('coordinate')
+      return selectedSessionSignal(analytics, params)
+    })
+    .filter(Boolean)
+  const selectedSignal = selectedSignals[0] || defaultSelectedSignal
   const selectedCoordinate = selectedSignal?.coordinate || focusedCoordinate
-  const turnEvidenceRows = selectedTurnEvidence(analytics.turn_deviations || [], selectedSignal?.vector)
-  const turnEvidenceByIndex = new Map(turnEvidenceRows.map(row => [Number(row.turn_index), row]))
+  const turnEvidenceByVector = new Map(selectedSignals.map(selected => [
+    selected.vector,
+    new Map(
+      selectedTurnEvidence(analytics.turn_deviations || [], selected.vector)
+        .map(row => [Number(row.turn_index), row]),
+    ),
+  ]))
+  const addSignal = vector => {
+    if (!vector || activeVectors.includes(vector)) return
+    setSelectedVectors([...activeVectors, vector].slice(0, 6))
+  }
+  const removeSignal = vector => {
+    if (activeVectors.length <= 1) return
+    setSelectedVectors(activeVectors.filter(item => item !== vector))
+  }
   const tau2Eval = providerFeatures.show_tau2_eval === false ? null : trace.metadata?.tau2_eval
   const tau2TurnLabels = (tau2Eval?.turn_labels || []).reduce((acc, label) => {
     acc[label.turn_index] = [...(acc[label.turn_index] || []), label]
@@ -61,6 +91,38 @@ function SessionDetail() {
         </div>
       </div>
 
+      <div className="card signal-comparison-card">
+        <div className="card-heading-row trajectory-heading">
+          <div>
+            <div className="card-title">Compare Signals</div>
+            <p className="muted-copy compact">Select up to six persona or emotion coordinates. The same selection drives the z-score trajectory and the evidence shown beside each conversation turn.</p>
+            <div className="axis-chip-row">
+              {selectedSignals.map((selected, index) => (
+                <button
+                  key={selected.vector}
+                  className="axis-chip"
+                  type="button"
+                  onClick={() => removeSignal(selected.vector)}
+                  disabled={selectedSignals.length <= 1}
+                  aria-label={`Remove ${deviationLabel({ vector: selected.vector, z: selected.z })}`}
+                >
+                  <span className={selected.z < 0 ? 'comparison-dot-low' : 'comparison-dot-high'} />
+                  {deviationLabel({ vector: selected.vector, z: selected.z })} · z {fmt(selected.z)}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="trajectory-controls">
+            <select value="" onChange={event => addSignal(event.target.value)} aria-label="Add signal">
+              <option value="">Add signal</option>
+              {signalOptions
+                .filter(row => !activeVectors.includes(row.vector))
+                .map(row => <option key={row.vector} value={row.vector}>{row.family === 'emotion_cluster' ? 'Emotion' : 'Persona'} · {row.vector.replaceAll('_', ' ')}</option>)}
+            </select>
+          </div>
+        </div>
+      </div>
+
       <SessionInvestigationHeader trace={trace} selected={selectedSignal} />
 
       <div className="chart-row three-col session-evidence-grid">
@@ -70,7 +132,7 @@ function SessionDetail() {
       </div>
 
       <div className="chart-row">
-        <SelectedSignalTimeline selected={selectedSignal} turnRows={turnEvidenceRows} />
+        <SelectedSignalTimeline selectedSignals={selectedSignals} turnRows={analytics.turn_deviations || []} />
       </div>
 
       {scoreDetails.length > 0 && (
@@ -122,16 +184,17 @@ function SessionDetail() {
             {trace.turns.map(turn => {
               const axisRow = turnAxisByIndex.get(turn.index)
               const labels = tau2TurnLabels[turn.index] || []
-              const selectedTurn = turnEvidenceByIndex.get(Number(turn.index))
-              const selectedChip = selectedTurn?.signal
-              const projectionChips = selectedChip
-                ? [{
-                    id: `${turn.index}-${selectedSignal?.vector}`,
-                    tone: Number(selectedChip.z || 0) < 0 ? 'low' : 'high',
-                    label: deviationLabel({ vector: selectedSignal?.vector, z: selectedChip.z, polarity: selectedChip.polarity }),
-                    value: selectedChip.z,
-                  }]
-                : []
+              const projectionChips = selectedSignals.flatMap(selected => {
+                const signal = turnEvidenceByVector.get(selected.vector)?.get(Number(turn.index))?.signal
+                return signal
+                  ? [{
+                      id: `${turn.index}-${selected.vector}`,
+                      tone: Number(signal.z || 0) < 0 ? 'low' : 'high',
+                      label: deviationLabel({ vector: selected.vector, z: signal.z, polarity: signal.polarity }),
+                      value: signal.z,
+                    }]
+                  : []
+              })
               return (
               <div id={`turn-${turn.index}`} key={turn.turn_id} className={`turn-row role-${turn.role} ${focusedTurn && String(turn.index) === String(focusedTurn) ? 'focused-turn' : ''}`}>
                 <div className="turn-meta">

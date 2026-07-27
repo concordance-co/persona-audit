@@ -9,12 +9,13 @@ the format matches production. No Modal or Neon access required.
 
     uv run python -m factory.scripts.build_demo_score_cache
 
-Emits data/supplemental_scores/<run_id>_assistant_trait_scores.json. Point the
+Emits data/supplemental_scores/<run_id>_assistant_trait_scores.json.gz. Point the
 dashboard at it with PERSONA_AUDIT_SCORE_RUN_ID=<run_id> (printed at the end).
 """
 
 from __future__ import annotations
 
+import gzip
 import json
 from collections import Counter
 
@@ -29,12 +30,13 @@ STAGE2_DIR = REPO_ROOT / "data" / "demo" / "stage2"
 CACHE_ROOT = REPO_ROOT / "artifacts" / "demo_hillclimb" / "modal_cache" / "behavior_audit_demo_scoring_v1"
 OUT_DIR = REPO_ROOT / "data" / "supplemental_scores"
 
-# Families to materialize locally. The emotion space is intentionally excluded:
-# it is ~51k rows for this dataset and would bloat the shipped repo; the trait
-# axis is the primary persona-separation surface and high-stakes probes are the
-# safety surface. Emotion remains available via the full artifacts if needed.
+# Families to materialize locally. Emotion rows are required for the public
+# dashboard's cluster baselines, session trajectories, and concept spectrum.
+# Projection rows are compacted below so the complete 171-concept artifact can
+# ship without copying the artifact's redundant per-row summaries.
 _FAMILY_BY_STEP_PREFIX = {
     "score_assistant_axis": "assistant_axis",
+    "score_emotions": "emotion",
     "score_high_stakes": "high_stakes",
 }
 
@@ -44,6 +46,16 @@ def _family(step_name: str) -> str | None:
         if step_name.startswith(prefix):
             return family
     return None
+
+
+def _compact_row(row: dict[str, object]) -> dict[str, object]:
+    """Drop redundant projection payloads while preserving serving fields."""
+
+    if row.get("score_family") not in {"assistant_axis", "emotion"}:
+        return row
+    compact = {key: value for key, value in row.items() if key not in {"summary", "row_payload"} and value is not None}
+    compact["row_payload"] = {}
+    return compact
 
 
 def main() -> int:
@@ -68,7 +80,7 @@ def main() -> int:
         loads.append(ArtifactLoad(artifact_id, family, payload))
 
     rows = [
-        row
+        _compact_row(row)
         for load in loads
         for row in score_rows_from_artifact(
             load, run_id=run_id, record_index=record_index, provider_id=provider_id, source=source
@@ -80,31 +92,31 @@ def main() -> int:
 
     family_counts = Counter(str(row["score_family"]) for row in rows)
     matched = sum(1 for row in rows if row.get("trace_id"))
-    coordinates = sorted({str(row["coordinate"]) for row in rows if row["score_family"] == "assistant_axis"})
-
-    OUT_DIR.mkdir(parents=True, exist_ok=True)
-    out_path = OUT_DIR / f"{run_id}_assistant_trait_scores.json"
-    out_path.write_text(
-        json.dumps(
-            {
-                "kind": "persona_audit_supplemental_score_rows",
-                "version": 1,
-                "run_id": run_id,
-                "source": PERSONA_DEMO_SOURCE,
-                "score_family": "assistant_axis",
-                "coordinates": coordinates,
-                "trace_count": len(traces),
-                "row_count": len(rows),
-                "score_family_counts": dict(family_counts),
-                "rows": rows,
-            },
-            separators=(",", ":"),
-        ),
-        encoding="utf-8",
+    coordinates = sorted(
+        {str(row["coordinate"]) for row in rows if row["score_family"] in {"assistant_axis", "emotion"}}
     )
 
+    OUT_DIR.mkdir(parents=True, exist_ok=True)
+    out_path = OUT_DIR / f"{run_id}_assistant_trait_scores.json.gz"
+    serialized = json.dumps(
+        {
+            "kind": "persona_audit_supplemental_score_rows",
+            "version": 1,
+            "run_id": run_id,
+            "source": PERSONA_DEMO_SOURCE,
+            "score_family": "assistant_axis+emotion",
+            "coordinates": coordinates,
+            "trace_count": len(traces),
+            "row_count": len(rows),
+            "score_family_counts": dict(family_counts),
+            "rows": rows,
+        },
+        separators=(",", ":"),
+    ).encode("utf-8")
+    out_path.write_bytes(gzip.compress(serialized, compresslevel=9, mtime=0))
+
     print(f"wrote {len(rows)} rows ({dict(family_counts)}) -> {out_path}")
-    print(f"trace-joined rows: {matched}/{len(rows)}; assistant_axis coordinates: {len(coordinates)}")
+    print(f"trace-joined rows: {matched}/{len(rows)}; projection coordinates: {len(coordinates)}")
     print(f"point the dashboard at it: PERSONA_AUDIT_SCORE_RUN_ID={run_id}")
     return 0
 

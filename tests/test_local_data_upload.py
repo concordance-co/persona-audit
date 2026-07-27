@@ -66,3 +66,6 @@ def test_local_behavior_audit_payloads_are_loadable() -> None:
         supplemental[0]["rows"][0]
     )
     assert {"run_id", "score_inventory", "score_surface", "module_scores"}.issubset(summaries[0])
+    demo = next(payload for payload in supplemental if payload["run_id"] == "wr_c325b34b511a_a9ce320d")
+    assert demo["score_family_counts"]["emotion"] == 51300
+    assert len({row["coordinate"] for row in demo["rows"] if row["score_family"] == "emotion"}) == 171
