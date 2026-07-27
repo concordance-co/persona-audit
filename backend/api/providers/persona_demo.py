@@ -73,6 +73,11 @@ SPEC = ProviderSpec(
     alias_prefixes=("persona",),
     load_traces=_load_traces,
     local_only=True,
+    dimensions={
+        "workflow": "metadata.workflow",
+        "final_action": "metadata.final_action",
+        "cohort": "labels.track",
+    },
     score=ScoreConfig(
         run_id_env="PERSONA_AUDIT_DEMO_SCORE_RUN_ID",
         default_run_id=DEFAULT_RUN_ID,

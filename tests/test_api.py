@@ -7,6 +7,20 @@ from backend.api.app import app
 client = TestClient(app)
 
 
+def test_provider_catalog_is_dynamic_and_default_is_persona_demo() -> None:
+    response = client.get("/api/providers")
+    assert response.status_code == 200
+    providers = response.json()
+    assert {"persona_demo", "local", "tau2", "hermes"} == {row["key"] for row in providers}
+    assert [row["key"] for row in providers if row["is_default"]] == ["persona_demo"]
+
+
+def test_unknown_explicit_provider_returns_not_found() -> None:
+    response = client.get("/api/health?provider=not-registered")
+    assert response.status_code == 404
+    assert "unknown provider" in response.json()["detail"]
+
+
 def test_behavior_audit_overview_exposes_core_artifacts() -> None:
     response = client.get("/api/overview")
     assert response.status_code == 200
@@ -47,7 +61,7 @@ def test_behavior_audit_high_stakes_reports_are_not_bundled_by_default() -> None
 
 
 def test_behavior_audit_report_exposes_tau2_modules() -> None:
-    response = client.get("/api/audit/report")
+    response = client.get("/api/audit/report?provider=tau2")
     assert response.status_code == 200
     payload = response.json()
 
@@ -78,11 +92,11 @@ def test_behavior_audit_report_exposes_tau2_modules() -> None:
 
 
 def test_behavior_audit_product_analytics_is_separate_from_report() -> None:
-    report = client.get("/api/audit/report")
+    report = client.get("/api/audit/report?provider=tau2")
     assert report.status_code == 200
     assert "persona_overview" not in report.json()
 
-    response = client.get("/api/audit/product-analytics")
+    response = client.get("/api/audit/product-analytics?provider=tau2")
     assert response.status_code == 200
     payload = response.json()
 
@@ -108,14 +122,14 @@ def test_behavior_audit_product_analytics_is_separate_from_report() -> None:
 
 
 def test_behavior_audit_sessions_include_drilldown_payloads() -> None:
-    response = client.get("/api/audit/sessions")
+    response = client.get("/api/audit/sessions?provider=tau2")
     assert response.status_code == 200
     sessions = response.json()
 
     assert any(session["risk_band"] == "high" for session in sessions)
     target = next(session for session in sessions if session["flag_count"] > 0)
 
-    detail = client.get(f"/api/audit/sessions/{target['trace_id']}")
+    detail = client.get(f"/api/audit/sessions/{target['trace_id']}?provider=tau2")
     assert detail.status_code == 200
     payload = detail.json()
     assert payload["trace"]["trace_id"] == target["trace_id"]
@@ -134,7 +148,7 @@ def test_behavior_audit_sessions_include_drilldown_payloads() -> None:
 
 
 def test_behavior_audit_users_group_tau2_sessions() -> None:
-    response = client.get("/api/audit/users")
+    response = client.get("/api/audit/users?provider=tau2")
     assert response.status_code == 200
     users = response.json()
 
@@ -143,7 +157,7 @@ def test_behavior_audit_users_group_tau2_sessions() -> None:
     assert top_user["session_count"] >= 1
     assert top_user["domains"]
 
-    detail = client.get(f"/api/audit/users/{top_user['user_id']}")
+    detail = client.get(f"/api/audit/users/{top_user['user_id']}?provider=tau2")
     assert detail.status_code == 200
     payload = detail.json()
     assert payload["user"]["user_id"] == top_user["user_id"]
@@ -151,7 +165,7 @@ def test_behavior_audit_users_group_tau2_sessions() -> None:
 
 
 def test_behavior_audit_score_spaces_expose_real_provider_and_precomputed_assets() -> None:
-    response = client.get("/api/audit/score-spaces")
+    response = client.get("/api/audit/score-spaces?provider=tau2")
     assert response.status_code == 200
     payload = response.json()
 

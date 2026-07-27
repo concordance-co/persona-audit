@@ -9,7 +9,7 @@ that to at most once per iteration.
 ## The One Command
 
 ```bash
-uv run python -m backend.scripts.demo_hillclimb tick
+uv run python -m factory.scripts.demo_hillclimb tick
 ```
 
 Each tick: run the check-in (digest appended to
@@ -28,7 +28,7 @@ Cron is the whole scheduler (requires `HF_TOKEN` and Modal auth in the
 environment; the run lock makes overlapping ticks harmless):
 
 ```cron
-*/15 * * * * cd $HOME/repos/concordance/persona-audit && uv run python -m backend.scripts.demo_hillclimb tick >> artifacts/demo_hillclimb/tick.log 2>&1
+*/15 * * * * cd $HOME/repos/concordance/persona-audit && uv run python -m factory.scripts.demo_hillclimb tick >> artifacts/demo_hillclimb/tick.log 2>&1
 ```
 
 Modal spend is bounded by the decision table, not the cadence: a tick only
@@ -78,11 +78,11 @@ Read files, not agents:
   every 60s and is regenerated at the start and end of every tick. Stat tiles,
   objective trend, top-surface effect sizes, QA checks, iteration history,
   and the tick log tail. Regenerate manually anytime with
-  `uv run python -m backend.scripts.demo_hillclimb report`.
+  `uv run python -m factory.scripts.demo_hillclimb report`.
 - `artifacts/demo_hillclimb/tick.log` — every tick's digest + what it did
 - `artifacts/demo_hillclimb/checkins.log` — digest history (same content, structured)
 - `git diff factory/hillclimb/personas.py` — every prompt revision the escalator made
-- `uv run python -m backend.scripts.demo_hillclimb status` — instant state
+- `uv run python -m factory.scripts.demo_hillclimb status` — instant state
 
 Exit code 3 in the tick log (grep `Recommended action: HOLD_HUMAN` or
 `needs-human`) means the loop is parked waiting for you: Stage 2 seed

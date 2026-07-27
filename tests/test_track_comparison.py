@@ -156,16 +156,16 @@ def test_persona_demo_tail_attributes_modes_to_tracks() -> None:
 
 
 def test_non_demo_character_and_tail_stay_pooled() -> None:
-    character = client.get("/api/audit/character").json()
+    character = client.get("/api/audit/character?provider=tau2").json()
     assert character["meta"]["tracks"] == []
     assert all("tracks" not in point for point in character["points"])
-    tail = client.get("/api/audit/tail").json()
+    tail = client.get("/api/audit/tail?provider=tau2").json()
     assert tail["meta"]["tracks"] == []
     assert all(mode.get("tracks", []) == [] for mode in tail["modes"])
 
 
 def test_non_demo_providers_keep_track_comparison_off() -> None:
-    response = client.get("/api/audit/product-analytics")
+    response = client.get("/api/audit/product-analytics?provider=tau2")
     assert response.status_code == 200
     persona = response.json()["persona_overview"]
     if not persona.get("available"):

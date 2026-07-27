@@ -8,14 +8,14 @@ import { providerPath, providerShowsReward, useProviderSelection } from '../layo
 import { useEffect, useState } from 'react'
 
 function Cohorts() {
-  const [provider] = useProviderSelection()
+  const [provider, , providerInfo] = useProviderSelection()
   const [users, setUsers] = useState([])
 
   useEffect(() => {
     getAuditUsers(provider).then(setUsers)
   }, [provider])
 
-  const isCorpusMode = !providerShowsReward(provider)
+  const isCorpusMode = !providerShowsReward(provider, providerInfo)
 
   return (
     <div>

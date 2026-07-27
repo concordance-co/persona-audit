@@ -53,13 +53,13 @@ After a Stage 2 run passes, promote the result and rebuild the score cache:
 
 ```bash
 # 1. run/regenerate the loop (writes the gitignored factory under data/demo/stage2/)
-uv run python -m backend.scripts.demo_hillclimb run-iteration --stage 2
+uv run python -m factory.scripts.demo_hillclimb run-iteration --stage 2
 
 # 2. promote the traces to the shipped location
 cp data/demo/stage2/normalized_traces.json data/demo/normalized_traces.json
 
 # 3. rebuild the tracked score cache from the cached score artifacts
-uv run python -m backend.scripts.build_demo_score_cache
+uv run python -m factory.scripts.build_demo_score_cache
 ```
 
 If regeneration produces a new scoring run id, update

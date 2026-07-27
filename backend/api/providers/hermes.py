@@ -28,6 +28,12 @@ SPEC = ProviderSpec(
     db_provider_id_prefix="hermes",
     preferred_db_provider_id=lambda: "hermes_local",
     supports_reward_math=False,
+    dimensions={
+        "workflow": "metadata.workflow",
+        "final_action": "metadata.final_action",
+        "cohort": "user_id",
+    },
+    character_reference_provider="tau2",
     descriptor={
         "id": "hermes",
         "label": "Hermes mode",

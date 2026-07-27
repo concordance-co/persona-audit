@@ -11,21 +11,21 @@ from __future__ import annotations
 import pytest
 
 from backend.paths import REPO_ROOT
-from backend.workflows import hermes_scoring, tau2_scoring
+from backend.workflows import hermes_scoring, local_scoring, tau2_scoring
 
 
 def _resources(runner_specs, name):
     return runner_specs[name].resources
 
 
-@pytest.mark.parametrize("module", [tau2_scoring, hermes_scoring])
+@pytest.mark.parametrize("module", [tau2_scoring, hermes_scoring, local_scoring])
 def test_scoring_runners_keep_batching_on(module):
     runner_specs = module.build_runner_specs()
     assert _resources(runner_specs, "capture_gpu").enable_workflow_batching is True
     assert _resources(runner_specs, "analysis_cpu").enable_workflow_batching is True
 
 
-@pytest.mark.parametrize("module", [tau2_scoring, hermes_scoring])
+@pytest.mark.parametrize("module", [tau2_scoring, hermes_scoring, local_scoring])
 def test_local_artifacts_anchored_to_repo(module):
     runner_specs = module.build_runner_specs()
     root = runner_specs["report_local"].artifacts.root

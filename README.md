@@ -81,33 +81,36 @@ can either be re-uploaded or pointed at via the table env vars (e.g.
 ## Bring Your Own Data
 
 The stable contract is the normalized trace shape (`AuditTrace`/`AuditTurn`,
-see [docs/adapter-contract.md](docs/adapter-contract.md)) plus a one-module
-provider registration:
+see [docs/adapter-contract.md](docs/adapter-contract.md)). JSON arrays and
+JSONL are both accepted. The shortest path needs no Python changes:
 
 1. Convert your conversations into the normalized shape
    ([docs/llm-data-conversion-instructions.md](docs/llm-data-conversion-instructions.md)
    is a ready-made instruction template for a coding agent).
-2. Register a provider: one module under `backend/api/providers/` exposing a
-   `SPEC`, plus one entry in `backend/api/providers/__init__.py`. The
-   `persona_demo` provider is the smallest worked example.
-3. Optionally upload normalized rows to Postgres
+2. Validate them:
+   `uv run python -m backend.scripts.validate_traces /path/to/traces.jsonl`.
+3. Set `PERSONA_AUDIT_LOCAL_TRACES=/path/to/traces.jsonl`; optionally set
+   `PERSONA_AUDIT_LOCAL_PROVIDER_ID` and `PERSONA_AUDIT_LOCAL_LABEL`.
+4. Open the dashboard with `?provider=local`.
+5. Optionally upload normalized rows to Postgres
    (`uv run python -m backend.scripts.upload_local_data`) and run scoring.
-4. Open the dashboard with `?provider=<your-key>`.
 
-There is intentionally no universal importer — source data varies too much;
-the normalized shape is the boundary.
+For source-specific parsing, custom dimensions, or deployment-specific
+behavior, register a provider module under `backend/api/providers/` exposing a
+`SPEC`, plus one entry in `backend/api/providers/__init__.py`. The
+`persona_demo` provider is the smallest worked example. Registered providers
+are discovered dynamically by the dashboard.
 
 The fastest route is to hand the whole job to a coding agent. Paste this:
 
 ```text
 I have conversation data at <PATH/DESCRIPTION OF MY DATA> that I want to
 browse in Persona Audit. Read docs/adapter-contract.md and
-docs/llm-data-conversion-instructions.md in this repo, then convert my data
-into the normalized trace shape and register it as a provider (one module
-under backend/api/providers/ plus one registry entry — persona_demo is the
-smallest example). Follow the "Required Response From The Coding Agent"
-section of the instructions doc, add focused tests, and finish by showing me
-the command to open the dashboard on my data.
+docs/llm-data-conversion-instructions.md in this repo, convert my data into
+validated normalized JSONL, and use the zero-code local provider unless the
+source needs a reusable custom adapter. Follow the "Required Response From The
+Coding Agent" section, add focused tests for any adapter code, and finish by
+showing me the command to open the dashboard on my data.
 ```
 
 (The dashboard's in-app help has the same prompt cards under "Run On My Data".)
@@ -131,6 +134,12 @@ backend/scripts/run_xenon_workflow.sh plan --file backend/workflows/tau2_scoring
 backend/scripts/run_xenon_workflow.sh run  --file backend/workflows/tau2_scoring.py --logging INFO
 ```
 
+For normalized local data, set `PERSONA_AUDIT_LOCAL_TRACES` and use
+`backend/workflows/local_scoring.py` with the same `plan` then `run` commands.
+The resulting assistant/emotion artifacts can be uploaded through
+`backend/scripts/upload_tau2_scores.py --provider local` (the script name is
+historical; its provider and artifact arguments are generic).
+
 Upload results with `backend/scripts/upload_tau2_scores.py` /
 `upload_hermes_scores.py` (they create tables as needed), or build local score
 caches. [docs/xenon-modal-runbook.md](docs/xenon-modal-runbook.md) covers the
@@ -141,6 +150,8 @@ against the 70B, so changing the model changes the science, not just the cost.
 
 To bring your own probes, vector spaces, or externally computed scores into
 the audit, see [docs/add-a-scoring-space.md](docs/add-a-scoring-space.md).
+To compose existing payloads into different pages, see
+[docs/remix-a-view.md](docs/remix-a-view.md).
 
 `factory/` contains the full pipeline that generated and score-validated the
 bundled demo dataset — a worked example for building your own contrastive

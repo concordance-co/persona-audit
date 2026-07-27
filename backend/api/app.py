@@ -11,8 +11,9 @@ data, POST /api/cache/clear or restart the process.
 
 from __future__ import annotations
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 
 from backend.api import cache
 from backend.api.audit_data import (
@@ -33,7 +34,7 @@ from backend.api.catalog import (
 from backend.api.character import character_report, character_trait_detail
 from backend.api.db import configured_database_url
 from backend.api.hermes import hermes_overview
-from backend.api.registry import resolve_provider
+from backend.api.registry import UnknownProviderError, provider_catalog, resolve_provider
 from backend.api.scores import score_inventory
 from backend.api.scoring_spaces import scoring_readiness
 from backend.api.tail import tail_report
@@ -41,6 +42,11 @@ from backend.api.trace_source import load_product_traces
 from backend.paths import env_value
 
 app = FastAPI(title="Persona Audit")
+
+
+@app.exception_handler(UnknownProviderError)
+def unknown_provider_handler(_request: Request, exc: UnknownProviderError) -> JSONResponse:
+    return JSONResponse(status_code=404, content={"detail": str(exc)})
 
 
 def _cors_origins() -> list[str]:
@@ -80,6 +86,13 @@ def health(provider: str | None = None) -> dict:
             "run_id": inventory.get("run_id"),
         },
     }
+
+
+@app.get("/api/providers")
+def providers() -> list[dict]:
+    """Registered data providers and the currently configured default."""
+
+    return provider_catalog()
 
 
 @app.post("/api/cache/clear")

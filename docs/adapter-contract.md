@@ -81,19 +81,27 @@ Turn:
 - Put source-specific parsing in `backend/adapters/<source>/`.
 - Register the provider in `backend/api/providers/` (see "Register Your Provider" below).
 
-## JSONL Conversion Target
+## JSON And JSONL Conversion Targets
 
-For local conversion work, use one JSON object per line, with each object matching the trace shape above. The repo intentionally does not try to provide a universal importer for every source format. Instead, use this contract as the target shape for a small source-specific adapter or one-time conversion.
+Local files may be either a JSON array of trace objects or JSONL with one trace
+object per line. Both use the same trace shape above and are auto-detected by
+`backend.api.trace_io.load_traces`.
 
 Recommended flow:
 
 1. Inspect the source data and identify conversation boundaries, roles, stable IDs, timestamps, and metadata.
 2. Convert each conversation/session into one normalized trace object.
-3. Validate that each trace has the required fields listed above.
+3. Validate with `uv run python -m backend.scripts.validate_traces <path>`.
 4. Choose how the app should read it:
+   - Set `PERSONA_AUDIT_LOCAL_TRACES=<path>` and use `?provider=local` (no code changes).
    - Add a small source-specific loader under `backend/adapters/<source>/` and register it as a provider (see below).
    - Or upload normalized trace/turn rows to the Postgres-compatible tables created by `backend/scripts/upload_local_data.py`.
 5. Keep scoring optional. Do not invent score rows when only raw conversations are available.
+
+The local provider groups Overview by `domain` and cohorts by `user_id` by
+default. Override those paths with `PERSONA_AUDIT_LOCAL_WORKFLOW_DIMENSION`,
+`PERSONA_AUDIT_LOCAL_ACTION_DIMENSION`, and
+`PERSONA_AUDIT_LOCAL_COHORT_DIMENSION`.
 
 Use `docs/llm-data-conversion-instructions.md` as the coding-agent instruction template for source-specific conversion.
 
@@ -121,6 +129,11 @@ The built-in upload helpers create two normalized trace tables by default:
 
 The trace table stores one row per conversation, keyed by `(provider_id, trace_id)`. The turn table stores one row per message/tool turn, keyed by `(provider_id, trace_id, turn_index)`. See `backend/scripts/upload_local_data.py` for the exact table columns.
 
+Turn timestamps are preserved during Postgres upload. Private
+`turn.reasoning` is discarded by default and counted in the upload summary.
+Use `--persist-reasoning` or `PERSONA_AUDIT_PERSIST_REASONING=1` only when the
+database is approved to store that sensitive text.
+
 Use a stable `provider_id` for each imported dataset, such as `acme_support_v1` or `my_agent_logs_v1`. The dashboard can then select that provider once it is registered (see below).
 
 ## Register Your Provider
@@ -130,10 +143,19 @@ Everything a data source needs to plug into the product lives on one `ProviderSp
 1. Create `backend/api/providers/<your_source>.py` exposing a `SPEC`. The smallest worked example is `backend/api/providers/persona_demo.py` (a fully local, bundled dataset). The spec bundles:
    - `key`, `aliases`, `alias_prefixes` — how `?provider=` values resolve to your provider.
    - `load_traces` — a zero-arg callable returning `TraceLoadResult(traces, provider_id, source)`. Wrap your adapter here.
-   - `score: ScoreConfig` — the env var names and defaults for your score run id and score table. If you have no scores yet, point it at the shared tau2 table defaults; the dashboard degrades gracefully.
+   - `score: ScoreConfig` — the env var names and defaults for your score run id and score table. If you have no scores yet, use a unique unscored run id; the dashboard degrades gracefully.
    - `descriptor` — UI labels, page copy, and `features` flags (what the frontend shows for this provider).
+   - `dimensions` — mappings such as `workflow: "labels.issue_type"` and
+     `final_action: "metadata.resolution"`. Paths may reference a trace field,
+     `labels.<key>`, or `metadata.<key>` and drive Overview grouping.
+   - `character_reference_provider` — another registered provider with a
+     scientifically valid comparison distribution. Leave unset (or use
+     `"self"`) for a within-run Character profile.
    - Optional: `local_only=True` (never consult the trace database), `db_provider_id_prefix` (claim `provider_id` rows in shared Postgres tables by prefix), `preferred_db_provider_id`, `supports_reward_math=False` (hide reward/pass-rate math when your source has no reward signal).
 2. Add your module's `SPEC` to the tuple in `backend/api/providers/__init__.py`.
 3. Open the dashboard with `?provider=<your-key>` (or set `PERSONA_AUDIT_PROVIDER`).
+   The frontend reads `/api/providers`, so no frontend allowlist needs editing.
+   An unknown explicit provider returns 404 rather than silently loading a
+   different dataset.
 
 `tests/test_registry.py::test_a_new_provider_needs_one_module_and_one_registry_entry` demonstrates (and enforces) this contract with a toy provider.

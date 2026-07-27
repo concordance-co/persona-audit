@@ -32,7 +32,7 @@ from collections.abc import Mapping, Sequence
 from typing import Any
 
 from backend.api.assistant_traits import audit_assistant_traits
-from backend.api.registry import resolve_provider
+from backend.api.registry import character_reference_provider, resolve_provider
 from backend.api.scores import score_rows_for_coordinates
 from backend.api.stats import histogram_counts
 from backend.api.trace_source import track_group_map
@@ -415,7 +415,7 @@ def character_report(provider: str | None = None) -> dict[str, Any]:
     if track_info and CHARACTER_CONTROL_TRACK in track_info[0]:
         return _track_character_report(audited_provider, audited_rows, track_info)
 
-    reference_provider = CHARACTER_REFERENCE_PROVIDER
+    reference_provider = character_reference_provider(audited_provider)
     reference_rows = score_rows_for_coordinates(coordinates, provider=reference_provider) or []
     result = compute_character(reference_rows, audited_rows)
     result["meta"].update(
@@ -524,7 +524,7 @@ def character_trait_detail(
     if track_info and CHARACTER_CONTROL_TRACK in track_info[0]:
         return _track_trait_detail(coordinate, audited_provider, track_info, limit=limit)
 
-    reference_provider = CHARACTER_REFERENCE_PROVIDER
+    reference_provider = character_reference_provider(audited_provider)
     coordinates = (coordinate,)
 
     reference_rows = score_rows_for_coordinates(coordinates, provider=reference_provider) or []

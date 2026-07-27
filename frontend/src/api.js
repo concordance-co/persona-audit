@@ -12,6 +12,10 @@ function withProvider(path, provider) {
   return `${path}${separator}provider=${encodeURIComponent(provider)}`
 }
 
+export function getProviders() {
+  return fetchJSON('/api/providers')
+}
+
 export function getOverview() {
   return fetchJSON('/api/overview')
 }

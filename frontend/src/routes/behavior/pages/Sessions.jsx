@@ -9,9 +9,9 @@ import { useAsyncResource } from '../../../hooks/useAsyncResource'
 import { useState } from 'react'
 
 function Sessions() {
-  const [provider] = useProviderSelection()
+  const [provider, , providerInfo] = useProviderSelection()
   const [filters, setFilters] = useState({ domain: '', risk: '' })
-  const isCorpusMode = !providerShowsReward(provider)
+  const isCorpusMode = !providerShowsReward(provider, providerInfo)
   const { data: sessionPayload, error } = useAsyncResource(
     () => getAuditSessions({
       domain: filters.domain || undefined,

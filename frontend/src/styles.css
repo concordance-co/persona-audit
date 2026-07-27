@@ -142,7 +142,8 @@ body::after {
   margin-bottom: var(--space-xl);
 }
 
-.provider-selector button {
+.provider-selector select {
+  width: 100%;
   min-height: 30px;
   padding: 4px 8px;
   border: 1px solid var(--audit-border);
@@ -159,9 +160,16 @@ body::after {
   cursor: pointer;
 }
 
-.provider-selector button.active {
-  background: var(--brand-ink);
-  color: var(--brand-white);
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 .nav-links {
@@ -3019,7 +3027,6 @@ code {
   }
 
   .provider-selector {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
     padding: 0 var(--space-md);
     margin-bottom: var(--space-md);
   }

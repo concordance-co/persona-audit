@@ -9,6 +9,7 @@ import psycopg
 from pipelines_v2.api import ModalVolumeStore, TransferPolicy
 from psycopg.rows import dict_row
 
+from backend.api.registry import provider_keys
 from backend.api.scoring_spaces import trace_scoring_records
 from backend.api.trace_source import load_product_traces
 from backend.paths import DATABASE_URL_ENV, configured_database_url, load_dotenv
@@ -57,10 +58,13 @@ SCORE_TABLE = "persona_audit_tau2_score_rows"
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--run-id", default=DEFAULT_RUN_ID)
+    parser.add_argument("--provider", choices=provider_keys(), default=None)
+    parser.add_argument("--workflow-name", default="behavior_audit_tau2_scoring_v1")
     parser.add_argument("--capture-artifact-id", default=DEFAULT_CAPTURE_ARTIFACT_ID)
     parser.add_argument("--projection-artifact-id", default=DEFAULT_PROJECTION_ARTIFACT_ID)
     parser.add_argument("--emotion-artifact-id", default=DEFAULT_EMOTION_ARTIFACT_ID)
     parser.add_argument("--high-stakes-artifact-id", action="append", dest="high_stakes_artifact_ids")
+    parser.add_argument("--no-high-stakes", action="store_true")
     parser.add_argument("--artifact-volume", default=ARTIFACT_VOLUME)
     parser.add_argument("--artifact-root", default=ARTIFACT_ROOT)
     parser.add_argument("--db-env-var", default=DB_ENV_VAR)
@@ -71,10 +75,12 @@ def main() -> None:
 
     load_dotenv()
 
-    traces, provider_id, source = load_product_traces()
+    traces, provider_id, source = load_product_traces(args.provider)
     records = trace_scoring_records(traces)
     record_index = build_record_index(records, provider_id=provider_id, source=source)
-    high_stakes_artifact_ids = tuple(args.high_stakes_artifact_ids or DEFAULT_HIGH_STAKES_ARTIFACT_IDS)
+    high_stakes_artifact_ids = (
+        () if args.no_high_stakes else tuple(args.high_stakes_artifact_ids or DEFAULT_HIGH_STAKES_ARTIFACT_IDS)
+    )
     store = ModalVolumeStore(
         name=args.artifact_volume,
         root=args.artifact_root,
@@ -106,7 +112,7 @@ def main() -> None:
 
     run_row = {
         "run_id": args.run_id,
-        "workflow_name": "behavior_audit_tau2_scoring_v1",  # historical: matches the default artifacts
+        "workflow_name": args.workflow_name,
         "provider_id": provider_id,
         "source": source,
         "artifact_volume": args.artifact_volume,

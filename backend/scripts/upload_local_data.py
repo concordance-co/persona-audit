@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import sys
 from collections.abc import Mapping, Sequence
 from pathlib import Path
 from typing import Any
@@ -22,8 +23,9 @@ from psycopg.types.json import Jsonb
 
 from backend.api.db import safe_identifier as _safe_identifier
 from backend.api.models import AuditTrace
+from backend.api.registry import provider_keys
 from backend.api.trace_source import load_product_traces
-from backend.paths import DATA_ROOT, configured_database_url, load_dotenv
+from backend.paths import DATA_ROOT, configured_database_url, env_value, load_dotenv
 from backend.scores_io import SCORE_COLUMNS, copy_value, ensure_tables
 from backend.scripts.upload_tau2_scores import (
     DB_ENV_VAR,
@@ -43,7 +45,7 @@ SCORE_SUMMARY_DIR = DATA_ROOT / "score_summaries"
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--db-env-var", default=DB_ENV_VAR)
-    parser.add_argument("--provider", choices=("tau2", "hermes", "all"), default="all")
+    parser.add_argument("--provider", choices=(*provider_keys(), "all"), default="all")
     parser.add_argument("--trace-table", default=TRACE_TABLE)
     parser.add_argument("--turn-table", default=TURN_TABLE)
     parser.add_argument("--summary-table", default=SUMMARY_TABLE)
@@ -55,17 +57,33 @@ def main() -> None:
     parser.add_argument("--skip-supplemental-scores", action="store_true")
     parser.add_argument("--skip-summaries", action="store_true")
     parser.add_argument("--dry-run", action="store_true")
+    parser.add_argument(
+        "--persist-reasoning",
+        action="store_true",
+        help=(
+            "persist private turn.reasoning text to Postgres; default is to discard it "
+            "(or set PERSONA_AUDIT_PERSIST_REASONING=1)"
+        ),
+    )
     args = parser.parse_args()
 
     load_dotenv()
-    providers = ("tau2", "hermes") if args.provider == "all" else (args.provider,)
+    providers = provider_keys() if args.provider == "all" else (args.provider,)
+    persist_reasoning = args.persist_reasoning or (
+        (env_value("PERSONA_AUDIT_PERSIST_REASONING", "0") or "0").lower() not in {"0", "false", "no"}
+    )
 
     trace_rows: list[dict[str, Any]] = []
     turn_rows: list[dict[str, Any]] = []
     if not args.skip_traces:
         for provider in providers:
             traces, provider_id, source = load_product_traces(provider, prefer_neon=False)
-            provider_trace_rows, provider_turn_rows = trace_table_rows(traces, provider_id=provider_id, source=source)
+            provider_trace_rows, provider_turn_rows = trace_table_rows(
+                traces,
+                provider_id=provider_id,
+                source=source,
+                persist_reasoning=persist_reasoning,
+            )
             trace_rows.extend(provider_trace_rows)
             turn_rows.extend(provider_turn_rows)
 
@@ -81,8 +99,16 @@ def main() -> None:
         "supplemental_score_rows": sum(len(payload["rows"]) for payload in supplemental_payloads),
         "summary_files": len(summary_payloads),
         "summary_run_ids": [payload["run_id"] for payload in summary_payloads],
+        "reasoning_persistence": "enabled" if persist_reasoning else "disabled",
+        "discarded_reasoning_turns": sum(1 for row in turn_rows if row.pop("_reasoning_discarded", False)),
     }
     print(json.dumps(summary, indent=2, sort_keys=True))
+    if summary["discarded_reasoning_turns"]:
+        print(
+            "WARNING: private turn.reasoning text will be discarded. "
+            "Pass --persist-reasoning or set PERSONA_AUDIT_PERSIST_REASONING=1 to retain it.",
+            file=sys.stderr,
+        )
     if args.dry_run:
         return
 
@@ -119,6 +145,7 @@ def trace_table_rows(
     *,
     provider_id: str,
     source: str,
+    persist_reasoning: bool = False,
 ) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
     trace_rows: list[dict[str, Any]] = []
     turn_rows: list[dict[str, Any]] = []
@@ -151,6 +178,9 @@ def trace_table_rows(
                     "role": turn.role,
                     "content": turn.content,
                     "tool_name": turn.tool_name,
+                    "reasoning": turn.reasoning if persist_reasoning else None,
+                    "timestamp": turn.timestamp,
+                    "_reasoning_discarded": bool(turn.reasoning and not persist_reasoning),
                 }
             )
     return trace_rows, turn_rows
@@ -217,12 +247,16 @@ def ensure_trace_tables(conn: psycopg.Connection, *, trace_table: str, turn_tabl
                 role text NOT NULL,
                 content text NOT NULL,
                 tool_name text,
+                reasoning text,
+                timestamp text,
                 uploaded_at timestamptz NOT NULL DEFAULT now(),
                 PRIMARY KEY (provider_id, trace_id, turn_index)
             )
             """
         ).format(turn_table=turn_identifier)
     )
+    conn.execute(sql.SQL("ALTER TABLE {table} ADD COLUMN IF NOT EXISTS reasoning text").format(table=turn_identifier))
+    conn.execute(sql.SQL("ALTER TABLE {table} ADD COLUMN IF NOT EXISTS timestamp text").format(table=turn_identifier))
     for name, table, columns in (
         (f"{trace_table}_user_idx", trace_table, ("provider_id", "user_id")),
         (f"{trace_table}_domain_idx", trace_table, ("provider_id", "domain")),
@@ -277,7 +311,17 @@ def replace_trace_rows(
         conn,
         turn_table,
         turn_rows,
-        ("provider_id", "trace_id", "turn_id", "turn_index", "role", "content", "tool_name"),
+        (
+            "provider_id",
+            "trace_id",
+            "turn_id",
+            "turn_index",
+            "role",
+            "content",
+            "tool_name",
+            "reasoning",
+            "timestamp",
+        ),
     )
 
 

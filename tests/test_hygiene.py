@@ -11,6 +11,7 @@ from backend.paths import DATA_ROOT, REPO_ROOT, configured_database_url, env_val
 
 EXPECTED_API_ROUTES = {
     "/api/health",
+    "/api/providers",
     "/api/overview",
     "/api/assets",
     "/api/audit/report",

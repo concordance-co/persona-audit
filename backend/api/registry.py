@@ -17,7 +17,7 @@ This module holds only types and resolution logic; the concrete specs live in
 from __future__ import annotations
 
 from collections.abc import Callable, Mapping
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any, NamedTuple
 
 from backend.api.models import AuditTrace
@@ -30,7 +30,17 @@ TAU2_PROVIDER = "tau2"
 HERMES_PROVIDER = "hermes"
 PERSONA_DEMO_PROVIDER = "persona_demo"
 
-_FALLBACK_PROVIDER = TAU2_PROVIDER
+_FALLBACK_PROVIDER = PERSONA_DEMO_PROVIDER
+
+DEFAULT_DIMENSIONS = {
+    "workflow": "metadata.workflow",
+    "final_action": "metadata.final_action",
+    "cohort": "user_id",
+}
+
+
+class UnknownProviderError(ValueError):
+    """Raised when an explicitly configured/requested provider is not registered."""
 
 
 class TraceLoadResult(NamedTuple):
@@ -85,6 +95,10 @@ class ProviderSpec:
     """False = reward/pass-rate analytics are not meaningful for this source."""
     workflow_from_task: Callable[[Mapping[str, Any]], str] | None = None
     """Optional dataset-specific task -> workflow-label taxonomy (see providers/tau2.py)."""
+    dimensions: Mapping[str, str] = field(default_factory=lambda: dict(DEFAULT_DIMENSIONS))
+    """Semantic analytics dimensions mapped to trace fields, labels, or metadata paths."""
+    character_reference_provider: str | None = None
+    """Reference provider for Character; None or ``self`` means this provider's own run."""
 
 
 def _registry() -> dict[str, ProviderSpec]:
@@ -111,7 +125,7 @@ def resolve_provider(provider: str | None = None) -> str:
     for spec in registry.values():
         if any(normalized.startswith(prefix) for prefix in spec.alias_prefixes):
             return spec.key
-    return _FALLBACK_PROVIDER
+    raise UnknownProviderError(f"unknown provider {raw!r}; choose one of {', '.join(sorted(registry))}")
 
 
 def get_provider(provider: str | None = None) -> ProviderSpec:
@@ -120,6 +134,52 @@ def get_provider(provider: str | None = None) -> ProviderSpec:
 
 def provider_descriptor(provider: str | None = None) -> dict[str, Any]:
     return dict(get_provider(provider).descriptor)
+
+
+def provider_catalog() -> list[dict[str, Any]]:
+    """Descriptors for every registered provider, including the configured default."""
+
+    default = resolve_provider(None)
+    return [
+        {
+            **dict(spec.descriptor),
+            "key": spec.key,
+            "is_default": spec.key == default,
+            "dimensions": dict(spec.dimensions),
+            "character_reference_provider": spec.character_reference_provider or "self",
+        }
+        for spec in _registry().values()
+    ]
+
+
+def dimension_value(trace: AuditTrace, path: str | None) -> Any:
+    """Resolve ``field``/``labels.foo``/``metadata.foo`` paths on a trace."""
+
+    if not path:
+        return None
+    head, *tail = str(path).split(".")
+    value: Any
+    if head == "labels":
+        value = trace.labels
+    elif head == "metadata":
+        value = trace.metadata
+    else:
+        value = getattr(trace, head, None)
+    for part in tail:
+        if not isinstance(value, Mapping):
+            return None
+        value = value.get(part)
+    return value
+
+
+def character_reference_provider(provider: str | None = None) -> str:
+    """Resolve the configured Character reference, defaulting to a self profile."""
+
+    selected = resolve_provider(provider)
+    configured = get_provider(selected).character_reference_provider
+    if not configured or configured.strip().lower() == "self":
+        return selected
+    return resolve_provider(configured)
 
 
 def score_run_id(provider: str | None = None) -> str:
