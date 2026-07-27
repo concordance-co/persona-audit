@@ -7,11 +7,11 @@ const PRIMARY_NAV = [
   ['/', 'Overview', true],
   ['/character', 'Character'],
   ['/tail', 'Tail'],
+  ['/sessions', 'Sessions'],
 ]
 
 const SUPPORT_NAV = [
   ['/report', 'Report'],
-  ['/sessions', 'Sessions'],
   ['/registry', 'Registry'],
   ['/llms', 'LLMs'],
 ]
@@ -30,9 +30,9 @@ function ProviderSelector({ provider, providers, onProvider }) {
     ? (providers.some(option => option.key === provider) ? providers : [...providers, fallback])
     : [fallback]
   return (
-    <div className="provider-selector" aria-label="Data provider">
+    <div className="provider-selector" aria-label="Dataset">
       <label>
-        <span className="sr-only">Data provider</span>
+        <span className="dataset-selector-label">Dataset</span>
         <select value={provider} onChange={event => onProvider(event.target.value)}>
           {options.map(option => (
             <option key={option.key} value={option.key}>{option.label || option.key}</option>

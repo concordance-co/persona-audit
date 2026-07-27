@@ -96,7 +96,7 @@ function TrackSeparationPanel({ comparison, familyControl }) {
             <span className="surface-badge">Direct comparison</span>
           </div>
           <p className="muted-copy compact">
-            Each dot is one track's mean for the named {isEmotion ? 'emotion signal' : 'persona trait'}, normalized across this dataset so 0 is the lowest observed trace and 1 is the highest. The gray span shows the distance between tracks; wider spans mean clearer separation. Rows are ordered by how much track membership explains the signal's variation. Hover a dot for the mean, uncertainty, and sample size.
+            Each dot is one track's mean for the named {isEmotion ? 'emotion signal' : 'persona trait'}, normalized across this dataset so 0 is the lowest observed session and 1 is the highest. The gray span shows the distance between tracks; wider spans mean clearer separation. Rows are ordered by how much track membership explains the signal's variation. Hover a dot for the mean, uncertainty, and sample size.
           </p>
         </div>
         <div className="track-card-controls">
@@ -249,7 +249,7 @@ function CharacterTrackHeatmap({ points, meta }) {
           <p className="muted-copy compact">
             Mean raw trait score per track, in the same units for every cell. Green is a positive raw score
             (more of the trait), red negative, depth relative to the strongest score in the row. Rows rank by
-            how far the tracks disagree. Hover for per-trace peaks.
+            how far the tracks disagree. Hover for per-session peaks.
           </p>
         </div>
       </div>
@@ -294,7 +294,7 @@ function CharacterTrackHeatmap({ points, meta }) {
                   track,
                   cell?.mean_score,
                   cell
-                    ? `${trackTitle(track)} on ${point.label}: mean raw score ${fmt(cell.mean_score)}, mean per-trace peak ${fmt(cell.peak_mean)}, n=${cell.traces}`
+                    ? `${trackTitle(track)} on ${point.label}: mean raw score ${fmt(cell.mean_score)}, mean per-session peak ${fmt(cell.peak_mean)}, n=${cell.traces}`
                     : undefined,
                 )
               })}

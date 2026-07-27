@@ -22,9 +22,16 @@ function strongestContrast(row) {
     .sort((a, b) => Math.abs(Number(b.paired_d)) - Math.abs(Number(a.paired_d)))[0]
 }
 
-function TrackOverviewTable({ comparison }) {
-  const rows = [...(comparison.vectors || [])]
+function comparisonRows(comparison, limitPerFamily = null) {
+  const sorted = [...(comparison.vectors || [])]
     .sort((a, b) => Number(b.eta_squared || 0) - Number(a.eta_squared || 0))
+  if (limitPerFamily == null) return sorted
+  return ['persona', 'emotion_cluster']
+    .flatMap(family => sorted.filter(row => row.family === family).slice(0, limitPerFamily))
+}
+
+function TrackOverviewTable({ comparison, limitPerFamily = null }) {
+  const rows = comparisonRows(comparison, limitPerFamily)
   if (!rows.length) return null
   return (
     <table className="data-table report-table">
@@ -44,6 +51,25 @@ function TrackOverviewTable({ comparison }) {
             </tr>
           )
         })}
+      </tbody>
+    </table>
+  )
+}
+
+function BaselineOverviewTable({ rows = [], limitPerFamily = null }) {
+  const sorted = [...rows].sort((a, b) => Math.abs(Number(b.basis_mean || 0)) - Math.abs(Number(a.basis_mean || 0)))
+  const visible = limitPerFamily == null
+    ? sorted
+    : ['persona', 'emotion_cluster'].flatMap(
+        family => sorted.filter(row => row.family === family).slice(0, limitPerFamily),
+      )
+  return (
+    <table className="data-table report-table">
+      <thead><tr><th>Signal</th><th>Family</th><th>Global mean</th><th>Global sd</th><th>n</th></tr></thead>
+      <tbody>
+        {visible.map(row => (
+          <tr key={row.vector}><td>{vectorLabel(row.vector)}</td><td>{row.family === 'emotion_cluster' ? 'Emotion' : 'Persona'}</td><td>{fmt(row.basis_mean)}</td><td>{fmt(row.basis_sd)}</td><td>{row.n}</td></tr>
+        ))}
       </tbody>
     </table>
   )
@@ -86,9 +112,8 @@ function Report() {
     .sort((a, b) => Number(a.distinctiveness) - Number(b.distinctiveness))
     .slice(0, 4)
   const isTrackComparison = Boolean(comparison.available && characterMeta.reference_kind === 'track')
-  const topComparisonRows = [...(comparison.vectors || [])]
-    .sort((a, b) => Number(b.eta_squared || 0) - Number(a.eta_squared || 0))
-    .slice(0, 3)
+  const topPersonaRows = comparisonRows(comparison).filter(row => row.family === 'persona').slice(0, 3)
+  const topEmotionRows = comparisonRows(comparison).filter(row => row.family === 'emotion_cluster').slice(0, 3)
 
   return (
     <div className="report">
@@ -106,7 +131,7 @@ function Report() {
           </p>
           <dl className="report-meta">
             <div><dt>Provider</dt><dd>{providerInfo.label || titleize(provider)}</dd></div>
-            <div><dt>Conversations</dt><dd>{traceCount?.toLocaleString?.() || traceCount || '-'}</dd></div>
+            <div><dt>Sessions</dt><dd>{traceCount?.toLocaleString?.() || traceCount || '-'}</dd></div>
             <div><dt>Character traits</dt><dd>{points.length} scored · {dropped.length} unavailable</dd></div>
             <div><dt>Generation</dt><dd>Computed from current API payloads; no LLM narrative</dd></div>
           </dl>
@@ -114,24 +139,29 @@ function Report() {
 
         <ReportSection n="1" title="Executive findings">
           {isTrackComparison ? (
-            <>
-              <p className="report-body">
-                The largest repeated differences across matched conversations are:
-              </p>
-              <ul className="report-body">
-                {topComparisonRows.map(row => {
-                  const contrast = strongestContrast(row)
-                  return (
-                    <li key={row.vector}>
-                      <strong>{vectorLabel(row.vector)}:</strong>{' '}
-                      {contrast
-                        ? `${trackTitle(contrast.a)} vs ${trackTitle(contrast.b)}, paired d ${fmt(contrast.paired_d)} across ${contrast.n_pairs} matched conversations.`
-                        : 'No paired contrast available.'}
-                    </li>
-                  )
-                })}
-              </ul>
-            </>
+            <div className="report-columns">
+              {[
+                ['Persona signals', topPersonaRows],
+                ['Emotion signals', topEmotionRows],
+              ].map(([label, rows]) => (
+                <div key={label}>
+                  <div className="report-label">{label}</div>
+                  <ul className="report-body">
+                    {rows.map(row => {
+                      const contrast = strongestContrast(row)
+                      return (
+                        <li key={row.vector}>
+                          <strong>{vectorLabel(row.vector)}:</strong>{' '}
+                          {contrast
+                            ? `${trackTitle(contrast.a)} vs ${trackTitle(contrast.b)}, paired d ${fmt(contrast.paired_d)} across ${contrast.n_pairs} matched sessions.`
+                            : 'No paired contrast available.'}
+                        </li>
+                      )
+                    })}
+                  </ul>
+                </div>
+              ))}
+            </div>
           ) : (
             <div className="report-columns">
               <div>
@@ -157,28 +187,27 @@ function Report() {
         <ReportSection n="2" title={isTrackComparison ? 'Overview — matched track separation' : 'Overview — scored baselines'}>
           <p className="report-body">
             {isTrackComparison
-              ? 'Every contrast uses the same underlying conversations for each track. Mean difference stays in the raw direction-oriented score units; paired d standardizes that within matched pairs.'
-              : 'These are the same populated score surfaces shown on Overview. Empty or under-sampled coordinates are excluded instead of rendered as blank columns.'}
+              ? 'Every contrast uses the same underlying sessions for each track. Mean difference stays in the raw direction-oriented score units; paired d standardizes that within matched pairs.'
+              : 'These are the same populated score surfaces shown on Overview. Empty or under-sampled signals are excluded instead of rendered as blank columns.'}
           </p>
-          {isTrackComparison
-            ? <TrackOverviewTable comparison={comparison} />
-            : (
-              <table className="data-table report-table">
-                <thead><tr><th>Signal</th><th>Family</th><th>Global mean</th><th>Global sd</th><th>n</th></tr></thead>
-                <tbody>
-                  {(overview.vector_inventory || []).map(row => (
-                    <tr key={row.vector}><td>{vectorLabel(row.vector)}</td><td>{row.family === 'emotion_cluster' ? 'Emotion' : 'Persona'}</td><td>{fmt(row.basis_mean)}</td><td>{fmt(row.basis_sd)}</td><td>{row.n}</td></tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
+          <div className="report-screen-summary">
+            {isTrackComparison
+              ? <TrackOverviewTable comparison={comparison} limitPerFamily={5} />
+              : <BaselineOverviewTable rows={overview.vector_inventory || []} limitPerFamily={5} />}
+          </div>
+          <details className="report-appendix">
+            <summary>Full signal appendix</summary>
+            {isTrackComparison
+              ? <TrackOverviewTable comparison={comparison} />
+              : <BaselineOverviewTable rows={overview.vector_inventory || []} />}
+          </details>
         </ReportSection>
 
         <ReportSection n="3" title="Character — recurring trait posture">
           <p className="report-body">
-            Character uses per-conversation peak trait scores. {isTrackComparison
+            Character uses per-session peak trait scores. {isTrackComparison
               ? `Each track is shown directly; the ${trackTitle(characterMeta.reference_provider)} track supplies the within-dataset reference threshold.`
-              : `Presence means a trace exceeds the ${Math.round(Number(characterMeta.quantile || 0.8) * 100)}th percentile reference threshold for that trait.`}
+              : `Presence means a session exceeds the ${Math.round(Number(characterMeta.quantile || 0.8) * 100)}th percentile reference threshold for that trait.`}
           </p>
           {isTrackComparison
             ? <CharacterTrackHeatmap points={points} meta={characterMeta} />
@@ -192,7 +221,7 @@ function Report() {
           {modes.length ? (
             <>
               <table className="data-table report-table">
-                <thead><tr><th>Mode signature</th><th>Turns</th><th>Traces</th><th>Typical z</th><th>Reach z</th></tr></thead>
+                <thead><tr><th>Mode signature</th><th>Turns</th><th>Sessions</th><th>Typical z</th><th>Reach z</th></tr></thead>
                 <tbody>
                   {modes.map(mode => (
                     <tr key={mode.id}>
@@ -205,7 +234,7 @@ function Report() {
                   ))}
                 </tbody>
               </table>
-              <p className="muted-copy compact">{tailMeta.n_tail_traces} of {tailMeta.total_traces} conversations contain at least one tail turn.</p>
+              <p className="muted-copy compact">{tailMeta.n_tail_traces} of {tailMeta.total_traces} sessions contain at least one tail turn.</p>
             </>
           ) : <p className="muted-copy">Not enough tail turns to form a stable mode.</p>}
         </ReportSection>
@@ -214,9 +243,9 @@ function Report() {
           <p className="report-body">These are the highest aggregate baseline deviations from the same Overview queue. Open a session to compare multiple selected signals across its trajectory and conversation log.</p>
           {outliers.length ? (
             <table className="data-table report-table">
-              <thead><tr><th>Trace</th><th>Segment</th><th>Signal</th><th>Primary z</th><th>Aggregate</th></tr></thead>
+              <thead><tr><th>Session</th><th>Segment</th><th>Signal</th><th>Primary z</th><th>Aggregate</th></tr></thead>
               <tbody>
-                {outliers.slice(0, 10).map(row => {
+                {outliers.slice(0, 6).map(row => {
                   const top = row.top_z?.[0] || {}
                   return (
                     <tr key={row.trace_id}>

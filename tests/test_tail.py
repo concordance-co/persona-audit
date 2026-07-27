@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import numpy as np
+
 from backend.api.tail import compute_tail
 
 A = "assistant_axis_trait__aa"
@@ -104,3 +106,29 @@ def test_compute_tail_signature_is_signed() -> None:
     bb_entry = next((s for s in aa_mode["signature"] if s["trait"] == "bb"), None)
     if bb_entry is not None:
         assert bb_entry["gap"] < 0
+
+
+def test_compute_tail_scatter_includes_deterministic_inspection_detail(monkeypatch) -> None:
+    class NoiseFirstClusterer:
+        def __init__(self, **_kwargs) -> None:
+            pass
+
+        def fit_predict(self, values):
+            labels = np.zeros(len(values), dtype=int)
+            labels[:5] = -1
+            return labels
+
+    monkeypatch.setattr("backend.api.tail.HDBSCAN", NoiseFirstClusterer)
+    scatter = compute_tail(_two_mode_corpus())["scatter"]
+
+    assert scatter is not None
+    assert scatter["detail_version"] == 1
+    assert scatter["entry_quantile"] == 0.9
+    assert scatter["size_turns"] == 5
+    assert scatter["central_severity"] <= scatter["reach"] <= scatter["maximum_severity"]
+    assert sum(row["turns"] for row in scatter["peak_traits"]) == 5
+    assert len(scatter["exemplars"]) == 5
+    assert [row["max_z"] for row in scatter["exemplars"]] == sorted(
+        (row["max_z"] for row in scatter["exemplars"]),
+        reverse=True,
+    )

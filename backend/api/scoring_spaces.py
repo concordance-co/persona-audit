@@ -223,6 +223,19 @@ def scoring_readiness(
     source: str,
 ) -> dict[str, Any]:
     records = trace_scoring_records(traces)
+    show_high_stakes = _show_high_stakes(provider_id)
+    required_layers = [40, 52]
+    sections = ["assistant_response"]
+    note = (
+        "Assistant Axis/traits and emotions can share one response-residual capture when layers 40 and 52 are included."
+    )
+    if show_high_stakes:
+        required_layers.insert(0, 31)
+        sections.append("full_trace")
+        note += (
+            " High-stakes probes additionally use full-trace features at layer 31 "
+            "and persisted probe payloads on Modal."
+        )
     return {
         "provider": {
             "id": provider_id,
@@ -241,18 +254,14 @@ def scoring_readiness(
         "capture_plan": {
             "model_id": "meta-llama/Llama-3.3-70B-Instruct",
             "residual_site": "resid_post",
-            "required_layers": [31, 40, 52],
-            "sections": ["assistant_response", "full_trace"],
-            "note": (
-                "Assistant Axis/traits and emotions can share one response-residual capture "
-                "if layers 40 and 52 are included. The high-stakes probes use full-trace "
-                "features at layer 31 and now point at persisted probe payloads on Modal."
-            ),
+            "required_layers": required_layers,
+            "sections": sections,
+            "note": note,
         },
         "spaces": [
             _assistant_axis_space(provider_id=provider_id),
             _emotion_space(),
-            *([_high_stakes_probe_space()] if _show_high_stakes(provider_id) else []),
+            *([_high_stakes_probe_space()] if show_high_stakes else []),
         ],
     }
 

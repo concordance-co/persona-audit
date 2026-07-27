@@ -64,7 +64,7 @@ function InvestigationQueue({ outliers = [], family = 'all', onFamily, provider 
       <div className="card-heading-row">
         <div>
           <div className="card-title">Investigation Queue</div>
-          <p className="muted-copy compact">Primary z is how far the named trait sits from its baseline for this trace (+ above, − below). Aggregate combines every tracked trait in that workflow into one overall deviation. Sorted by largest aggregate.</p>
+          <p className="muted-copy compact">Primary z is how far the named signal sits from its baseline for this session (+ above, − below). Aggregate combines every tracked signal in that segment into one overall deviation. Sorted by largest aggregate.</p>
         </div>
         <div className="compact-toggle">
           {[
@@ -81,7 +81,7 @@ function InvestigationQueue({ outliers = [], family = 'all', onFamily, provider 
       <table>
         <thead>
           <tr>
-            <th>Trace</th>
+            <th>Session</th>
             <th>Segment</th>
             <th>Family</th>
             <th>Primary signal</th>
@@ -173,7 +173,7 @@ function CohortExplorerPanel({ cohorts = [], sessions = [], selected, onSelected
           <PersonaMetric label="Pass Rate" value={pct(selectedStats.passRate)} detail={`all ${pct(allStats.passRate)}`} compact />
         )}
         <PersonaMetric label="Avg Turns" value={fmt(selectedStats.avgTurns)} detail={`all ${fmt(allStats.avgTurns)}`} compact />
-        <PersonaMetric label="High Risk" value={compactNumber(selectedStats.highRisk)} detail={`${compactNumber(selectedStats.flags)} flags`} compact />
+        <PersonaMetric label="High Severity" value={compactNumber(selectedStats.highRisk)} detail={`${compactNumber(selectedStats.flags)} flags`} compact />
       </div>
       <table>
         <thead>
@@ -182,7 +182,7 @@ function CohortExplorerPanel({ cohorts = [], sessions = [], selected, onSelected
             <th className="num">Sessions</th>
             {features.show_pass_rate !== false && <th className="num">Pass</th>}
             <th className="num">Avg turns</th>
-            <th className="num">High risk</th>
+            <th className="num">High severity</th>
             <th className="num">Flags</th>
           </tr>
         </thead>
@@ -216,7 +216,7 @@ function TurnLengthPanel({ rows = [], providerInfo = {} }) {
   return (
     <div className="card enterprise-panel">
       <div className="card-title">Interaction Length Burden</div>
-      <p className="muted-copy compact">{showPassRate ? 'Longer traces are the clearest product signal in this benchmark: pass rate falls as sessions stretch.' : 'Conversation-length buckets show where longer sessions concentrate in the corpus.'}</p>
+      <p className="muted-copy compact">{showPassRate ? 'Longer sessions are the clearest product signal in this benchmark: pass rate falls as sessions stretch.' : 'Conversation-length buckets show where longer sessions concentrate in the corpus.'}</p>
       <ResponsiveContainer width="100%" height={260}>
         <BarChart data={chartRows} margin={{ top: 8, right: 12, left: 0, bottom: 52 }}>
           <CartesianGrid strokeDasharray="3 3" stroke={CHART_GRID_COLOR} />
@@ -256,7 +256,7 @@ function ProductStateCards({ sessions = [], cohorts = [], reward = {}, viableSeg
         <PersonaMetric label="Pass Rate" value={pct(stats.passRate ?? reward.pass_rate)} detail={`${compactNumber(reward.fail_count)} failures`} />
       )}
       <PersonaMetric label="Avg Turns" value={fmt(stats.avgTurns)} detail="interaction burden" />
-      <PersonaMetric label="High Risk" value={compactNumber(stats.highRisk)} detail={`${compactNumber(stats.flags)} total flags`} />
+      <PersonaMetric label="High Severity" value={compactNumber(stats.highRisk)} detail={`${compactNumber(stats.flags)} total flags`} />
       <PersonaMetric label={`Segment x ${actionLabelText}`} value={compactNumber(viableSegments.length)} detail={`${compactNumber(hiddenSegments)} low-n hidden`} />
       {features.show_reward === false ? (
         <PersonaMetric label="Flags" value={compactNumber(stats.flags)} detail="heuristic triage signals" />
@@ -389,7 +389,7 @@ function SessionInvestigationHeader({ trace, selected }) {
         <div className="use-case-label">Investigation</div>
         <h2>{deviationLabel({ vector: selected.vector, z: selected.z, polarity: selected.polarity })}</h2>
         <p>
-          Compared against {baseline.label || scopeLabel(selected.baselineScope)}. Primary z {fmt(selected.z)} is how far this trace sits from that baseline; the aggregate score stays on the queue.
+          Compared against {baseline.label || scopeLabel(selected.baselineScope)}. Primary z {fmt(selected.z)} is how far this session sits from that baseline; the aggregate score stays on the queue.
         </p>
       </div>
       <div className="hero-callout">

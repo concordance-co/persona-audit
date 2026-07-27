@@ -16,7 +16,7 @@ function CharacterScatterTooltip({ active, payload }) {
   return (
     <div className="chart-tooltip">
       <div className="chart-tooltip-title">{point.track ? `${trackTitle(point.track)} · ${point.label}` : point.label}</div>
-      <div>Frequency: {pct1(point.frequency)} of traces</div>
+      <div>Frequency: {pct1(point.frequency)} of sessions</div>
       <div>Distinctiveness: {point.distinctiveness >= 0 ? '+' : ''}{pct1(point.distinctiveness)} vs reference</div>
       <div className="muted-copy compact">Reference rate {pct1(point.reference_rate)} · {point.audited_present}/{point.audited_total} present</div>
     </div>
@@ -51,10 +51,10 @@ function CharacterDistribution({ distribution, label }) {
     <div className="character-distribution">
       <p className="muted-copy compact">
         {series
-          ? `Distribution of per-trace peak ${label?.toLowerCase()} raw scores per track, each as a share of its own traces. The dashed line marks the control track's mean per-trace peak.`
+          ? `Distribution of per-session peak ${label?.toLowerCase()} raw scores per track, each as a share of its own sessions. The dashed line marks the control track's mean per-session peak.`
           : selfProfile
-            ? `Distribution of per-trace peak ${label?.toLowerCase()} scores within this run. The dashed line marks the run's 80th percentile.`
-            : `Distribution of per-trace peak ${label?.toLowerCase()} intensity — this model vs reference, each as a share of its own traces. The dashed line is the presence threshold; mass to its right is the tail.`}
+            ? `Distribution of per-session peak ${label?.toLowerCase()} scores within this run. The dashed line marks the run's 80th percentile.`
+            : `Distribution of per-session peak ${label?.toLowerCase()} intensity — this model vs reference, each as a share of its own sessions. The dashed line is the presence threshold; mass to its right is the tail.`}
       </p>
       <ResponsiveContainer width="100%" height={220}>
         <BarChart data={bins} margin={{ top: 18, right: 16, left: 0, bottom: 4 }} barGap={0} barCategoryGap="8%">
@@ -134,7 +134,7 @@ function CharacterDrift({ drift, label }) {
           if (!trackMulti) return null
           return (
             <p key={name} className="muted-copy compact">
-              {trackTitle(name)}: {pct((trackSummary.rising || 0) / trackMulti)} of {trackMulti.toLocaleString()} multi-turn conversations rise in {lower},
+              {trackTitle(name)}: {pct((trackSummary.rising || 0) / trackMulti)} of {trackMulti.toLocaleString()} multi-turn sessions rise in {lower},
               {' '}{pct((trackSummary.falling || 0) / trackMulti)} fall (mean change {trackSummary.mean_delta >= 0 ? '+' : ''}{fmt(trackSummary.mean_delta)}).
             </p>
           )
@@ -142,7 +142,7 @@ function CharacterDrift({ drift, label }) {
       ) : (
         multi > 0 && (
           <p className="muted-copy compact">
-            Within-conversation drift: {pct((summary.rising || 0) / multi)} of {multi.toLocaleString()} multi-turn conversations rise in {lower} from start to end,
+            Within-session drift: {pct((summary.rising || 0) / multi)} of {multi.toLocaleString()} multi-turn sessions rise in {lower} from start to end,
             {' '}{pct((summary.falling || 0) / multi)} fall (mean change {summary.mean_delta >= 0 ? '+' : ''}{fmt(summary.mean_delta)}).
           </p>
         )
@@ -167,16 +167,16 @@ function CharacterDrilldown({ coordinate, provider, point }) {
 
   return (
     <div className="card">
-      <div className="card-title">{point?.label} · distribution & traces</div>
+      <div className="card-title">{point?.label} · distribution & sessions</div>
       <p className="muted-copy compact">
         {detail?.meta?.reference_kind === 'track'
-          ? <>Every audited trace ranked by peak {point?.label?.toLowerCase()} raw score, with its track. Click any trace to inspect it turn by turn in Session Review.</>
+          ? <>Every audited session ranked by peak {point?.label?.toLowerCase()} raw score, with its track. Click any session to inspect it turn by turn in Session Review.</>
           : detail?.meta?.reference_kind === 'self_profile'
-            ? <>The highest-scoring {point?.label?.toLowerCase()} traces in this run. Click any trace to inspect the underlying conversation turn by turn.</>
-          : <>Traces whose peak {point?.label?.toLowerCase()} intensity exceeds the reference threshold, ranked by peak. Click any trace to inspect it turn by turn in Session Review.</>}
+            ? <>The highest-scoring {point?.label?.toLowerCase()} sessions in this run. Click any session to inspect the underlying conversation turn by turn.</>
+            : <>Sessions whose peak {point?.label?.toLowerCase()} intensity exceeds the reference threshold, ranked by peak. Click any session to inspect it turn by turn in Session Review.</>}
       </p>
-      {error && <p className="muted-copy">Could not load traces: {error}</p>}
-      {!detail && !error && <p className="muted-copy">Loading traces...</p>}
+      {error && <p className="muted-copy">Could not load sessions: {error}</p>}
+      {!detail && !error && <p className="muted-copy">Loading sessions...</p>}
       {detail && (
         <>
           <CharacterDistribution distribution={detail.distribution} label={point?.label} />
@@ -216,8 +216,8 @@ function CharacterDrilldown({ coordinate, provider, point }) {
           {(detail.point.audited_present ?? detail.point.audited_total) > 25 && (
             <p className="muted-copy compact">
               {detail.meta?.reference_kind === 'self_profile'
-                ? `Showing the 25 highest-scoring of ${detail.point.audited_present ?? detail.point.audited_total} traces above the run's 80th percentile.`
-                : `Showing the 25 most extreme of ${detail.point.audited_present ?? detail.point.audited_total} traces.`}
+                ? `Showing the 25 highest-scoring of ${detail.point.audited_present ?? detail.point.audited_total} sessions above the run's 80th percentile.`
+                : `Showing the 25 most extreme of ${detail.point.audited_present ?? detail.point.audited_total} sessions.`}
             </p>
           )}
         </>
@@ -296,7 +296,7 @@ function SelfCharacterTooltip({ active, payload }) {
       <div>Mean raw score: {fmt(point.mean_score)}</div>
       <div>Middle 80%: {fmt(point.trace_p10)} to {fmt(point.trace_p90)}</div>
       <div>Trace spread: {fmt(point.trace_spread)}</div>
-      <div className="muted-copy compact">mean per-trace peak {fmt(point.peak_mean)} · n={point.trace_count}</div>
+      <div className="muted-copy compact">mean per-session peak {fmt(point.peak_mean)} · n={point.trace_count}</div>
     </div>
   )
 }
@@ -319,21 +319,21 @@ function SelfCharacterSummary({ points, selected, onSelect }) {
   return (
     <>
       <p className="character-headline">
-        Across <strong>{traceCount.toLocaleString()} traces</strong>, the highest average signals are{' '}
+        Across <strong>{traceCount.toLocaleString()} sessions</strong>, the highest average signals are{' '}
         <strong>{joinTraits(levels.map(point => point.label))}</strong>;{' '}
         <strong>{joinTraits(variable.map(point => point.label))}</strong> vary most from conversation to conversation.
       </p>
       <div className="character-signature-grid">
         <div className="card">
           <div className="card-title">Highest average levels</div>
-          <p className="muted-copy compact">Mean raw score across each trace; descriptive, not relative to another model.</p>
+          <p className="muted-copy compact">Mean raw score across each session; descriptive, not relative to another model.</p>
           <div className="character-chip-row">
             {levels.map(point => <Chip key={point.coordinate} point={point} metric="mean_score" tone="level" />)}
           </div>
         </div>
         <div className="card">
-          <div className="card-title">Most variable across traces</div>
-          <p className="muted-copy compact">Width of the middle 80% of per-trace mean scores.</p>
+          <div className="card-title">Most variable across sessions</div>
+          <p className="muted-copy compact">Width of the middle 80% of per-session mean scores.</p>
           <div className="character-chip-row">
             {variable.map(point => <Chip key={point.coordinate} point={point} metric="trace_spread" tone="variation" />)}
           </div>
@@ -365,7 +365,7 @@ function SelfCharacterProfile({ points, selected, onSelect }) {
           domain={[0, 'auto']}
           tickFormatter={value => Number(value).toFixed(1)}
           tick={{ fontSize: 11 }}
-          label={{ value: 'Trace-to-trace spread (P90 − P10)', angle: -90, position: 'left', offset: -2, fontSize: 12 }}
+          label={{ value: 'Session-to-session spread (P90 − P10)', angle: -90, position: 'left', offset: -2, fontSize: 12 }}
         />
         <ZAxis range={[140, 140]} />
         <ReferenceLine x={0} stroke={CHART_ZERO_COLOR} strokeDasharray="2 3" />
@@ -504,7 +504,7 @@ function TrackPortraitTooltip({ active, payload }) {
       <div>Mean raw score: {fmt(point.mean_score)}</div>
       <div>Control mean: {fmt(point.control_mean_score)}</div>
       <div>Δ vs control: {point.delta >= 0 ? '+' : ''}{fmt(point.delta)}</div>
-      <div className="muted-copy compact">mean per-trace peak {fmt(point.peak_mean)} · n={point.traces}</div>
+      <div className="muted-copy compact">mean per-session peak {fmt(point.peak_mean)} · n={point.traces}</div>
     </div>
   )
 }
@@ -661,7 +661,7 @@ function CharacterBarTooltip({ active, payload, mode }) {
       ) : (
         <div>Distinctiveness: {point.distinctiveness >= 0 ? '+' : ''}{pct1(point.distinctiveness)}</div>
       )}
-      <div className="muted-copy compact">{point.audited_present}/{point.audited_total} traces present</div>
+      <div className="muted-copy compact">{point.audited_present}/{point.audited_total} sessions present</div>
     </div>
   )
 }
@@ -739,7 +739,7 @@ function CharacterPortrait({ points, selected, onSelect }) {
           domain={[0, 1]}
           tickFormatter={pct}
           tick={{ fontSize: 11 }}
-          label={{ value: 'Frequency (share of traces present)', position: 'bottom', offset: 18, fontSize: 12 }}
+          label={{ value: 'Frequency (share of sessions present)', position: 'bottom', offset: 18, fontSize: 12 }}
         />
         <YAxis
           type="number"
@@ -782,9 +782,9 @@ const CHARACTER_MODES = [
 ]
 
 const SELF_CHARACTER_MODES = [
-  ['portrait', 'Profile', 'Average level on x and trace-to-trace variation on y. Upper-right traits are both stronger and less consistent within this run. Neither axis is a quality or risk judgment. Click a trait to drill in.'],
-  ['levels', 'Levels', 'Traits ranked by mean raw score across traces. This describes the run’s average posture without claiming distinctiveness from another model. Click a bar to drill in.'],
-  ['variation', 'Variation', 'Traits ranked by the width of their middle 80% across traces. Wider bars mean the model varies more from conversation to conversation. Click a bar to drill in.'],
+  ['portrait', 'Profile', 'Average level on x and session-to-session variation on y. Upper-right traits are both stronger and less consistent within this run. Neither axis is a quality or risk judgment. Click a trait to drill in.'],
+  ['levels', 'Levels', 'Traits ranked by mean raw score across sessions. This describes the run’s average posture without claiming distinctiveness from another model. Click a bar to drill in.'],
+  ['variation', 'Variation', 'Traits ranked by the width of their middle 80% across sessions. Wider bars mean the model varies more from session to session. Click a bar to drill in.'],
 ]
 
 // Track mode swaps every measure to raw score units: no present-rates, no
@@ -847,7 +847,7 @@ function Character() {
       ) : selfMode ? (
         <p className="muted-copy">
           Within-run behavior profile for <strong>{meta.audited_provider}</strong>. Because this demo has no
-          external control corpus, the page describes average trait levels and trace-to-trace variation in
+          external control corpus, the page describes average trait levels and session-to-session variation in
           raw score units. It does not claim that these traits are distinctive from another model.
         </p>
       ) : (
@@ -917,10 +917,10 @@ function Character() {
 
       {dropped.length > 0 && (
         <div className="card">
-          <div className="card-title">{selfMode ? 'Not shown · insufficient scored traces' : `Not shown · no ${meta.reference_provider} reference`}</div>
+          <div className="card-title">{selfMode ? 'Not shown · insufficient scored sessions' : `Not shown · no ${meta.reference_provider} reference`}</div>
           <p className="muted-copy compact">
             {selfMode
-              ? 'These traits do not have enough scored traces for a stable within-run profile. Reported, never silently dropped.'
+              ? 'These traits do not have enough scored sessions for a stable within-run profile. Reported, never silently dropped.'
               : <>These traits are scored for {meta.audited_provider} but absent from the {meta.reference_provider}{' '}reference, so distinctiveness cannot be computed. Reported, never silently dropped.</>}
           </p>
           <div className="tag-row">

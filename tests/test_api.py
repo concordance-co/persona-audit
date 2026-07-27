@@ -201,5 +201,9 @@ def test_behavior_audit_score_spaces_expose_real_provider_and_precomputed_assets
 def test_persona_demo_registry_hides_unselected_high_stakes_space() -> None:
     response = client.get("/api/audit/score-spaces?provider=persona_demo")
     assert response.status_code == 200
-    families = {space["family"] for space in response.json()["spaces"]}
+    payload = response.json()
+    families = {space["family"] for space in payload["spaces"]}
     assert families == {"assistant_axis", "emotion_vectors"}
+    assert payload["capture_plan"]["required_layers"] == [40, 52]
+    assert payload["capture_plan"]["sections"] == ["assistant_response"]
+    assert "high-stakes" not in payload["capture_plan"]["note"].lower()

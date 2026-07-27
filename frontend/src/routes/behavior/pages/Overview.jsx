@@ -135,7 +135,7 @@ function Overview() {
           </p>
         </div>
         <div className="overview-chip-row" aria-label="Dataset scope">
-          <span>{compactMetricNumber(reward.trace_count || data.trace_count)} traces</span>
+          <span>{compactMetricNumber(reward.trace_count || data.trace_count)} sessions</span>
           {providerInfo.dataset_label && <span>{providerInfo.dataset_label}</span>}
           <span>{data.score_source?.available ? 'Scores loaded' : 'Cached data'}</span>
         </div>
@@ -168,8 +168,8 @@ function Overview() {
             <div className="overview-section">
               <div className="section-heading-row">
                 <div>
-                  <div className="card-title">Outlier Trace Previews</div>
-                  <p className="muted-copy compact">Compact turn-level preview only; session pages own full trace inspection.</p>
+                  <div className="card-title">Outlier Session Previews</div>
+                  <p className="muted-copy compact">Compact turn-level preview only; session pages own the full evidence review.</p>
                 </div>
               </div>
               <div className="chart-row two-col">
@@ -198,7 +198,7 @@ function Overview() {
               title="Emotion Baselines"
               description={emotionRows.length
                 ? 'Emotion clusters group related scored emotion concepts into readable families, such as joy, contentment, gratitude, suspicion, anger, fear, and shame.'
-                : 'Global emotion summaries are available, but this provider does not include the trace-level emotion rows needed for segment comparisons.'}
+                : 'Global emotion summaries are available, but this provider does not include the session-level emotion rows needed for segment comparisons.'}
               rows={baselineInventory}
               vectors={emotionBaselineVectors}
             />
@@ -241,7 +241,7 @@ function Overview() {
             {!segmentFamilyRows.length && (
               <div className="card">
                 <div className="card-title">No populated segment baselines</div>
-                <p className="muted-copy compact">This grouping has no populated {segmentFamilyIsEmotion ? 'emotion' : 'persona'} rows that meet the minimum sample-size threshold. Choose another grouping or add more traces per segment.</p>
+                <p className="muted-copy compact">This grouping has no populated {segmentFamilyIsEmotion ? 'emotion' : 'persona'} rows that meet the minimum sample-size threshold. Choose another grouping or add more sessions per segment.</p>
               </div>
             )}
           </div>
@@ -304,8 +304,8 @@ function Overview() {
             <div className="overview-section">
               <div className="section-heading-row">
                 <div>
-                  <div className="card-title">Outlier Trace Previews</div>
-                  <p className="muted-copy compact">Compact turn-level preview only; session pages own full trace inspection.</p>
+                  <div className="card-title">Outlier Session Previews</div>
+                  <p className="muted-copy compact">Compact turn-level preview only; session pages own the full evidence review.</p>
                 </div>
               </div>
               <div className="chart-row two-col">
@@ -322,7 +322,7 @@ function Overview() {
                 <div>
                   <div className="card-title">Deployment Preview Storyboard</div>
                   <p className="muted-copy compact">
-                    {providerCopy.storyboard_note || `Example-only: each ${simulatedSeries.window_size}-trace block is sorted by segment labels.`}
+                    {providerCopy.storyboard_note || `Example-only: each ${simulatedSeries.window_size}-session block is sorted by segment labels.`}
                   </p>
                 </div>
               </div>

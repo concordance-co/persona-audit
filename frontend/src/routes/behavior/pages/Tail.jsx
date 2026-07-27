@@ -254,7 +254,7 @@ function TailVisualization({ modes, meta }) {
       {view === 'map' ? (
         <>
           <p className="muted-copy compact tail-viz-sub">
-            Where each failure cluster sits — further right means a more intense moment, higher up means it
+            Where each tail pattern sits — further right means a more intense moment, higher up means it
             happens more often. The biggest, reddest bubbles are the patterns worth attention first.
           </p>
           <TailMapView modes={modes} />
@@ -298,6 +298,94 @@ function TailExemplar({ label, exemplar, provider }) {
   )
 }
 
+function TailScatter({ scatter, provider, trackOrder = [] }) {
+  const peakTraits = scatter.peak_traits || []
+  const exemplars = scatter.exemplars || []
+  const entryPercentile = Math.round(Number(scatter.entry_quantile || 0.9) * 100)
+  return (
+    <details className="card tail-scatter">
+      <summary>
+        <span>
+          <span className="tail-mode-title">Scattered tail · {scatter.size_turns} turns</span>
+          <span className="muted-copy compact tail-scatter-summary">
+            {pct(scatter.size_share)} of the tail · {scatter.trace_count} sessions · isolated extremes
+          </span>
+        </span>
+        <span className="tail-scatter-toggle">Inspect</span>
+      </summary>
+
+      <div className="tail-scatter-body">
+        <p className="muted-copy compact">
+          These turns are individually extreme, but the clustering step did not find enough similar neighbors
+          to form a stable pattern. They are kept visible instead of being forced into a named mode.
+        </p>
+
+        <div className="tail-scatter-metrics">
+          <div><span>Typical intensity</span><strong>{scatter.central_severity}σ</strong></div>
+          {scatter.reach != null && <div><span>95th percentile</span><strong>{scatter.reach}σ</strong></div>}
+          {scatter.maximum_severity != null && <div><span>Maximum</span><strong>{scatter.maximum_severity}σ</strong></div>}
+        </div>
+
+        {(scatter.tracks || []).length > 0 && (
+          <div className="tail-scatter-section">
+            <div className="report-label">Track composition</div>
+            <TrackShareChips tracks={scatter.tracks} order={trackOrder} />
+          </div>
+        )}
+
+        {peakTraits.length > 0 && (
+          <div className="tail-scatter-section">
+            <div className="report-label">Most common peak signals</div>
+            <div className="tail-scatter-signals">
+              {peakTraits.map(row => (
+                <span key={row.trait}>{row.label}<strong>{row.turns}</strong></span>
+              ))}
+            </div>
+            <p className="tail-mode-note">Counts show which signal peaked on each turn, not a shared signature.</p>
+          </div>
+        )}
+
+        {exemplars.length > 0 && (
+          <div className="tail-scatter-section">
+            <div className="report-label">Top {exemplars.length} examples</div>
+            <div className="tail-scatter-examples">
+              {exemplars.map(exemplar => (
+                <div className="tail-scatter-example" key={`${exemplar.trace_id}-${exemplar.turn_index}`}>
+                  <div>
+                    <span>Why it is tail</span>
+                    <strong>Crossed the {entryPercentile}th-percentile entry threshold</strong>
+                  </div>
+                  <div>
+                    <span>Largest spike</span>
+                    <strong>{exemplar.peak_label} · {exemplar.max_z}σ</strong>
+                  </div>
+                  <Link
+                    to={providerPath(sessionFocusLink(exemplar.trace_id, {
+                      coordinate: `assistant_axis_trait__${exemplar.peak_trait}`,
+                      vector: exemplar.peak_trait,
+                      family: 'persona',
+                      turn: exemplar.turn_index,
+                      source: 'tail_scatter',
+                    }), provider)}
+                  >
+                    Open {exemplar.trace_id} · turn {exemplar.turn_index} →
+                  </Link>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {exemplars.length === 0 && (
+          <div className="tail-scatter-unavailable">
+            Example detail was not returned by the active API. Refresh after restarting the backend to load the current Tail payload.
+          </div>
+        )}
+      </div>
+    </details>
+  )
+}
+
 function TailModeCard({ mode, rank, provider, trackOrder = [] }) {
   return (
     <div className={`card tail-mode ${mode.concerning ? 'is-concern' : 'is-benign'}`}>
@@ -309,7 +397,7 @@ function TailModeCard({ mode, rank, provider, trackOrder = [] }) {
             <TailModeBadge mode={mode} />
           </div>
           <div className="muted-copy compact">
-            Seen in <strong>{mode.size_turns}</strong> turns across <strong>{mode.trace_count}</strong> conversations
+            Seen in <strong>{mode.size_turns}</strong> turns across <strong>{mode.trace_count}</strong> sessions
             {mode.diffuse ? ' · diffuse / weakly defined' : ''}
           </div>
           {(mode.tracks || []).length > 0 && (
@@ -342,7 +430,7 @@ function TailModeCard({ mode, rank, provider, trackOrder = [] }) {
           <div className="report-label">How common</div>
           <div className="tail-freq">
             <span><strong>{pct(mode.size_share)}</strong> of all tail turns</span>
-            <span><strong>{pct(mode.trace_share)}</strong> of all conversations</span>
+            <span><strong>{pct(mode.trace_share)}</strong> of all sessions</span>
           </div>
         </div>
       </div>
@@ -351,10 +439,10 @@ function TailModeCard({ mode, rank, provider, trackOrder = [] }) {
         <div className="report-label">See it for yourself</div>
         <div className="tail-exemplars">
           {mode.exemplars_coincide
-            ? <TailExemplar label="Representative — also the worst" exemplar={mode.representative} provider={provider} />
+            ? <TailExemplar label={mode.concerning ? 'Representative — also the worst' : 'Representative — also the most extreme'} exemplar={mode.representative} provider={provider} />
             : <>
                 <TailExemplar label="A representative moment" exemplar={mode.representative} provider={provider} />
-                <TailExemplar label="The worst moment" exemplar={mode.worst} provider={provider} />
+                <TailExemplar label={mode.concerning ? 'The worst moment' : 'The most extreme moment'} exemplar={mode.worst} provider={provider} />
               </>}
         </div>
       </div>
@@ -399,7 +487,7 @@ function Tail() {
           ? <>a persona track pushed past <strong>its own track&apos;s 90th-percentile</strong></>
           : <>this model pushed past its <strong>own 90th-percentile</strong></>} on any persona trait is an
         extreme moment. We grouped those moments by <strong>which traits fired together</strong> and found{' '}
-        <strong>{modes.length} recurring patterns</strong> across {meta.n_tail_traces} of {meta.total_traces} conversations.
+        <strong>{modes.length} recurring patterns</strong> across {meta.n_tail_traces} of {meta.total_traces} sessions.
         Not every extreme is a problem — so each pattern is split into <strong>concerning</strong> (a concern trait runs hot:
         sycophantic, manipulative, hostile, condescending) and <strong>benign extremes</strong> (distinctive, but on neutral
         or desirable traits like calm, analytical, or conciliatory).
@@ -483,17 +571,10 @@ function Tail() {
       )}
 
       {scatter && (
-        <div className="card tail-scatter">
-          <div className="tail-mode-title">Scattered tail · {scatter.size_turns} turns</div>
-          <p className="muted-copy compact">
-            {pct(scatter.size_share)} of the tail ({scatter.trace_count} traces) does not form a pattern —
-            isolated, one-off extremes rather than a repeated one. Typical intensity {scatter.central_severity}σ.
-            Shown as a finding, not forced into a cluster.
-          </p>
-        </div>
+        <TailScatter scatter={scatter} provider={provider} trackOrder={meta.tracks || []} />
       )}
     </div>
   )
 }
 
-export { TAIL_COACT_TOP, TAIL_SEVERITY_MAX, Tail, TailClusterSilhouette, TailCoactRow, TailExemplar, TailFingerprint, TailMapCard, TailMapTooltip, TailMapView, TailModeBadge, TailModeCard, TailSeverity, TailTraitGroup, TailVisualization, tailModeHeadline, tailShortLabel, tailTrackSummary }
+export { TAIL_COACT_TOP, TAIL_SEVERITY_MAX, Tail, TailClusterSilhouette, TailCoactRow, TailExemplar, TailFingerprint, TailMapCard, TailMapTooltip, TailMapView, TailModeBadge, TailModeCard, TailScatter, TailSeverity, TailTraitGroup, TailVisualization, tailModeHeadline, tailShortLabel, tailTrackSummary }

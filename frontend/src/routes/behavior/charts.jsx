@@ -1,6 +1,5 @@
-// Overview/system chart components (baselines, trace-order series, outliers).
-// Moved verbatim from BehaviorAuditRoutes.jsx (pure reorganization).
-import { CHART_GRID_COLOR, EMOTION_VECTOR_KEYS, PERSONA_VECTOR_KEYS, fmt } from './helpers'
+// Overview/system chart components (baselines, session-order series, outliers).
+import { CHART_GRID_COLOR, fmt } from './helpers'
 import { CartesianGrid, Legend, Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { Fragment, useState } from 'react'
 import { InfoHint, actionLabel, compactMetricNumber, compactNumber, deltaColor, deviationLabel, emotionClusterDetail, rowsByGroupAndVector, sessionFocusLink, topVectorsByDelta, vectorLabel, zColor, zValue } from './shared.jsx'
@@ -39,7 +38,7 @@ function TraceOrderSeriesChart({ rows, vectors }) {
   return (
     <div className="card full-width-card">
       <div className="card-title">Deployment Preview Storyboard</div>
-      <p className="muted-copy compact">Example only: traces grouped by Tau2 task label, to preview how production monitoring would look. The jumps between blocks come from the grouping, not from real drift.</p>
+      <p className="muted-copy compact">Example only: sessions grouped by Tau2 task label, to preview how production monitoring would look. The jumps between blocks come from the grouping, not from real drift.</p>
       <div className="vector-toggle-row">
         {availableVectors.map(vector => (
           <label key={vector} className="vector-toggle">
@@ -131,18 +130,46 @@ function OutlierTraceChart({ trace, provider }) {
 
 function SystemStateCards({ data, reward, scoreRowCount, providerInfo = {} }) {
   const families = data.score_source?.families || []
-  const familyCount = families.length
   const persona = data.persona_overview || {}
+  const providerFeatures = providerInfo.features || {}
+  const visibleFamilies = families.filter(row => (
+    providerFeatures.show_high_stakes !== false
+    || !String(row.score_family || '').includes('high_stakes')
+  ))
+  const visibleScoreRowCount = visibleFamilies.reduce(
+    (sum, row) => sum + Number(row.row_count || 0),
+    0,
+  ) || scoreRowCount
+  const inventory = persona.vector_inventory || []
+  const comparison = persona.track_comparison || {}
+  const comparisonVectors = comparison.available ? (comparison.vectors || []) : []
+  const personaSignalCount = comparisonVectors.length
+    ? comparisonVectors.filter(row => row.family === 'persona').length
+    : inventory.filter(row => row.family === 'persona' && row.overview !== false).length
+  const emotionSignalCount = comparisonVectors.length
+    ? comparisonVectors.filter(row => row.family === 'emotion_cluster').length
+    : inventory.filter(row => row.family === 'emotion_cluster' && row.overview !== false).length
+  const displayedFamilyCount = new Set(
+    inventory.map(row => row.family).filter(Boolean),
+  ).size + (
+    providerFeatures.show_high_stakes !== false
+    && visibleFamilies.some(row => String(row.score_family || '').includes('high_stakes'))
+      ? 1
+      : 0
+  )
   const cohortLabel = providerInfo.cohort_plural_label || 'cohorts'
   const actionLabelText = providerInfo.action_label || 'Action'
+  const taskLabel = providerInfo.task_label || 'case'
   return (
     <div className="stats-grid enterprise-stats">
-      <PersonaMetric label="Traces" value={compactMetricNumber(reward.trace_count || data.trace_count)} detail={`${compactNumber(data.user_count)} ${cohortLabel.toLowerCase()}`} />
+      <PersonaMetric label="Sessions" value={compactMetricNumber(reward.trace_count || data.trace_count)} detail={`${compactNumber(data.user_count)} ${cohortLabel.toLowerCase()}`} />
       <PersonaMetric label="Turns" value={compactMetricNumber(reward.assistant_turn_count || 1268)} detail="Assistant turns with turn-level scores." />
-      <PersonaMetric label="Score Rows" value={compactMetricNumber(scoreRowCount)} detail={`${familyCount} score families loaded.`} />
-      <PersonaMetric label="Traits" value={compactMetricNumber((persona.persona_vectors || PERSONA_VECTOR_KEYS).length)} detail="Persona posture traits, separate from emotion clusters." />
-      <PersonaMetric label="Emotions" value={compactMetricNumber((persona.emotion_cluster_vectors || EMOTION_VECTOR_KEYS).length)} detail="Emotion cluster vectors used for the default emotion layer." />
-      <PersonaMetric label={`Low-n ${actionLabelText}`} value={compactMetricNumber(persona.low_n_task_action_count || 0)} detail="Segment/action cells below n=10 stay drilldown-only." />
+      <PersonaMetric label="Score Rows" value={compactMetricNumber(visibleScoreRowCount)} detail={`${displayedFamilyCount} displayed signal families.`} />
+      <PersonaMetric label="Persona Signals" value={compactMetricNumber(personaSignalCount)} detail="Populated persona signals in this Overview." />
+      <PersonaMetric label="Emotion Signals" value={compactMetricNumber(emotionSignalCount)} detail="Populated emotion signals in this Overview." />
+      {comparison.available
+        ? <PersonaMetric label={`Paired ${taskLabel}s`} value={compactMetricNumber(comparison.paired_task_count || 0)} detail={`Cases answered by every compared track.`} />
+        : <PersonaMetric label={`Low-n ${actionLabelText}`} value={compactMetricNumber(persona.low_n_task_action_count || 0)} detail="Segment/action cells below n=10 stay drilldown-only." />}
     </div>
   )
 }

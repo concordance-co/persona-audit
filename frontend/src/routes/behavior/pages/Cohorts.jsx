@@ -23,7 +23,7 @@ function Cohorts() {
         <div>
           <h1 className="page-title">Cohorts</h1>
           <p className="subtle-line">
-            {isCorpusMode ? 'Conversation users grouped for corpus analytics.' : 'Synthetic Tau2 trace buckets used to demonstrate cohort analytics.'}
+            {isCorpusMode ? 'Conversation users grouped for corpus analytics.' : 'Synthetic Tau2 session buckets used to demonstrate cohort analytics.'}
           </p>
         </div>
       </div>
@@ -35,7 +35,7 @@ function Cohorts() {
               <th>{isCorpusMode ? 'User' : 'Cohort'}</th>
               <th>{isCorpusMode ? 'Topics' : 'Domains'}</th>
               <th className="num">Sessions</th>
-              <th className="num">High Risk</th>
+              <th className="num">High Severity</th>
               <th className="num">Flags</th>
               {!isCorpusMode && <th className="num">Avg Reward</th>}
               <th>Last Outcome</th>
@@ -94,7 +94,7 @@ function CohortDetail() {
         <div className="card">
           <div className="card-title">Sessions</div>
           <div className="stat-value">{user.session_count}</div>
-          <div className="stat-label">{user.high_risk_sessions} high-risk sessions in cohort</div>
+          <div className="stat-label">{user.high_risk_sessions} high-severity sessions in cohort</div>
         </div>
         <div className="card">
           <div className="card-title">Flags</div>
@@ -123,7 +123,7 @@ function CohortDetail() {
             <tr>
               <th>Session</th>
               <th>{showReward ? 'Domain' : 'Topic'}</th>
-              <th>Risk</th>
+              <th>Flag severity</th>
               {showReward && <th className="num">Reward</th>}
               <th className="num">Flags</th>
               <th>{showReward ? 'Task' : 'Session'}</th>
