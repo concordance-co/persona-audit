@@ -84,7 +84,7 @@ export function Shell({ children }) {
       <div className="app-layout">
         <nav className="sidebar">
           <div className="sidebar-brand">
-            <div className="brand-mark" />
+            <img className="brand-mark" src="/concordance_icon_black.svg" alt="" aria-hidden="true" />
             <span>Persona Audit</span>
           </div>
           <ProviderSelector provider={provider} providers={visibleProviders} onProvider={setProvider} />

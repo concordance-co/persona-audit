@@ -126,12 +126,8 @@ body::after {
 .brand-mark {
   width: 24px;
   height: 24px;
-  border-radius: 4px;
-  border: 1px solid var(--brand-ink);
-  background:
-    linear-gradient(135deg, var(--brand-ink) 0 38%, transparent 38% 62%, var(--brand-ink) 62%),
-    var(--brand-red);
-  box-shadow: 3px 3px 0 rgba(8, 8, 8, 0.16);
+  flex-shrink: 0;
+  object-fit: contain;
 }
 
 .provider-selector {
