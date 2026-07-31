@@ -1,5 +1,5 @@
 // Sessions list page with deterministic summary and inspection entry points.
-import { Link } from 'react-router-dom'
+import { Link } from 'react-router'
 import { RiskPill, compactNumber, sessionFocusLink, vectorLabel } from '../shared.jsx'
 import { fmt, titleize } from '../helpers'
 import { getAuditSessions, getProductAnalytics } from '../../../api'

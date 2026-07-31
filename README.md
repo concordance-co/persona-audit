@@ -50,7 +50,7 @@ tests/              hermetic tests + free plan tier + opt-in live Modal tier
 ## Requirements
 
 - Python 3.13+, [`uv`](https://docs.astral.sh/uv/)
-- Node.js 20+
+- Node.js 22.22+
 - [xenon](https://github.com/concordance-co/xenon) — installed automatically
   by `uv sync` from the Git pin; a sibling clone is needed only for running
   scoring workflows on Modal
@@ -89,11 +89,11 @@ JSONL are both accepted. The shortest path needs no Python changes:
    is a ready-made instruction template for a coding agent).
 2. Validate them:
    `uv run python -m backend.scripts.validate_traces /path/to/traces.jsonl`.
-3. Set `PERSONA_AUDIT_LOCAL_TRACES=/path/to/traces.jsonl`; optionally set
-   `PERSONA_AUDIT_LOCAL_PROVIDER_ID` and `PERSONA_AUDIT_LOCAL_LABEL`.
+3. Set `PERSONA_AUDIT_LOCAL_TRACES=/absolute/path/to/traces.jsonl`; optionally
+   set `PERSONA_AUDIT_LOCAL_PROVIDER_ID` and `PERSONA_AUDIT_LOCAL_LABEL`.
 4. Open the dashboard with `?provider=local`.
-5. Optionally upload normalized rows to Postgres
-   (`uv run python -m backend.scripts.upload_local_data`) and run scoring.
+5. Optionally score the file on your Modal account using the database-free
+   path below. Postgres is only an optional additional sink.
 
 For source-specific parsing, custom dimensions, or deployment-specific
 behavior, register a provider module under `backend/api/providers/` exposing a
@@ -126,29 +126,56 @@ Scoring captures Llama-3.3-70B residual activations and projects them onto
 released trait/emotion vector spaces. One-time setup:
 
 ```bash
-modal setup                                          # authenticate
-git clone https://github.com/concordance-co/xenon ../xenon   # source mount for the runner
-uv run python -m backend.scripts.bootstrap_modal     # volumes + HF secret + model download
+uv run modal setup
+git clone https://github.com/concordance-co/xenon ../xenon
+uv run modal secret create huggingface HF_TOKEN=YOUR_HUGGING_FACE_TOKEN
+uv run python -m backend.scripts.bootstrap_modal
 ```
 
-The bootstrap is idempotent and `--check` verifies without creating anything.
-Then plan (free, no GPU) and run through the wrapper:
+The Hugging Face account must have accepted the Llama-3.3-70B license.
+`bootstrap_modal` creates the model/data volumes, downloads the model through
+that secret, and verifies the sibling Xenon checkout. It is idempotent;
+`--check` verifies without creating or downloading anything.
+
+To score normalized local data, use an absolute trace path, plan for free,
+then run:
 
 ```bash
-backend/scripts/run_xenon_workflow.sh plan --file backend/workflows/tau2_scoring.py
-backend/scripts/run_xenon_workflow.sh run  --file backend/workflows/tau2_scoring.py --logging INFO
+export PERSONA_AUDIT_LOCAL_TRACES=/absolute/path/to/traces.jsonl
+backend/scripts/run_xenon_workflow.sh plan --file backend/workflows/local_scoring.py
+backend/scripts/run_xenon_workflow.sh run --file backend/workflows/local_scoring.py --logging INFO
 ```
 
-For normalized local data, set `PERSONA_AUDIT_LOCAL_TRACES` and use
-`backend/workflows/local_scoring.py` with the same `plan` then `run` commands.
-The resulting assistant/emotion artifacts can be uploaded through
-`backend/scripts/upload_tau2_scores.py --provider local` (the script name is
-historical; its provider and artifact arguments are generic).
+The run result identifies the `capture_local`, `score_assistant_axis`, and
+`score_emotions` artifacts. Materialize them into the dashboard's local,
+gitignored score cache:
 
-Upload results with `backend/scripts/upload_tau2_scores.py` /
-`upload_hermes_scores.py` (they create tables as needed), or build local score
-caches. [docs/xenon-modal-runbook.md](docs/xenon-modal-runbook.md) covers the
-workflow contract, efficiency rules, and recovery commands. The
+```bash
+uv run python -m backend.scripts.upload_tau2_scores \
+  --provider local \
+  --workflow-name persona_audit_local_scoring_v1 \
+  --artifact-root /data/artifacts/persona_audit_local_scoring_v1 \
+  --run-id <wr_...> \
+  --capture-artifact-id <capture_local artifact id> \
+  --projection-artifact-id <score_assistant_axis artifact id> \
+  --emotion-artifact-id <score_emotions artifact id> \
+  --no-high-stakes \
+  --skip-database
+```
+
+The importer writes
+`data/supplemental_scores/<run-id>_assistant_trait_scores.json.gz`. Set the
+printed `PERSONA_AUDIT_LOCAL_SCORE_RUN_ID=<run-id>` in `.env`, restart the API
+or `POST /api/cache/clear`, and open `?provider=local`. No database is involved.
+Set `PERSONA_AUDIT_SCORE_CACHE_DIR` to an absolute directory if the cache
+should live outside the repo; the importer and API both honor it.
+If `PERSONA_AUDIT_DATABASE_URL` is configured and `--skip-database` is omitted,
+the same command writes both the local cache and Postgres tables.
+
+The importer name is historical; its provider and artifact arguments are
+generic. [docs/xenon-modal-runbook.md](docs/xenon-modal-runbook.md) covers the
+workflow contract, efficiency rules, artifact discovery, and recovery
+commands. The
 `PERSONA_AUDIT_MODEL_ID` and layer choices are documented in
 `backend/workflows/common.py` — the released vector spaces are precomputed
 against the 70B, so changing the model changes the science, not just the cost.

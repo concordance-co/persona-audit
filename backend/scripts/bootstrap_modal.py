@@ -52,7 +52,7 @@ def main() -> int:
             problems,
             "Modal auth",
             False,
-            "run `modal setup` (or set MODAL_TOKEN_ID/MODAL_TOKEN_SECRET)",
+            "run `uv run modal setup` (or set MODAL_TOKEN_ID/MODAL_TOKEN_SECRET)",
         )
         _summarize(problems)
         return 1
@@ -63,7 +63,7 @@ def main() -> int:
         if not exists and not args.check:
             subprocess.run(["modal", "volume", "create", volume], check=True)
             exists = True
-        _report(problems, f"volume {volume}", exists, f"run `modal volume create {volume}`")
+        _report(problems, f"volume {volume}", exists, f"run `uv run modal volume create {volume}`")
 
     secret = hf_secret_name()
     secret_ok = _secret_exists(secret)
@@ -71,7 +71,7 @@ def main() -> int:
         problems,
         f"secret {secret} (HF_TOKEN)",
         secret_ok,
-        f"run `modal secret create {secret} HF_TOKEN=<your huggingface token>`",
+        f"run `uv run modal secret create {secret} HF_TOKEN=YOUR_HUGGING_FACE_TOKEN`",
     )
 
     model = model_id()

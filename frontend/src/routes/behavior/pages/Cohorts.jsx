@@ -1,7 +1,7 @@
 // Cohorts, cohort detail, and high-stakes pages.
 // Moved verbatim from BehaviorAuditRoutes.jsx (pure reorganization).
 import { FALLBACK_SIGNAL_COLOR, SIGNAL_COLORS, evalLabelTitle, fmt } from '../helpers'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useParams } from 'react-router'
 import { RiskPill } from '../shared.jsx'
 import { getAuditUser, getAuditUsers, getHighStakesReports } from '../../../api'
 import { providerPath, providerShowsReward, useProviderSelection } from '../layout'

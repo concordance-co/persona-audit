@@ -25,6 +25,25 @@ backend/scripts/run_xenon_workflow.sh rerun-step --file backend/workflows/tau2_s
 Always `plan` before `run`. Plan is free and catches spec errors; run costs
 GPU time.
 
+## One-time setup
+
+Xenon installs from the pinned public Git dependency during `uv sync`, but
+Modal source mounting also needs a Xenon checkout. Scoring runs entirely on
+your Modal account:
+
+```bash
+uv run modal setup
+git clone https://github.com/concordance-co/xenon ../xenon
+uv run modal secret create huggingface HF_TOKEN=YOUR_HUGGING_FACE_TOKEN
+uv run python -m backend.scripts.bootstrap_modal
+uv run python -m backend.scripts.bootstrap_modal --check
+```
+
+The Hugging Face account behind that token must have accepted the
+Llama-3.3-70B license. The bootstrap creates the default `persona-audit-models`
+and `persona-audit-data` volumes and downloads the model; override those names
+with the documented `PERSONA_AUDIT_*` settings when needed.
+
 The workflows:
 
 | Workflow file | Purpose | GPU runner |
@@ -149,21 +168,23 @@ configured Modal data volume; the driver pulls them via `ModalVolumeStore` into
 2. `analysis_cpu` steps: projections onto trait coordinates, emotion vector
    space scores, persisted-probe inference. These are many small independent
    steps; workflow batching folds them into few Modal calls.
-3. Score artifacts are pulled and uploaded with
+3. Score artifacts are pulled and materialized with
    `backend/scripts/upload_tau2_scores.py` /
-   `upload_hermes_scores.py`, which read `result.json` from the
-   configured data volume and write the `persona_audit_*_score_*` tables.
+   `upload_hermes_scores.py`, which read `result.json` from the configured data
+   volume. They can write a local score cache, Postgres tables, or both.
 
 `local_scoring.py` uses the same assistant/emotion pipeline over
-`PERSONA_AUDIT_LOCAL_TRACES`. Plan it before spending:
+`PERSONA_AUDIT_LOCAL_TRACES`. The trace path must be absolute because the
+wrapper executes from the Xenon checkout. Plan it before spending:
 
 ```bash
+export PERSONA_AUDIT_LOCAL_TRACES=/absolute/path/to/traces.jsonl
 backend/scripts/run_xenon_workflow.sh plan --file backend/workflows/local_scoring.py
 backend/scripts/run_xenon_workflow.sh run --file backend/workflows/local_scoring.py --logging INFO
 ```
 
-Upload its artifact ids through the generic arguments on the historically
-named Tau2 uploader:
+Materialize its artifact ids through the generic arguments on the historically
+named Tau2 uploader. This command is local-only and needs no database:
 
 ```bash
 uv run python -m backend.scripts.upload_tau2_scores \
@@ -174,13 +195,22 @@ uv run python -m backend.scripts.upload_tau2_scores \
   --capture-artifact-id <capture_...> \
   --projection-artifact-id <projection_...> \
   --emotion-artifact-id <emotion_score_...> \
-  --no-high-stakes
+  --no-high-stakes \
+  --skip-database
 ```
 
-Set `PERSONA_AUDIT_LOCAL_SCORE_RUN_ID` to the uploaded run id, then clear the
-API cache. Comparative Character references remain the provider owner's
-responsibility; set `PERSONA_AUDIT_LOCAL_CHARACTER_REFERENCE` only when the
-chosen provider is a valid comparison corpus.
+The importer writes a gzip cache under `data/supplemental_scores/` and prints
+the exact `PERSONA_AUDIT_LOCAL_SCORE_RUN_ID` setting. Put that setting in
+`.env`, then restart the API or clear its cache. Generated score caches are
+gitignored and can contain derived information from private traces; keep them
+local. Set `PERSONA_AUDIT_SCORE_CACHE_DIR` to an absolute local directory when
+the cache should live outside the repo; both the importer and API use it. To
+also upload Postgres tables, configure
+`PERSONA_AUDIT_DATABASE_URL` and omit `--skip-database`.
+
+Comparative Character references remain the provider owner's responsibility;
+set `PERSONA_AUDIT_LOCAL_CHARACTER_REFERENCE` only when the chosen provider is
+a valid comparison corpus.
 
 For the demo dataset, `factory/workflows/demo_scoring.py` reuses the Tau2
 workflow's exact steps and surfaces over the normalized demo traces

@@ -1,15 +1,18 @@
-"""Shared score-artifact IO: pull Modal score artifacts and write score tables.
+"""Shared score-artifact IO: shape Modal outputs for local caches or Postgres.
 
 Used by every upload script (backend/scripts/upload_*_scores.py,
 upload_local_data.py) and the demo score-cache builder. The canonical
-score-row shape is ``SCORE_COLUMNS``; ``ensure_tables`` creates the run/score
-tables and ``replace_run`` idempotently swaps a run's rows via COPY.
+score-row shape is ``SCORE_COLUMNS``. Local caches reuse those rows directly;
+``ensure_tables`` and ``replace_run`` provide the optional Postgres sink.
 """
 
 from __future__ import annotations
 
+import gzip
+import json
 from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Any
 
 import psycopg
@@ -55,6 +58,58 @@ class ArtifactLoad:
     artifact_id: str
     family: str
     payload: Mapping[str, Any]
+
+
+def build_local_score_cache_payload(
+    *,
+    run_row: Mapping[str, Any],
+    score_rows: Sequence[Mapping[str, Any]],
+) -> dict[str, Any]:
+    """Shape canonical score rows for the database-free serving path."""
+
+    family_counts: dict[str, int] = {}
+    coordinates: set[str] = set()
+    for row in score_rows:
+        family = str(row.get("score_family") or "unknown")
+        family_counts[family] = family_counts.get(family, 0) + 1
+        if row.get("coordinate"):
+            coordinates.add(str(row["coordinate"]))
+    return {
+        "kind": "persona_audit_supplemental_score_rows",
+        "version": 1,
+        "run_id": str(run_row["run_id"]),
+        "workflow_name": run_row.get("workflow_name"),
+        "provider_id": run_row.get("provider_id"),
+        "source": run_row.get("source"),
+        "trace_count": run_row.get("trace_count"),
+        "record_count": run_row.get("record_count"),
+        "row_count": len(score_rows),
+        "score_family_counts": family_counts,
+        "coordinates": sorted(coordinates),
+        "metadata": dict(run_row.get("metadata") or {}),
+        "rows": [dict(row) for row in score_rows],
+    }
+
+
+def local_score_cache_path(root: Path, run_id: str) -> Path:
+    """Return the offline-cache path without allowing run-id path traversal."""
+
+    normalized = str(run_id).strip()
+    if not normalized or Path(normalized).name != normalized or "/" in normalized or "\\" in normalized:
+        raise ValueError(f"unsafe score run id for local cache: {run_id!r}")
+    return Path(root) / f"{normalized}_assistant_trait_scores.json.gz"
+
+
+def write_local_score_cache(payload: Mapping[str, Any], root: Path) -> Path:
+    """Atomically write a deterministic gzip cache consumed by scores/offline.py."""
+
+    path = local_score_cache_path(root, str(payload["run_id"]))
+    path.parent.mkdir(parents=True, exist_ok=True)
+    serialized = json.dumps(dict(payload), separators=(",", ":"), sort_keys=True).encode("utf-8")
+    tmp_path = path.with_name(f"{path.name}.tmp")
+    tmp_path.write_bytes(gzip.compress(serialized, compresslevel=9, mtime=0))
+    tmp_path.replace(path)
+    return path
 
 
 def record_index(records: Sequence[Mapping[str, Any]], *, provider_id: str, source: str) -> dict[str, dict[str, Any]]:

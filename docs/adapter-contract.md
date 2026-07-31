@@ -93,7 +93,9 @@ Recommended flow:
 2. Convert each conversation/session into one normalized trace object.
 3. Validate with `uv run python -m backend.scripts.validate_traces <path>`.
 4. Choose how the app should read it:
-   - Set `PERSONA_AUDIT_LOCAL_TRACES=<path>` and use `?provider=local` (no code changes).
+   - Set `PERSONA_AUDIT_LOCAL_TRACES=<absolute path>` and use
+     `?provider=local` (no code changes). Use an absolute path if the file will
+     be scored through the Xenon wrapper.
    - Add a small source-specific loader under `backend/adapters/<source>/` and register it as a provider (see below).
    - Or upload normalized trace/turn rows to the Postgres-compatible tables created by `backend/scripts/upload_local_data.py`.
 5. Keep scoring optional. Do not invent score rows when only raw conversations are available.

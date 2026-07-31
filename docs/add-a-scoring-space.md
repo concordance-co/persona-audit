@@ -15,7 +15,7 @@ payload from `PersistedProbeImportSpec`-compatible training).
 
 1. Put the probe artifact on your Modal data volume
    (`PERSONA_AUDIT_DATA_VOLUME`), e.g. under `/data/artifacts/my_probes_v1/<artifact_id>/result.json`.
-   `modal volume put <volume> <local_dir> /data/artifacts/my_probes_v1/<artifact_id>` works.
+   `uv run modal volume put <volume> <local_dir> /data/artifacts/my_probes_v1/<artifact_id>` works.
 2. Append an entry to `HIGH_STAKES_PERSISTED_PROBES` in
    `backend/api/scoring_spaces.py` with your `domain`, `probe_family`,
    `artifact_id`, `target_root`, and metrics. That single config entry drives:
@@ -74,6 +74,11 @@ bring rows directly. Two equivalent sinks:
   `turn_index`, `provider_id`, `score`, ...). Point
   `PERSONA_AUDIT_SCORE_RUN_ID` (or your provider's ScoreConfig) at the run id.
   `factory/scripts/build_demo_score_cache.py` is the worked example.
+- **Xenon artifacts to local cache**:
+  `backend/scripts/upload_tau2_scores.py --provider local --skip-database ...`
+  pulls projection/emotion artifacts from the configured Modal volume and
+  writes the gzip supplemental file automatically. See the complete command
+  in `docs/xenon-modal-runbook.md`.
 - **Postgres rows**: `uv run python -m backend.scripts.upload_local_data`
   uploads supplemental JSON files into the score tables, or use
   `backend/scores_io.py` directly.
