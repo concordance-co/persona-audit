@@ -1,6 +1,6 @@
 import { CharacterPortrait } from './Character.jsx'
 import { CharacterTrackHeatmap, trackTitle } from '../tracks.jsx'
-import { Link } from 'react-router-dom'
+import { Link } from 'react-router'
 import { fmt, pct, pct1, titleize } from '../helpers'
 import { getCharacter, getProductAnalytics, getTail } from '../../../api'
 import { providerPath, useProviderSelection } from '../layout'

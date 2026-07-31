@@ -2,7 +2,7 @@
 // Moved verbatim from BehaviorAuditRoutes.jsx (pure reorganization).
 import { Bar, BarChart, CartesianGrid, Cell, Legend, Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { CHART_GRID_COLOR, CHART_ZERO_COLOR, EMOTION_CLUSTER_BY_CONCEPT, EMOTION_SPECTRUM_X_AXIS_STEP, HIGHLIGHT_COLOR, NEGATIVE_COLOR, POSITIVE_COLOR, VECTOR_COLORS, average, axisIdForCoordinate, buildCoordinateTrajectoryRows, buildEmotionSpectrumData, buildSessionProjectionDistributions, coordinateTitle, defaultTrajectoryCoordinates, emotionConceptKey, evalLabelTitle, familyTitle, fmt, groupByValue, pct, pct1, smoothLinePath, trajectoryCoordinateOptions } from './helpers'
-import { Link } from 'react-router-dom'
+import { Link } from 'react-router'
 import { PersonaMetric } from './charts.jsx'
 import { actionLabel, clamp01, compactNumber, deviationLabel, scopeLabel, sessionFocusLink, taskGroupLabel, vectorLabel, zValue } from './shared.jsx'
 import { providerPath } from './layout'

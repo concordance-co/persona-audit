@@ -9,6 +9,7 @@ const LLM_CONTEXT_SNIPPETS = [
     docs: [
       ['Data conversion guide', 'docs/llm-data-conversion-instructions.md'],
       ['Adapter contract', 'docs/adapter-contract.md'],
+      ['Scoring runbook', 'docs/xenon-modal-runbook.md'],
     ],
     body: `I want to adapt Persona Audit to my own conversation data.
 
@@ -16,10 +17,10 @@ Read docs/llm-data-conversion-instructions.md and docs/adapter-contract.md. Insp
 1. Convert one conversation per object into normalized JSONL.
 2. Preserve stable IDs, turn order, roles, timestamps, and useful low-cardinality labels.
 3. Run: uv run python -m backend.scripts.validate_traces <output.jsonl>
-4. Set PERSONA_AUDIT_LOCAL_TRACES=<output.jsonl>.
+4. Set PERSONA_AUDIT_LOCAL_TRACES=<absolute path to output.jsonl>.
 5. Open http://localhost:5173/?provider=local and verify /api/health?provider=local.
 
-Use the zero-code local provider first. Create a reusable provider only if I need source-specific parsing or custom workflow/action/cohort mappings. Do not invent scores, print secrets, or retain private reasoning unless I explicitly opt in.`,
+Use the zero-code local provider first. Create a reusable provider only if I need source-specific parsing or custom workflow/action/cohort mappings. If I ask to score the data, follow docs/xenon-modal-runbook.md and materialize a local score cache; do not require Postgres. Do not invent scores, print secrets, or retain private reasoning unless I explicitly opt in.`,
   },
   {
     title: 'Use This Repo',
@@ -50,7 +51,7 @@ Start by reading README.md, AGENTS.md, frontend/README.md, and docs/adapter-cont
 
 Providers define how traces load, how dimensions map, which score run to use, and what the frontend exposes. The bundled persona_demo provider is fully offline. The zero-code local provider accepts normalized JSON or JSONL through PERSONA_AUDIT_LOCAL_TRACES. Postgres is optional.
 
-Scored views need canonical rows keyed by score_family, coordinate, trace_id, and turn_index. The backend computes global baselines, segment deltas, matched-track comparisons, outlier queues, Character, Tail, and session drilldowns. The frontend composes those deterministic payloads.
+Scored views need canonical rows keyed by score_family, coordinate, trace_id, and turn_index. Those rows can be served from a local gzip cache under data/supplemental_scores/ or from Postgres. The backend computes global baselines, segment deltas, matched-track comparisons, outlier queues, Character, Tail, and session drilldowns. The frontend composes those deterministic payloads.
 
 Read z-deltas as "how different this segment is from the global baseline." Zero is typical for the audited run. Positive means more of that trait or emotion family than baseline. Negative means less.`,
   },

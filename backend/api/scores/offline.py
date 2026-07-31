@@ -24,9 +24,7 @@ from backend.api.scores.shaping import (
 from backend.api.stats import mean as _stats_mean
 from backend.api.stats import pearson as _stats_pearson
 from backend.api.stats import quantile as _stats_quantile
-from backend.paths import DATA_ROOT
-
-SUPPLEMENTAL_SCORE_DIR = DATA_ROOT / "supplemental_scores"
+from backend.paths import configured_score_cache_dir
 
 
 def _stats_pearson_unrounded(xs, ys):
@@ -35,7 +33,7 @@ def _stats_pearson_unrounded(xs, ys):
 
 @data_cache(maxsize=4)
 def _supplemental_score_rows(run_id: str) -> tuple[dict[str, Any], ...]:
-    path = SUPPLEMENTAL_SCORE_DIR / f"{run_id}_assistant_trait_scores.json"
+    path = configured_score_cache_dir() / f"{run_id}_assistant_trait_scores.json"
     gzip_path = path.with_suffix(".json.gz")
     if path.exists():
         raw = path.read_text(encoding="utf-8")

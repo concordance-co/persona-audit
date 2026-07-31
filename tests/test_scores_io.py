@@ -2,10 +2,21 @@
 
 from __future__ import annotations
 
+import gzip
+import json
+
 from psycopg import sql
 
-from backend.api.scores import offline
-from backend.scores_io import SCORE_COLUMNS, ensure_tables, replace_run
+from backend.api.cache import clear_all
+from backend.api.scores import offline, score_inventory, score_rows_for_trace
+from backend.scores_io import (
+    SCORE_COLUMNS,
+    build_local_score_cache_payload,
+    ensure_tables,
+    local_score_cache_path,
+    replace_run,
+    write_local_score_cache,
+)
 
 
 class FakeCopy:
@@ -115,6 +126,55 @@ def test_replace_run_deletes_then_inserts_and_copies_rows() -> None:
     assert len(copied) == 1
     assert len(copied[0]) == len(SCORE_COLUMNS)
     assert copied[0][SCORE_COLUMNS.index("coordinate")] == "assistant_axis_trait__calm"
+
+
+def test_local_score_cache_round_trips_through_offline_serving(tmp_path, monkeypatch) -> None:
+    run_row = {
+        "run_id": "wr_local_test",
+        "workflow_name": "persona_audit_local_scoring_v1",
+        "provider_id": "local",
+        "source": "local fixture",
+        "trace_count": 1,
+        "record_count": 1,
+        "metadata": {"score_family_counts": {"assistant_axis": 1}},
+    }
+    score_row = {
+        "run_id": "wr_local_test",
+        "artifact_id": "projection_1",
+        "score_family": "assistant_axis",
+        "coordinate": "assistant_axis_trait__calm",
+        "example_key": "trace_1__turn_1",
+        "trace_id": "trace_1",
+        "turn_index": 1,
+        "provider_id": "local",
+        "score": 0.5,
+        "row_payload": {"score": 0.5},
+    }
+    payload = build_local_score_cache_payload(run_row=run_row, score_rows=[score_row])
+
+    path = write_local_score_cache(payload, tmp_path)
+
+    assert path == tmp_path / "wr_local_test_assistant_trait_scores.json.gz"
+    assert json.loads(gzip.decompress(path.read_bytes()))["rows"] == [score_row]
+    monkeypatch.setenv("PERSONA_AUDIT_SCORE_CACHE_DIR", str(tmp_path))
+    monkeypatch.setenv("PERSONA_AUDIT_LOCAL_SCORE_RUN_ID", "wr_local_test")
+    for name in ("PERSONA_AUDIT_DATABASE_URL", "BEHAVIOR_AUDIT_DATABASE_URL", "XENON_NEON_DATABASE_URL"):
+        monkeypatch.setenv(name, "")
+    offline._supplemental_score_rows.cache_clear()
+    assert offline._supplemental_score_rows("wr_local_test") == (score_row,)
+    clear_all()
+    assert score_inventory("local")["available"] is True
+    assert score_rows_for_trace("trace_1", provider="local") == [score_row]
+    clear_all()
+
+
+def test_local_score_cache_path_rejects_path_traversal(tmp_path) -> None:
+    for run_id in ("", "../outside", "nested/run"):
+        try:
+            local_score_cache_path(tmp_path, run_id)
+        except ValueError:
+            continue
+        raise AssertionError(f"unsafe run id was accepted: {run_id!r}")
 
 
 # --- SQL <-> offline parity -------------------------------------------------

@@ -1,7 +1,7 @@
 // Route table for the behavior-audit dashboard. Pages live under
 // ./behavior/pages/, shared components under ./behavior/. This file was a
 // 4,900-line monolith; it was split verbatim (pure reorganization).
-import { BrowserRouter as Router, Navigate, Route, Routes } from 'react-router-dom'
+import { BrowserRouter as Router, Navigate, Route, Routes } from 'react-router'
 import { Character } from './behavior/pages/Character.jsx'
 import { LLMs } from './behavior/pages/LLMs.jsx'
 import { Overview } from './behavior/pages/Overview.jsx'

@@ -5,7 +5,7 @@ import { buildProjectionTailThresholds, buildTurnAxisRows, fmt } from '../helper
 import { deviationLabel } from '../shared.jsx'
 import { getAuditSession } from '../../../api'
 import { useAsyncResource } from '../../../hooks/useAsyncResource'
-import { useLocation, useParams } from 'react-router-dom'
+import { useLocation, useParams } from 'react-router'
 import { useEffect, useMemo, useState } from 'react'
 import { useProviderSelection } from '../layout'
 

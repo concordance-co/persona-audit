@@ -7,7 +7,7 @@ import subprocess
 import warnings
 
 from backend.api.app import app
-from backend.paths import DATA_ROOT, REPO_ROOT, configured_database_url, env_value
+from backend.paths import DATA_ROOT, REPO_ROOT, configured_database_url, configured_score_cache_dir, env_value
 
 EXPECTED_API_ROUTES = {
     "/api/health",
@@ -76,6 +76,15 @@ def test_database_url_prefers_public_env_and_keeps_legacy_fallbacks(monkeypatch)
 
     monkeypatch.setenv("PERSONA_AUDIT_DATABASE_URL", "postgresql://public")
     assert configured_database_url() == "postgresql://public"
+
+
+def test_score_cache_dir_is_stable_across_working_directories(tmp_path, monkeypatch) -> None:
+    monkeypatch.setenv("PERSONA_AUDIT_SCORE_CACHE_DIR", "private/scores")
+    assert configured_score_cache_dir() == REPO_ROOT / "private/scores"
+
+    external = tmp_path / "scores"
+    monkeypatch.setenv("PERSONA_AUDIT_SCORE_CACHE_DIR", str(external))
+    assert configured_score_cache_dir() == external
 
 
 def test_legacy_env_alias_warns_deprecation(monkeypatch) -> None:

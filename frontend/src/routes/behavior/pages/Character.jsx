@@ -3,7 +3,7 @@
 import { Bar, BarChart, CartesianGrid, Cell, LabelList, Legend, Line, LineChart, ReferenceLine, ResponsiveContainer, Scatter, ScatterChart, Tooltip, XAxis, YAxis, ZAxis } from 'recharts'
 import { CHART_GRID_COLOR, CHART_ZERO_COLOR, HIGHLIGHT_COLOR, POSITIVE_COLOR, fmt, pct, pct1 } from '../helpers'
 import { CharacterTrackHeatmap, trackColor, trackTitle } from '../tracks.jsx'
-import { Link } from 'react-router-dom'
+import { Link } from 'react-router'
 import { getCharacter, getCharacterTrait } from '../../../api'
 import { providerPath, useProviderSelection } from '../layout'
 import { sessionFocusLink } from '../shared.jsx'

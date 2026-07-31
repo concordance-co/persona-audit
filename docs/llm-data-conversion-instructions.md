@@ -50,9 +50,12 @@ Choose one path:
 1. Normalized local file (preferred first run)
    - Write either a JSON array or JSONL file.
    - Run `uv run python -m backend.scripts.validate_traces <path>`.
-   - Set `PERSONA_AUDIT_LOCAL_TRACES=<path>`.
+   - Set `PERSONA_AUDIT_LOCAL_TRACES=<absolute path>`. An absolute path is
+     required when scoring through the Xenon wrapper.
    - Optionally set `PERSONA_AUDIT_LOCAL_PROVIDER_ID` and `PERSONA_AUDIT_LOCAL_LABEL`.
    - Open `http://localhost:5173/?provider=local`.
+   - To add trait/emotion scores without a database, follow the local workflow
+     and cache-materialization commands in `docs/xenon-modal-runbook.md`.
 
 2. Source-specific adapter
    - Add loader code under `backend/adapters/<source>/`.

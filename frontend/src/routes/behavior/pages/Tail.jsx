@@ -2,7 +2,7 @@
 // Moved verbatim from BehaviorAuditRoutes.jsx (pure reorganization).
 import { InfoHint, sessionFocusLink } from '../shared.jsx'
 import { LabelList, ResponsiveContainer, Scatter, ScatterChart, Tooltip, XAxis, YAxis } from 'recharts'
-import { Link, useLocation } from 'react-router-dom'
+import { Link, useLocation } from 'react-router'
 import { TrackShareChips, trackColor, trackTitle } from '../tracks.jsx'
 import { getTail } from '../../../api'
 import { pct } from '../helpers'

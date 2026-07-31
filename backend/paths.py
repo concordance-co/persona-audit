@@ -23,6 +23,7 @@ ENV_PREFIX = "PERSONA_AUDIT_"
 LEGACY_ENV_PREFIX = "BEHAVIOR_AUDIT_"
 DATABASE_URL_ENV = "PERSONA_AUDIT_DATABASE_URL"
 LEGACY_NEON_DATABASE_URL_ENV = "XENON_NEON_DATABASE_URL"
+SCORE_CACHE_DIR_ENV = "PERSONA_AUDIT_SCORE_CACHE_DIR"
 
 _WARNED_LEGACY_ENV: set[str] = set()
 
@@ -89,3 +90,17 @@ def configured_database_url(env_var: str = DATABASE_URL_ENV) -> str | None:
     """
 
     return env_value(env_var)
+
+
+def configured_score_cache_dir() -> Path:
+    """Return the local supplemental-score directory.
+
+    Relative overrides are anchored to the repository root so the API and
+    artifact importer agree even when Xenon changes the process cwd.
+    """
+
+    configured = env_value(SCORE_CACHE_DIR_ENV)
+    if not configured:
+        return DATA_ROOT / "supplemental_scores"
+    path = Path(configured).expanduser()
+    return path if path.is_absolute() else REPO_ROOT / path

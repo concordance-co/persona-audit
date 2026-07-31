@@ -1,24 +1,28 @@
-"""Upload Persona Audit Tau2 score artifacts into Neon."""
+"""Import Persona Audit score artifacts into a local cache and optional Postgres."""
 
 from __future__ import annotations
 
 import argparse
 import json
+from pathlib import Path
 
 import psycopg
 from pipelines_v2.api import ModalVolumeStore, TransferPolicy
 from psycopg.rows import dict_row
 
-from backend.api.registry import provider_keys
+from backend.api.registry import get_provider, provider_keys, resolve_provider
 from backend.api.scoring_spaces import trace_scoring_records
 from backend.api.trace_source import load_product_traces
-from backend.paths import DATABASE_URL_ENV, configured_database_url, load_dotenv
+from backend.paths import DATABASE_URL_ENV, configured_database_url, configured_score_cache_dir, load_dotenv
 from backend.scores_io import (
     ArtifactLoad,
+    build_local_score_cache_payload,
     ensure_tables,
     load_result,
+    local_score_cache_path,
     replace_run,
     score_rows_from_artifact,
+    write_local_score_cache,
 )
 from backend.scores_io import (
     record_index as build_record_index,
@@ -56,7 +60,7 @@ SCORE_TABLE = "persona_audit_tau2_score_rows"
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--run-id", default=DEFAULT_RUN_ID)
     parser.add_argument("--provider", choices=provider_keys(), default=None)
     parser.add_argument("--workflow-name", default="behavior_audit_tau2_scoring_v1")
@@ -70,12 +74,23 @@ def main() -> None:
     parser.add_argument("--db-env-var", default=DB_ENV_VAR)
     parser.add_argument("--run-table", default=RUN_TABLE)
     parser.add_argument("--score-table", default=SCORE_TABLE)
+    parser.add_argument(
+        "--local-cache-dir",
+        type=Path,
+        default=configured_score_cache_dir(),
+        help="directory for the database-free gzip score cache",
+    )
+    parser.add_argument("--skip-local-cache", action="store_true", help="do not write the local gzip score cache")
+    parser.add_argument("--skip-database", action="store_true", help="do not upload score rows to Postgres")
     parser.add_argument("--dry-run", action="store_true")
     args = parser.parse_args()
+    if args.skip_local_cache and args.skip_database and not args.dry_run:
+        parser.error("--skip-local-cache and --skip-database would discard every output")
 
     load_dotenv()
 
-    traces, provider_id, source = load_product_traces(args.provider)
+    selected_provider = resolve_provider(args.provider)
+    traces, provider_id, source = load_product_traces(selected_provider)
     records = trace_scoring_records(traces)
     record_index = build_record_index(records, provider_id=provider_id, source=source)
     high_stakes_artifact_ids = (
@@ -137,12 +152,17 @@ def main() -> None:
             ],
         },
     }
+    local_cache = build_local_score_cache_payload(run_row=run_row, score_rows=score_rows)
+    cache_path = local_score_cache_path(args.local_cache_dir, args.run_id)
+    database_url = None if args.skip_database else configured_database_url(args.db_env_var)
 
     print(
         json.dumps(
             {
                 "run": run_row,
                 "score_family_counts": family_counts,
+                "local_cache_path": None if args.skip_local_cache else str(cache_path),
+                "database_configured": bool(database_url),
             },
             indent=2,
             sort_keys=True,
@@ -151,16 +171,26 @@ def main() -> None:
     if args.dry_run:
         return
 
-    database_url = configured_database_url(args.db_env_var)
-    if not database_url:
-        raise RuntimeError(f"{args.db_env_var} is not set")
-    with psycopg.connect(database_url, autocommit=False, row_factory=dict_row) as conn:
-        ensure_tables(conn, run_table=args.run_table, score_table=args.score_table)
-        replace_run(
-            conn, run_table=args.run_table, score_table=args.score_table, run_row=run_row, score_rows=score_rows
-        )
-        conn.commit()
-    print(f"uploaded {len(score_rows)} score rows for {args.run_id}")
+    if not args.skip_local_cache:
+        written_path = write_local_score_cache(local_cache, args.local_cache_dir)
+        print(f"wrote {len(score_rows)} score rows to local cache: {written_path}")
+
+    if database_url:
+        with psycopg.connect(database_url, autocommit=False, row_factory=dict_row) as conn:
+            ensure_tables(conn, run_table=args.run_table, score_table=args.score_table)
+            replace_run(
+                conn, run_table=args.run_table, score_table=args.score_table, run_row=run_row, score_rows=score_rows
+            )
+            conn.commit()
+        print(f"uploaded {len(score_rows)} score rows for {args.run_id}")
+    elif args.skip_local_cache:
+        raise RuntimeError(f"{args.db_env_var} is not set and local cache output was disabled")
+    elif not args.skip_database:
+        print(f"{args.db_env_var} is not set; skipped optional database upload")
+
+    run_id_env = get_provider(selected_provider).score.run_id_env
+    print(f"serve this run locally: {run_id_env}={args.run_id}")
+    print("restart the API or POST /api/cache/clear after changing the run id")
 
 
 if __name__ == "__main__":

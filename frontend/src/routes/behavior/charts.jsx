@@ -3,7 +3,7 @@ import { CHART_GRID_COLOR, fmt } from './helpers'
 import { CartesianGrid, Legend, Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { Fragment, useState } from 'react'
 import { InfoHint, actionLabel, compactMetricNumber, compactNumber, deltaColor, deviationLabel, emotionClusterDetail, rowsByGroupAndVector, sessionFocusLink, topVectorsByDelta, vectorLabel, zColor, zValue } from './shared.jsx'
-import { Link } from 'react-router-dom'
+import { Link } from 'react-router'
 import { providerPath } from './layout'
 
 function PersonaMetric({ label, value, detail, compact = false }) {
